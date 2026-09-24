@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_hifz/app/app_theme.dart';
 import 'package:quran_hifz/features/quran/domain/quran_surah.dart';
 import 'package:quran_hifz/features/quran/presentation/widgets/quran_surah_row.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
@@ -35,6 +36,8 @@ void main() {
     expect(find.text('Al-Baqarah'), findsOneWidget);
     expect(find.text('Madani · 286 Verses'), findsOneWidget);
     expect(find.text('سورة البقرة'), findsOneWidget);
+    final englishName = tester.widget<Text>(find.text('Al-Baqarah'));
+    expect(englishName.style?.fontSize, 18);
     expect(find.byType(Card), findsNothing);
     expect(
       tester.getSize(find.byType(QuranSurahRow)).height,
@@ -83,6 +86,7 @@ void main() {
 }
 
 Widget _app(Widget child) => MaterialApp(
+  theme: appTheme(AppThemePreference.light, language: AppLanguage.english),
   home: Scaffold(
     body: Center(child: SizedBox(width: 380, child: child)),
   ),

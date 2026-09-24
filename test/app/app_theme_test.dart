@@ -19,12 +19,54 @@ void main() {
     expect(blue.colorScheme.onSurface, const Color(0xFF273238));
     expect(blue.colorScheme.onSurfaceVariant, const Color(0xFF77868D));
     expect(blue.textTheme.bodyMedium?.fontFamily, 'SolaimanLipi');
+    final english = appTheme(
+      AppThemePreference.light,
+      language: AppLanguage.english,
+    );
+    expect(english.textTheme.bodyMedium?.fontFamily, isNull);
+    expect(english.textTheme.titleMedium?.fontSize, 16);
+    expect(english.textTheme.titleMedium?.fontWeight, FontWeight.w500);
+    expect(english.textTheme.titleSmall?.fontSize, 14);
+    expect(english.textTheme.titleSmall?.fontWeight, FontWeight.w500);
+    expect(english.textTheme.bodyMedium?.fontSize, 14);
+    expect(english.textTheme.bodyMedium?.fontWeight, FontWeight.w400);
+    expect(english.textTheme.bodySmall?.fontSize, 12);
+    expect(english.textTheme.bodySmall?.fontWeight, FontWeight.w400);
+    expect(english.textTheme.labelMedium?.fontSize, 12);
+    expect(english.textTheme.labelMedium?.fontWeight, FontWeight.w500);
+    for (final style in [
+      english.textTheme.titleLarge,
+      english.textTheme.titleMedium,
+      english.textTheme.titleSmall,
+      english.textTheme.bodyLarge,
+      english.textTheme.bodyMedium,
+      english.textTheme.bodySmall,
+      english.textTheme.labelLarge,
+      english.textTheme.labelMedium,
+      english.textTheme.labelSmall,
+    ]) {
+      expect(style?.color, english.colorScheme.onSurface);
+    }
     expect(
-      appTheme(
-        AppThemePreference.light,
-        language: AppLanguage.english,
-      ).textTheme.bodyMedium?.fontFamily,
-      'Inter',
+      english.primaryTextTheme.titleLarge?.color,
+      english.colorScheme.onPrimary,
+    );
+
+    final englishDark = appTheme(
+      AppThemePreference.dark,
+      language: AppLanguage.english,
+    );
+    expect(
+      englishDark.textTheme.titleLarge?.color,
+      englishDark.colorScheme.onSurface,
+    );
+    expect(
+      englishDark.textTheme.bodyMedium?.color,
+      englishDark.colorScheme.onSurface,
+    );
+    expect(
+      englishDark.primaryTextTheme.titleLarge?.color,
+      englishDark.colorScheme.onPrimary,
     );
     expect(blue.textTheme.bodyMedium?.fontSize, 13);
     expect(blue.textTheme.titleLarge?.fontSize, 20);

@@ -49,8 +49,23 @@ ThemeData appTheme(
     );
   }
 
-  final fontFamily = language == AppLanguage.bangla ? 'SolaimanLipi' : 'Inter';
-  final textTheme = _compactTextTheme(fontFamily, scheme);
+  final androidTypography = Typography.material2021(
+    platform: TargetPlatform.android,
+    colorScheme: scheme,
+  );
+  final fontFamily = language == AppLanguage.bangla ? 'SolaimanLipi' : null;
+  final textTheme = language == AppLanguage.bangla
+      ? _compactTextTheme('SolaimanLipi', scheme)
+      : androidTypography.englishLike.apply(
+          bodyColor: scheme.onSurface,
+          displayColor: scheme.onSurface,
+          decorationColor: scheme.onSurface,
+        );
+  final primaryTextTheme = textTheme.apply(
+    bodyColor: scheme.onPrimary,
+    displayColor: scheme.onPrimary,
+    decorationColor: scheme.onPrimary,
+  );
   final rounded12 = RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(12),
     side: BorderSide(color: scheme.outlineVariant),
@@ -74,7 +89,7 @@ ThemeData appTheme(
     brightness: scheme.brightness,
     fontFamily: fontFamily,
     textTheme: textTheme,
-    primaryTextTheme: textTheme,
+    primaryTextTheme: primaryTextTheme,
     scaffoldBackgroundColor: scheme.surface,
     visualDensity: VisualDensity.standard,
     iconTheme: IconThemeData(color: scheme.onSurfaceVariant, size: 20),

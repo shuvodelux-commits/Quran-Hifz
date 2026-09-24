@@ -56,7 +56,11 @@ void main() {
       expect(navigation.elevation, 0);
       expect(find.byType(NavigationDestination), findsNWidgets(5));
       expect(find.text('হোম'), findsOneWidget, reason: '$theme home');
-      expect(find.text('পরবর্তী সলাত'), findsOneWidget, reason: '$theme home');
+      expect(
+        find.text('এখন সলাতের সময় নয়'),
+        findsOneWidget,
+        reason: '$theme home',
+      );
       await tester.tap(find.text('সলাত').last);
       await tester.pumpAndSettle();
       expect(

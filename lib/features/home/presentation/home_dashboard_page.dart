@@ -10,7 +10,6 @@ import '../../quran/application/todays_ayah.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/domain/app_preferences.dart';
 import '../application/mosque_prayer_times_providers.dart';
-import '../application/prayer_tracker_providers.dart';
 import '../data/bangla_calendar.dart';
 import '../data/bangladesh_cities.dart';
 import '../data/mosque_prayer_times_repository.dart';
@@ -60,9 +59,6 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
     final prayerState = ref.watch(prayerScheduleProvider);
     final language = ref.watch(appLanguageProvider);
     final schedule = prayerState.value;
-    final dayKey = _dateKey(_now);
-    final completed =
-        ref.watch(dailyPrayerChecksProvider(dayKey)).value ?? <String>{};
     final mosqueTimesState = ref.watch(mosquePrayerTimesProvider);
     final mosqueTimes = mosqueTimesState.value ?? {};
     final mosqueTimesReady = mosqueTimesState.hasValue;
@@ -195,11 +191,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                                 _ => null,
                               },
                               active: current?.name == name,
-                              completed: completed.contains(name),
                               language: language,
-                              onTap: name == 'Sunrise'
-                                  ? null
-                                  : () => _toggle(dayKey, name),
                             ),
                         ],
                       ),
@@ -434,10 +426,6 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
     );
   }
 
-  Future<void> _toggle(String dayKey, String name) async {
-    await toggleDailyPrayer(ref, dayKey, name);
-  }
-
   Future<void> _editMosqueTime(
     String prayer,
     MosquePrayerTime? saved,
@@ -517,112 +505,82 @@ class _DateHero extends StatelessWidget {
   final AppLanguage language;
 
   @override
-  Widget build(BuildContext context) => Container(
-    key: const ValueKey('home-date-summary'),
-    constraints: const BoxConstraints(minHeight: 126),
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
-    decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: [Color(0xFF08615D), Color(0xFF064844)],
-      ),
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: const Color(0xFF2AA89D), width: 1.4),
-      boxShadow: [
-        BoxShadow(
-          color: const Color(0xFF002F30).withValues(alpha: 0.18),
-          blurRadius: 12,
-          offset: const Offset(0, 5),
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final cardStart = Color.lerp(scheme.primary, Colors.black, 0.12)!;
+    final cardEnd = Color.lerp(scheme.primary, Colors.black, 0.22)!;
+
+    return Container(
+      key: const ValueKey('home-date-summary'),
+      constraints: const BoxConstraints(minHeight: 116),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [cardStart, cardEnd],
         ),
-      ],
-    ),
-    child: LayoutBuilder(
-      builder: (context, constraints) {
-        final wide = constraints.maxWidth >= 520;
-        return Row(
-          children: [
-            Icon(
-              Icons.mosque_rounded,
-              size: wide ? 54 : 30,
-              color: const Color(0xFF35AFA5).withValues(alpha: 0.78),
-            ),
-            SizedBox(width: wide ? 14 : 7),
-            Expanded(
-              flex: wide ? 6 : 7,
-              child: _ReferenceDateBlock(
-                now: now,
-                schedule: schedule,
-                language: language,
-                wide: wide,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: scheme.onPrimary.withValues(alpha: 0.18),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.shadow.withValues(alpha: 0.12),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= 520;
+          return Row(
+            children: [
+              Expanded(
+                flex: wide ? 7 : 6,
+                child: _ReferenceDateBlock(
+                  now: now,
+                  schedule: schedule,
+                  language: language,
+                  wide: wide,
+                ),
               ),
-            ),
-            _ReferenceDivider(height: wide ? 92 : 86),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: wide ? 18 : 8),
-              child: Icon(
-                Icons.wb_sunny_rounded,
-                size: wide ? 54 : 38,
-                color: const Color(0xFFFFE79A),
-                shadows: const [
-                  Shadow(color: Color(0x55FFE79A), blurRadius: 12),
-                ],
-              ),
-            ),
-            _ReferenceDivider(height: wide ? 92 : 86),
-            SizedBox(
-              width: wide ? 230 : 82,
-              child: wide
-                  ? Row(
-                      children: [
-                        Expanded(
-                          child: _ReferenceSunStat(
-                            label: appText(language, 'সূর্যোদয়', 'Sunrise'),
-                            time: schedule?.sunrise,
-                            language: language,
-                            wide: true,
-                          ),
-                        ),
-                        const _ReferenceDivider(height: 68),
-                        Expanded(
-                          child: _ReferenceSunStat(
-                            label: appText(language, 'সূর্যাস্ত', 'Sunset'),
-                            time: schedule?.sunset,
-                            language: language,
-                            wide: true,
-                          ),
-                        ),
-                      ],
-                    )
-                  : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _ReferenceSunStat(
-                          label: appText(language, 'সূর্যোদয়', 'Sunrise'),
-                          time: schedule?.sunrise,
-                          language: language,
-                        ),
-                        const SizedBox(height: 7),
-                        Container(
-                          height: 1,
-                          color: const Color(
-                            0xFF2AA89D,
-                          ).withValues(alpha: 0.45),
-                        ),
-                        const SizedBox(height: 7),
-                        _ReferenceSunStat(
-                          label: appText(language, 'সূর্যাস্ত', 'Sunset'),
-                          time: schedule?.sunset,
-                          language: language,
-                        ),
-                      ],
+              _ReferenceDivider(height: wide ? 82 : 78),
+              SizedBox(width: wide ? 18 : 12),
+              Expanded(
+                flex: wide ? 6 : 5,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _ReferenceSunStat(
+                        label: appText(language, 'সূর্যোদয়', 'Sunrise'),
+                        time: schedule?.sunrise,
+                        language: language,
+                        wide: wide,
+                      ),
                     ),
-            ),
-          ],
-        );
-      },
-    ),
-  );
+                    SizedBox(width: wide ? 14 : 9),
+                    _ReferenceDivider(height: wide ? 64 : 56),
+                    SizedBox(width: wide ? 14 : 9),
+                    Expanded(
+                      child: _ReferenceSunStat(
+                        label: appText(language, 'সূর্যাস্ত', 'Sunset'),
+                        time: schedule?.sunset,
+                        language: language,
+                        wide: wide,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 }
 
 class _ReferenceDateBlock extends StatelessWidget {
@@ -638,70 +596,54 @@ class _ReferenceDateBlock extends StatelessWidget {
   final bool wide;
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          Icon(
-            Icons.nights_stay_rounded,
-            size: wide ? 22 : 17,
-            color: const Color(0xFFF7FCF8),
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final primaryText = scheme.onPrimary;
+    final secondaryText = scheme.onPrimary.withValues(alpha: 0.76);
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          _compactHijriDate(schedule?.hijriDateAt(now) ?? '—', language),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: primaryText,
+            fontSize: wide ? 16 : 14,
+            height: 1.15,
+            fontWeight: FontWeight.w700,
           ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              localHijriDate(schedule?.hijriDateAt(now) ?? '—', language),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: const Color(0xFFF7FCF8),
-                fontSize: wide ? 20 : 14,
-                height: 1.2,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-      SizedBox(height: wide ? 7 : 5),
-      Text(
-        _homeWeekdayDate(now, language),
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: const Color(0xFF9DE29D),
-          fontSize: wide ? 15 : 11,
-          height: 1.2,
-          fontWeight: FontWeight.w500,
         ),
-      ),
-      SizedBox(height: wide ? 5 : 3),
-      Row(
-        children: [
-          Icon(
-            Icons.calendar_month_rounded,
-            size: wide ? 17 : 13,
-            color: const Color(0xFF9DE29D),
+        SizedBox(height: wide ? 7 : 5),
+        Text(
+          '${_homeWeekday(now, language)} - ${_compactGregorianDate(now, language)}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: secondaryText,
+            fontSize: wide ? 16 : 14,
+            fontWeight: FontWeight.w600,
           ),
-          const SizedBox(width: 5),
-          Expanded(
-            child: Text(
-              banglaCalendarDate(now, english: language == AppLanguage.english),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: const Color(0xFF9DE29D),
-                fontSize: wide ? 14 : 11,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+        ),
+        SizedBox(height: wide ? 7 : 5),
+        Text(
+          _compactBanglaDate(now, language),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: primaryText,
+            fontSize: wide ? 16 : 14,
+            fontWeight: FontWeight.w600,
           ),
-        ],
-      ),
-    ],
-  );
+        ),
+      ],
+    );
+  }
 }
 
 class _ReferenceDivider extends StatelessWidget {
@@ -712,7 +654,7 @@ class _ReferenceDivider extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     width: 1,
     height: height,
-    color: const Color(0xFF2AA89D).withValues(alpha: 0.72),
+    color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.18),
   );
 }
 
@@ -729,38 +671,68 @@ class _ReferenceSunStat extends StatelessWidget {
   final bool wide;
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Text(
-          localClock(time, language),
-          maxLines: 1,
-          style: TextStyle(
-            color: const Color(0xFFF7FCF8),
-            fontSize: wide ? 20 : 13,
-            fontWeight: FontWeight.w600,
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            localClock(time, language),
+            maxLines: 1,
+            style: TextStyle(
+              color: scheme.onPrimary,
+              fontSize: wide ? 22 : 17,
+              height: 1,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
-      ),
-      const SizedBox(height: 2),
-      Text(
-        label,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: const Color(0xFF9DE29D),
-          fontSize: wide ? 13 : 10,
-          fontWeight: FontWeight.w500,
+        SizedBox(height: wide ? 7 : 5),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            maxLines: 1,
+            style: TextStyle(
+              color: scheme.onPrimary.withValues(alpha: 0.76),
+              fontSize: wide ? 15 : 12,
+              height: 1,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }
 
-String _homeWeekdayDate(DateTime value, AppLanguage language) {
+String _compactHijriDate(String value, AppLanguage language) {
+  if (value == '—') return value;
+  final withoutYear = value.replaceFirst(RegExp(r'\s+\d+\s*AH\s*$'), '').trim();
+  return localHijriDate(withoutYear, language);
+}
+
+String _compactGregorianDate(DateTime value, AppLanguage language) {
+  final full = localGregorianDate(value, language);
+  final parts = full.split(RegExp(r'\s+'));
+  if (parts.length < 3) return full;
+  return parts.sublist(0, parts.length - 1).join(' ');
+}
+
+String _compactBanglaDate(DateTime value, AppLanguage language) {
+  final full = banglaCalendarDate(
+    value,
+    english: language == AppLanguage.english,
+  );
+  final parts = full.split(RegExp(r'\s+'));
+  if (parts.length < 3) return full;
+  return parts.sublist(0, parts.length - 1).join(' ');
+}
+
+String _homeWeekday(DateTime value, AppLanguage language) {
   const banglaDays = [
     'সোমবার',
     'মঙ্গলবার',
@@ -779,10 +751,9 @@ String _homeWeekdayDate(DateTime value, AppLanguage language) {
     'Saturday',
     'Sunday',
   ];
-  final day = language == AppLanguage.bangla
+  return language == AppLanguage.bangla
       ? banglaDays[value.weekday - 1]
       : englishDays[value.weekday - 1];
-  return '$day - ${localGregorianDate(value, language)}';
 }
 
 class _CurrentPrayerCard extends StatelessWidget {
@@ -848,7 +819,7 @@ class _CurrentPrayerCard extends StatelessWidget {
                     title,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
-                      fontSize: 12,
+                      fontSize: language == AppLanguage.english ? 14 : 12,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -859,15 +830,19 @@ class _CurrentPrayerCard extends StatelessWidget {
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: language == AppLanguage.english
+                          ? FontWeight.w500
+                          : FontWeight.w600,
                     ),
                   ),
                   Text(
                     '$timeLabel ${localClock(targetTime, language)}',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                      fontSize: language == AppLanguage.english ? 12 : 13,
+                      fontWeight: language == AppLanguage.english
+                          ? FontWeight.w400
+                          : FontWeight.w500,
                     ),
                   ),
                 ],
@@ -882,13 +857,21 @@ class _CurrentPrayerCard extends StatelessWidget {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(countdownLabel, style: const TextStyle(fontSize: 11)),
+                Text(
+                  countdownLabel,
+                  style: TextStyle(
+                    fontSize: language == AppLanguage.english ? 12 : 11,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
                 Text(
                   remaining == null ? '—' : localCountdown(remaining, language),
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
+                    fontSize: language == AppLanguage.english ? 16 : 17,
+                    fontWeight: language == AppLanguage.english
+                        ? FontWeight.w500
+                        : FontWeight.w600,
                   ),
                 ),
               ],
@@ -911,35 +894,27 @@ class _PrayerRow extends StatelessWidget {
     required this.time,
     this.end,
     required this.active,
-    required this.completed,
     required this.language,
-    this.onTap,
   });
   final String name;
   final DateTime? time;
   final DateTime? end;
   final bool active;
-  final bool completed;
   final AppLanguage language;
-  final VoidCallback? onTap;
+
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    child: Container(
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final foreground = active ? scheme.primary : scheme.onSurface;
+    final muted = active ? scheme.primary : scheme.onSurfaceVariant;
+
+    return Container(
       key: ValueKey('prayer-row-$name'),
-      constraints: const BoxConstraints(minHeight: 40, maxHeight: 40),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      constraints: const BoxConstraints(minHeight: 46, maxHeight: 46),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-        ),
-        color: active
-            ? Theme.of(
-                context,
-              ).colorScheme.primaryContainer.withValues(alpha: 0.5)
-            : null,
+        border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+        color: active ? scheme.primaryContainer.withValues(alpha: 0.5) : null,
       ),
       child: Row(
         children: [
@@ -949,80 +924,106 @@ class _PrayerRow extends StatelessWidget {
                 : name == 'Sunrise'
                 ? Icons.wb_sunny_outlined
                 : Icons.mosque_outlined,
-            size: 20,
-            color: active
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.onSurfaceVariant,
+            size: 18,
+            color: muted,
           ),
           const SizedBox(width: 8),
           SizedBox(
-            width: 82,
+            width: 68,
             child: Text(
               localPrayerName(name, language),
-              style: TextStyle(
-                color: active
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.onSurface,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              end == null
-                  ? localClock(time, language)
-                  : _prayerWindow(time, end!, language),
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: end == null
-                    ? (language == AppLanguage.english ? 14 : 16)
-                    : (language == AppLanguage.english ? 12 : 14),
-                color: active
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.onSurface,
-                fontWeight: FontWeight.w500,
+                color: foreground,
+                fontSize: 14,
+                fontWeight: language == AppLanguage.english
+                    ? FontWeight.w500
+                    : FontWeight.w600,
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          Icon(
-            onTap == null
-                ? Icons.remove_circle_outline
-                : completed
-                ? Icons.check_circle_rounded
-                : Icons.radio_button_unchecked_rounded,
-            color: onTap == null
-                ? Theme.of(context).colorScheme.outline
-                : completed
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.outline,
-            size: 20,
+          const SizedBox(width: 6),
+          Expanded(
+            child: end == null
+                ? Align(
+                    alignment: Alignment.centerRight,
+                    child: _PrayerTimeCell(
+                      key: ValueKey('prayer-time-$name'),
+                      time: time,
+                      language: language,
+                      active: active,
+                    ),
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: _PrayerTimeCell(
+                          key: ValueKey('prayer-start-$name'),
+                          time: time,
+                          language: language,
+                          active: active,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Container(
+                        width: 1,
+                        height: 24,
+                        color: scheme.outlineVariant,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _PrayerTimeCell(
+                          key: ValueKey('prayer-end-$name'),
+                          time: end,
+                          language: language,
+                          active: active,
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         ],
       ),
-    ),
-  );
+    );
+  }
 }
 
-String _prayerWindow(DateTime? start, DateTime end, AppLanguage language) {
-  if (start == null) return '—';
-  if (language == AppLanguage.bangla) {
-    return '${localClock(start, language)} – ${localClock(end, language)}';
-  }
+class _PrayerTimeCell extends StatelessWidget {
+  const _PrayerTimeCell({
+    super.key,
+    required this.time,
+    required this.language,
+    required this.active,
+  });
 
-  String clock(DateTime value) {
-    final hour = value.hour % 12 == 0 ? 12 : value.hour % 12;
-    return '${hour.toString().padLeft(2, '0')}:'
-        '${value.minute.toString().padLeft(2, '0')}';
-  }
+  final DateTime? time;
+  final AppLanguage language;
+  final bool active;
 
-  final startPeriod = start.hour < 12 ? 'AM' : 'PM';
-  final endPeriod = end.hour < 12 ? 'AM' : 'PM';
-  if (startPeriod == endPeriod) {
-    return '${clock(start)}–${clock(end)} $endPeriod';
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final valueColor = active ? scheme.primary : scheme.onSurface;
+
+    return Center(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          localClock(time, language),
+          maxLines: 1,
+          style: TextStyle(
+            color: valueColor,
+            fontSize: language == AppLanguage.english ? 14 : 15,
+            height: 1,
+            fontWeight: language == AppLanguage.english
+                ? FontWeight.w400
+                : FontWeight.w600,
+          ),
+        ),
+      ),
+    );
   }
-  return '${clock(start)} $startPeriod–${clock(end)} $endPeriod';
 }
 
 class _MosqueTimesHeader extends StatelessWidget {
@@ -1031,53 +1032,49 @@ class _MosqueTimesHeader extends StatelessWidget {
   final AppLanguage language;
 
   @override
-  Widget build(BuildContext context) => Container(
-    height: 40,
-    padding: const EdgeInsets.symmetric(horizontal: 6),
-    decoration: BoxDecoration(
-      border: Border(
-        bottom: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final style = TextStyle(
+      color: scheme.onSurfaceVariant,
+      fontSize: language == AppLanguage.english ? 12 : 11,
+      fontWeight: language == AppLanguage.english
+          ? FontWeight.w500
+          : FontWeight.w600,
+    );
+
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
       ),
-    ),
-    child: Row(
-      children: [
-        SizedBox(
-          width: 110,
-          child: Text(
-            appText(language, 'সলাত', 'Salat'),
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(appText(language, 'সলাত', 'Salat'), style: style),
+          ),
+          Expanded(
+            child: Text(
+              appText(language, 'আজান', 'Azan'),
+              textAlign: TextAlign.center,
+              style: style,
             ),
           ),
-        ),
-        Expanded(
-          child: Text(
-            appText(language, 'আজান', 'Azan'),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
+          const SizedBox(width: 16),
+          Container(width: 1, height: 24, color: scheme.outlineVariant),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              appText(language, 'জামাত', 'Jamaat'),
+              textAlign: TextAlign.center,
+              style: style,
             ),
           ),
-        ),
-        Expanded(
-          child: Text(
-            appText(language, 'জামাত', 'Jamaat'),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        const SizedBox(width: 28),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }
 
 class _MosquePrayerRow extends StatelessWidget {
@@ -1101,104 +1098,111 @@ class _MosquePrayerRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final azan = _clockFromMinutes(savedTime?.azanMinutes) ?? calculatedAzan;
     final jamaat = _clockFromMinutes(savedTime?.jamaatMinutes);
-    final foreground = active
-        ? Theme.of(context).colorScheme.primary
-        : Theme.of(context).colorScheme.onSurface;
+    final foreground = active ? scheme.primary : scheme.onSurface;
+    final muted = active ? scheme.primary : scheme.onSurfaceVariant;
+
     return Container(
       key: ValueKey('mosque-time-$name'),
       height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-        ),
-        color: active
-            ? Theme.of(
-                context,
-              ).colorScheme.primaryContainer.withValues(alpha: 0.5)
-            : null,
+        border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+        color: active ? scheme.primaryContainer.withValues(alpha: 0.5) : null,
       ),
       child: Row(
         children: [
           Icon(
             name == 'Isha' ? Icons.nights_stay_outlined : Icons.mosque_outlined,
-            size: 20,
-            color: active
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.onSurfaceVariant,
+            size: 18,
+            color: muted,
           ),
           const SizedBox(width: 8),
           SizedBox(
-            width: 82,
+            width: 68,
             child: Text(
               localPrayerName(name, language),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: foreground,
                 fontSize: 14,
-                fontWeight: FontWeight.w500,
+                fontWeight: language == AppLanguage.english
+                    ? FontWeight.w500
+                    : FontWeight.w600,
               ),
             ),
           ),
+          const SizedBox(width: 6),
           Expanded(
-            child: InkWell(
-              key: ValueKey('mosque-azan-$name'),
+            child: _MosqueTimeCell(
+              cellKey: ValueKey('mosque-azan-$name'),
+              time: azan,
+              language: language,
+              active: active,
               onTap: onAzanTap,
-              borderRadius: BorderRadius.circular(8),
-              child: Center(
-                child: Text(
-                  localClock(azan, language),
-                  style: TextStyle(
-                    color: foreground,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
             ),
           ),
+          const SizedBox(width: 16),
+          Container(width: 1, height: 24, color: scheme.outlineVariant),
+          const SizedBox(width: 16),
           Expanded(
-            child: InkWell(
-              key: ValueKey('mosque-jamaat-$name'),
+            child: _MosqueTimeCell(
+              cellKey: ValueKey('mosque-jamaat-$name'),
+              time: jamaat,
+              language: language,
+              active: active,
               onTap: onJamaatTap,
-              borderRadius: BorderRadius.circular(8),
-              child: Center(
-                child: Text(
-                  localClock(jamaat, language),
-                  style: TextStyle(
-                    color: foreground,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 28,
-            child: IconButton(
-              key: ValueKey('mosque-edit-$name'),
-              tooltip: appText(
-                language,
-                'আজানের সময় সম্পাদনা',
-                'Edit Azan time',
-              ),
-              onPressed: onAzanTap,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints.tightFor(width: 28, height: 36),
-              icon: Icon(
-                Icons.edit_outlined,
-                color: onAzanTap == null
-                    ? Theme.of(context).colorScheme.outline
-                    : Theme.of(context).colorScheme.primary,
-                size: 18,
-              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MosqueTimeCell extends StatelessWidget {
+  const _MosqueTimeCell({
+    required this.cellKey,
+    required this.time,
+    required this.language,
+    required this.active,
+    required this.onTap,
+  });
+
+  final Key cellKey;
+  final DateTime? time;
+  final AppLanguage language;
+  final bool active;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final foreground = active ? scheme.primary : scheme.onSurface;
+
+    return InkWell(
+      key: cellKey,
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Center(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            localClock(time, language),
+            maxLines: 1,
+            style: TextStyle(
+              color: foreground,
+              fontSize: language == AppLanguage.english ? 14 : 15,
+              height: 1,
+              fontWeight: language == AppLanguage.english
+                  ? FontWeight.w400
+                  : FontWeight.w600,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1211,15 +1215,21 @@ class _Panel extends StatelessWidget {
   const _Panel({required this.child});
   final Widget child;
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(8),
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-    ),
-    child: child,
-  );
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: DefaultTextStyle.merge(
+        style: TextStyle(color: scheme.onSurface),
+        child: child,
+      ),
+    );
+  }
 }
 
 class _ProhibitedTimeRow extends StatelessWidget {

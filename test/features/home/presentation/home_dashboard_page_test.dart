@@ -6,10 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/core/database/database_providers.dart';
 import 'package:quran_hifz/core/database/user_database.dart';
+import 'package:quran_hifz/core/localization/app_locale_text.dart';
 import 'package:quran_hifz/features/home/application/mosque_prayer_times_providers.dart';
+import 'package:quran_hifz/features/home/data/bangla_calendar.dart';
 import 'package:quran_hifz/features/home/data/mosque_prayer_times_repository.dart';
 import 'package:quran_hifz/features/home/data/prayer_schedule.dart';
-import 'package:quran_hifz/features/home/data/prayer_tracker_repository.dart';
 import 'package:quran_hifz/features/home/presentation/home_dashboard_page.dart';
 import 'package:quran_hifz/features/home/presentation/home_page.dart';
 import 'package:quran_hifz/features/quran/application/todays_ayah.dart';
@@ -84,14 +85,25 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 350));
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
+      final theme = appTheme(preference);
+      expect(scaffold.backgroundColor, theme.colorScheme.surface);
+      final hero = tester.widget<Container>(
+        find.byKey(const ValueKey('home-date-summary')),
+      );
+      final decoration = hero.decoration! as BoxDecoration;
+      final gradient = decoration.gradient! as LinearGradient;
       expect(
-        scaffold.backgroundColor,
-        appTheme(preference).colorScheme.surface,
+        gradient.colors.first,
+        Color.lerp(theme.colorScheme.primary, Colors.black, 0.12),
+      );
+      expect(
+        gradient.colors.last,
+        Color.lerp(theme.colorScheme.primary, Colors.black, 0.22),
       );
     }
   });
 
-  testWidgets('English prayer ranges remain fully visible at 360px', (
+  testWidgets('English prayer start and end times stay separated at 360px', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(360, 780);
@@ -136,20 +148,160 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final rangeFinder = find.text('04:35–05:51 AM');
-    expect(rangeFinder, findsOneWidget);
-    final range = tester.widget<Text>(rangeFinder);
-    final painter = TextPainter(
-      text: TextSpan(text: range.data, style: range.style),
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
-    )..layout();
-    expect(painter.width, lessThanOrEqualTo(tester.getSize(rangeFinder).width));
-    expect(range.overflow, isNot(TextOverflow.ellipsis));
+    final activePrayer = schedule.currentPrayer(DateTime.now());
+    final currentTitle = tester.widget<Text>(
+      find.text(activePrayer == null ? 'Prayer break' : 'Current Prayer'),
+    );
+    final currentTimeLine = tester.widget<Text>(
+      find.textContaining(activePrayer == null ? 'Starts at' : 'Ends at'),
+    );
+    final countdownLabel = tester.widget<Text>(
+      find.text(activePrayer == null ? 'Starts in' : 'Ends in'),
+    );
+    expect(currentTitle.style?.fontSize, 14);
+    expect(currentTitle.style?.fontWeight, FontWeight.w500);
+    expect(currentTimeLine.style?.fontSize, 12);
+    expect(currentTimeLine.style?.fontWeight, FontWeight.w400);
+    expect(countdownLabel.style?.fontSize, 12);
+    expect(countdownLabel.style?.fontWeight, FontWeight.w400);
+
+    final gregorianParts = localGregorianDate(
+      now,
+      AppLanguage.english,
+    ).split(' ');
+    final compactGregorian = gregorianParts
+        .sublist(0, gregorianParts.length - 1)
+        .join(' ');
+    expect(find.text('6 Rabi al-Thani'), findsOneWidget);
+    expect(find.textContaining(compactGregorian), findsOneWidget);
+
+    final start = find.descendant(
+      of: find.byKey(const ValueKey('prayer-start-Fajr')),
+      matching: find.text('04:35 AM'),
+    );
+    final end = find.descendant(
+      of: find.byKey(const ValueKey('prayer-end-Fajr')),
+      matching: find.text('05:51 AM'),
+    );
+    expect(start, findsOneWidget);
+    expect(end, findsOneWidget);
+    expect(find.text('Start'), findsNothing);
+    expect(find.text('End'), findsNothing);
+
+    final fajrName = tester.widget<Text>(
+      find.descendant(
+        of: find.byKey(const ValueKey('prayer-row-Fajr')),
+        matching: find.text('Fajr'),
+      ),
+    );
+    final fajrStart = tester.widget<Text>(start);
+    expect(fajrName.style?.fontSize, 14);
+    expect(fajrName.style?.fontWeight, FontWeight.w500);
+    expect(fajrStart.style?.fontSize, 14);
+    expect(fajrStart.style?.fontWeight, FontWeight.w400);
+
+    await tester.dragUntilVisible(
+      find.text('Prohibited prayer times'),
+      find.byType(ListView),
+      const Offset(0, -260),
+    );
+    await tester.pumpAndSettle();
+
+    final expectedSurfaceText = appTheme(
+      AppThemePreference.light,
+      language: AppLanguage.english,
+    ).colorScheme.onSurface;
+    for (final label in [
+      'Prohibited prayer times',
+      'Fasting today',
+      'Today’s ayah',
+    ]) {
+      final finder = find.text(label);
+      expect(finder, findsOneWidget);
+      expect(
+        DefaultTextStyle.of(tester.element(finder)).style.color,
+        expectedSurfaceText,
+        reason: '$label should use onSurface text on a light panel',
+      );
+    }
+  });
+
+  testWidgets('English local mosque card uses one consistent type hierarchy', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 780);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final database = UserDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final now = DateTime.now();
+    final schedule = PrayerSchedule(
+      location: 'Natore, Bangladesh',
+      latitude: 24.42,
+      longitude: 88.99,
+      hijriDate: '6 Rabi al-Thani 1448 AH',
+      sunrise: DateTime(now.year, now.month, now.day, 5, 51),
+      sunset: DateTime(now.year, now.month, now.day, 18, 6),
+      times: {
+        'Fajr': DateTime(now.year, now.month, now.day, 4, 35),
+        'Dhuhr': DateTime(now.year, now.month, now.day, 12),
+        'Asr': DateTime(now.year, now.month, now.day, 16, 23),
+        'Maghrib': DateTime(now.year, now.month, now.day, 18, 6),
+        'Isha': DateTime(now.year, now.month, now.day, 19, 22),
+      },
+      tomorrowFajr: DateTime(now.year, now.month, now.day + 1, 4, 35),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          userDatabaseProvider.overrideWithValue(database),
+          appLanguageProvider.overrideWithValue(AppLanguage.english),
+          prayerScheduleProvider.overrideWith((ref) async => schedule),
+        ],
+        child: MaterialApp(
+          theme: appTheme(
+            AppThemePreference.light,
+            language: AppLanguage.english,
+          ),
+          home: const HomeDashboardPage(onMore: _noop, onPrayer: _noop),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final pager = find.byKey(const ValueKey('prayer-card-pager'));
+    await tester.drag(pager, const Offset(-320, 0));
+    await tester.pumpAndSettle();
+
+    final azanHeader = tester.widget<Text>(find.text('Azan').hitTestable());
+    final jamaatHeader = tester.widget<Text>(find.text('Jamaat').hitTestable());
+    final fajrName = tester.widget<Text>(
+      find.descendant(
+        of: find.byKey(const ValueKey('mosque-time-Fajr')),
+        matching: find.text('Fajr'),
+      ),
+    );
+    final azanTime = tester.widget<Text>(
+      find.descendant(
+        of: find.byKey(const ValueKey('mosque-azan-Fajr')),
+        matching: find.text('04:35 AM'),
+      ),
+    );
+
+    expect(azanHeader.style?.fontSize, 12);
+    expect(azanHeader.style?.fontWeight, FontWeight.w500);
+    expect(jamaatHeader.style?.fontSize, 12);
+    expect(jamaatHeader.style?.fontWeight, FontWeight.w500);
+    expect(fajrName.style?.fontSize, 14);
+    expect(fajrName.style?.fontWeight, FontWeight.w500);
+    expect(azanTime.style?.fontSize, 14);
+    expect(azanTime.style?.fontWeight, FontWeight.w400);
   });
 
   testWidgets(
-    'home shows prayer windows and tapping a row saves the salat check',
+    'home separates prayer start and end times without tracker controls',
     (tester) async {
       tester.view.physicalSize = const Size(360, 780);
       tester.view.devicePixelRatio = 1;
@@ -199,12 +351,37 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('পরবর্তী সলাত'), findsNothing);
-      expect(find.textContaining('০৪:১১ – ০৫:৩২'), findsOneWidget);
+      final gregorianParts = localGregorianDate(
+        now,
+        AppLanguage.bangla,
+      ).split(' ');
+      final compactGregorian = gregorianParts
+          .sublist(0, gregorianParts.length - 1)
+          .join(' ');
+      final banglaParts = banglaCalendarDate(now).split(' ');
+      final compactBangla = banglaParts
+          .sublist(0, banglaParts.length - 1)
+          .join(' ');
+      expect(find.text('৩ রবিউস সানি'), findsOneWidget);
+      expect(find.textContaining(compactGregorian), findsOneWidget);
+      expect(find.text(compactBangla), findsOneWidget);
+      final fajrStart = find.descendant(
+        of: find.byKey(const ValueKey('prayer-start-Fajr')),
+        matching: find.text('০৪:১১'),
+      );
+      final fajrEnd = find.descendant(
+        of: find.byKey(const ValueKey('prayer-end-Fajr')),
+        matching: find.text('০৫:৩২'),
+      );
+      expect(fajrStart, findsOneWidget);
+      expect(fajrEnd, findsOneWidget);
+      expect(find.text('শুরু'), findsNothing);
+      expect(find.text('শেষ'), findsNothing);
       final list = tester.widget<ListView>(find.byType(ListView));
       expect(list.padding, const EdgeInsets.fromLTRB(12, 8, 12, 16));
       expect(
         tester.getSize(find.byKey(const ValueKey('prayer-row-Fajr'))).height,
-        inInclusiveRange(38, 42),
+        inInclusiveRange(45, 47),
       );
       final hero = tester.widget<Container>(
         find.byKey(const ValueKey('home-date-summary')),
@@ -213,19 +390,11 @@ void main() {
       expect(decoration.gradient, isNotNull);
       expect(decoration.borderRadius, BorderRadius.circular(18));
       expect(decoration.border, isNotNull);
-      final prayerTime = tester.widget<Text>(
-        find.textContaining('০৪:১১ – ০৫:৩২'),
-      );
+      final prayerTime = tester.widget<Text>(fajrStart);
       expect(prayerTime.style?.fontSize, greaterThanOrEqualTo(14));
-      expect(prayerTime.style?.fontWeight, FontWeight.w500);
-      await tester.tap(find.text('ফজর').last);
-      await tester.pumpAndSettle();
-      final key =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-      expect(
-        await PrayerTrackerRepository(database).load(key),
-        contains('Fajr'),
-      );
+      expect(prayerTime.style?.fontWeight, FontWeight.w600);
+      expect(find.byIcon(Icons.radio_button_unchecked_rounded), findsNothing);
+      expect(find.byIcon(Icons.check_circle_rounded), findsNothing);
       await tester.dragUntilVisible(
         find.text('সলাতের নিষিদ্ধ সময়'),
         find.byType(ListView),
@@ -430,12 +599,7 @@ void main() {
           .onTap,
       isNull,
     );
-    expect(
-      tester
-          .widget<IconButton>(find.byKey(const ValueKey('mosque-edit-Fajr')))
-          .onPressed,
-      isNull,
-    );
+    expect(find.byKey(const ValueKey('mosque-edit-Fajr')), findsNothing);
     pending.complete({});
     await tester.pumpAndSettle();
   });

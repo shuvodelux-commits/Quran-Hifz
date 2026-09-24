@@ -26,6 +26,31 @@ void main() {
     expect(scope.child, isA<QuranHifzApp>());
   });
 
+  testWidgets('English UI keeps the Android device text scale unchanged', (
+    tester,
+  ) async {
+    final pendingManifest = Completer<String>();
+    final bootstrap = QuranContentBootstrap(
+      manifestLoader: () => pendingManifest.future,
+      install: (_) => throw StateError('unreachable'),
+      openDatabase: (_) => throw StateError('unreachable'),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          quranContentBootstrapperProvider.overrideWithValue(bootstrap),
+          themePreferenceProvider.overrideWithValue(AppThemePreference.light),
+          appLanguageProvider.overrideWithValue(AppLanguage.english),
+        ],
+        child: const QuranHifzApp(),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('app-language-text-scale')), findsNothing);
+  });
+
   testWidgets('provider-scoped app renders through canonical bootstrap', (
     tester,
   ) async {

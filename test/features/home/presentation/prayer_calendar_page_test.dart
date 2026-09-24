@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_hifz/app/app_theme.dart';
 import 'package:quran_hifz/core/localization/app_locale_text.dart';
 import 'package:quran_hifz/features/home/data/prayer_schedule.dart';
 import 'package:quran_hifz/features/home/presentation/home_page.dart';
@@ -45,6 +46,51 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('০৫:৫৩–০৬:০৮'), findsOneWidget);
+  });
+
+  testWidgets('prohibited-time chips follow the selected theme color', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 780);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final schedule = _scheduleFor(today);
+    final theme = appTheme(
+      AppThemePreference.green,
+      language: AppLanguage.english,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWithValue(AppLanguage.english),
+          asrSchoolProvider.overrideWithValue(AsrSchool.hanafi),
+          prayerScheduleProvider.overrideWith((ref) async => schedule),
+          prayerScheduleRepositoryProvider.overrideWithValue(
+            _CalendarRepository([schedule]),
+          ),
+        ],
+        child: MaterialApp(theme: theme, home: const PrayerCalendarPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final chipContainers = tester.widgetList<Container>(
+      find.ancestor(of: find.text('Morning'), matching: find.byType(Container)),
+    );
+    final chip = chipContainers.firstWhere(
+      (container) =>
+          container.decoration is BoxDecoration &&
+          (container.decoration! as BoxDecoration).borderRadius ==
+              BorderRadius.circular(10),
+    );
+    expect(
+      (chip.decoration! as BoxDecoration).color,
+      theme.colorScheme.primaryContainer,
+    );
   });
 }
 

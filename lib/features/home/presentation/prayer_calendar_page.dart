@@ -416,25 +416,34 @@ class _AvoidChip extends StatelessWidget {
   final String label;
   final String time;
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: Container(
-      margin: const EdgeInsets.symmetric(horizontal: 2),
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.tertiaryContainer,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          Text(label, style: const TextStyle(fontSize: 10)),
-          Text(
-            time,
-            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: scheme.primaryContainer,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: DefaultTextStyle.merge(
+          style: TextStyle(color: scheme.onPrimaryContainer),
+          child: Column(
+            children: [
+              Text(label, style: const TextStyle(fontSize: 10)),
+              Text(
+                time,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 const _banglaMonths = [
