@@ -87,6 +87,7 @@ void main() {
       'protection',
       'food',
       'travel',
+      'work-market',
       'family',
       'intimacy',
       'illness',

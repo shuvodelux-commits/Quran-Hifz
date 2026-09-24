@@ -3029,7 +3029,8 @@
       "category_ids": [
         "quran",
         "munajat",
-        "rizq-debt"
+        "rizq-debt",
+        "work-market"
       ],
       "tags_bn": [
         "কুরআন",
@@ -3063,7 +3064,8 @@
       "category_ids": [
         "quran",
         "munajat",
-        "rizq-debt"
+        "rizq-debt",
+        "work-market"
       ],
       "tags_bn": [
         "কুরআন",
@@ -3288,7 +3290,8 @@
       "transliteration_en": "Allaahummak-finee bihalaalika ‘an haraamika wa ‘aghninee bifadhlika ‘amman siwaaka",
       "meaning_en": "O Allah, suffice me with what You have allowed instead of what You have forbidden, and make me independent of all others besides You.",
       "category_ids": [
-        "rizq-debt"
+        "rizq-debt",
+        "work-market"
       ],
       "tags_bn": [
         "ঋণমুক্তির দোয়া",
@@ -3385,7 +3388,8 @@
       "meaning_en": "O Allah, I seek refuge in you from grief and sadness, from weakness and from laziness, from miserliness and from cowardice, from being overcome by debt and overpowered by men (i .e . others).",
       "category_ids": [
         "protection",
-        "rizq-debt"
+        "rizq-debt",
+        "work-market"
       ],
       "tags_bn": [
         "দুশ্চিন্তা ও ঋণ থেকে আশ্রয়ের দোয়া",
