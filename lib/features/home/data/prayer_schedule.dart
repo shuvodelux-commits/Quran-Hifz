@@ -56,6 +56,47 @@ class PrayerSchedule {
   String hijriDateAt(DateTime now) =>
       !now.isBefore(sunset) ? (tomorrowHijriDate ?? hijriDate) : hijriDate;
 
+  ({String name, DateTime end})? currentPrayer(DateTime now) {
+    final fajr = times['Fajr'];
+    final dhuhr = times['Dhuhr'];
+    final asr = times['Asr'];
+    final maghrib = times['Maghrib'];
+    final isha = times['Isha'];
+
+    if (fajr != null && now.isBefore(fajr)) {
+      return (name: 'Isha', end: fajr);
+    }
+    if (fajr != null && !now.isBefore(fajr) && now.isBefore(sunrise)) {
+      return (name: 'Fajr', end: sunrise);
+    }
+    if (dhuhr != null &&
+        asr != null &&
+        !now.isBefore(dhuhr) &&
+        now.isBefore(asr)) {
+      return (name: 'Dhuhr', end: asr);
+    }
+    if (asr != null &&
+        maghrib != null &&
+        !now.isBefore(asr) &&
+        now.isBefore(maghrib)) {
+      return (name: 'Asr', end: maghrib);
+    }
+    if (maghrib != null &&
+        isha != null &&
+        !now.isBefore(maghrib) &&
+        now.isBefore(isha)) {
+      return (name: 'Maghrib', end: isha);
+    }
+    final nextFajr = tomorrowFajr;
+    if (isha != null &&
+        nextFajr != null &&
+        !now.isBefore(isha) &&
+        now.isBefore(nextFajr)) {
+      return (name: 'Isha', end: nextFajr);
+    }
+    return null;
+  }
+
   ({String name, DateTime time})? nextPrayer(DateTime now) {
     for (final name in prayerNames) {
       final time = times[name];

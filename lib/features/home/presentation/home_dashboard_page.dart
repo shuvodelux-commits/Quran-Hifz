@@ -66,6 +66,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
     final mosqueTimesState = ref.watch(mosquePrayerTimesProvider);
     final mosqueTimes = mosqueTimesState.value ?? {};
     final mosqueTimesReady = mosqueTimesState.hasValue;
+    final current = schedule?.currentPrayer(_now);
     final next = schedule?.nextPrayer(_now);
     final todaysAyah = ref.watch(todaysAyahProvider).value;
 
@@ -156,7 +157,8 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
               const SizedBox(height: 8),
               _DateHero(now: _now, schedule: schedule, language: language),
               const SizedBox(height: 8),
-              _NextPrayerCard(
+              _CurrentPrayerCard(
+                current: current,
                 next: next,
                 now: _now,
                 onTap: widget.onPrayer,
@@ -192,7 +194,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                                 'Isha' => schedule?.tomorrowFajr,
                                 _ => null,
                               },
-                              active: next?.name == name,
+                              active: current?.name == name,
                               completed: completed.contains(name),
                               language: language,
                               onTap: name == 'Sunrise'
@@ -211,7 +213,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                               name: name,
                               calculatedAzan: schedule?.times[name],
                               savedTime: mosqueTimes[name],
-                              active: next?.name == name,
+                              active: current?.name == name,
                               language: language,
                               onAzanTap: mosqueTimesReady
                                   ? () => _editMosqueTime(
@@ -513,167 +515,187 @@ class _DateHero extends StatelessWidget {
   final DateTime now;
   final PrayerSchedule? schedule;
   final AppLanguage language;
+
   @override
   Widget build(BuildContext context) => Container(
     key: const ValueKey('home-date-summary'),
-    padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
+    constraints: const BoxConstraints(minHeight: 126),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
     decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.primary,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Column(
-      children: [
-        Row(
-          children: [
-            _DateColumn(
-              icon: Icons.nights_stay_outlined,
-              value: localHijriDate(
-                schedule?.hijriDateAt(now) ?? '—',
-                language,
-              ),
-              label: appText(language, 'হিজরি', 'Hijri'),
-            ),
-            const _HeroDivider(),
-            _DateColumn(
-              icon: Icons.calendar_today_outlined,
-              value: localGregorianDate(now, language),
-              label: appText(language, 'গ্রেগরিয়ান', 'Gregorian'),
-            ),
-            const _HeroDivider(),
-            _DateColumn(
-              icon: Icons.auto_awesome_outlined,
-              value: banglaCalendarDate(
-                now,
-                english: language == AppLanguage.english,
-              ),
-              label: appText(language, 'বাংলা', 'Bangla'),
-            ),
-          ],
-        ),
-        Divider(
-          color: Theme.of(
-            context,
-          ).colorScheme.onPrimary.withValues(alpha: 0.35),
-          height: 14,
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: _SunLine(
-                icon: Icons.wb_sunny_outlined,
-                label: appText(language, 'সূর্যোদয়', 'Sunrise'),
-                time: schedule?.sunrise,
-                language: language,
-              ),
-            ),
-            Container(
-              width: 1,
-              height: 30,
-              color: Theme.of(
-                context,
-              ).colorScheme.onPrimary.withValues(alpha: 0.4),
-            ),
-            Expanded(
-              child: _SunLine(
-                icon: Icons.wb_twilight_outlined,
-                label: appText(language, 'সূর্যাস্ত', 'Sunset'),
-                time: schedule?.sunset,
-                language: language,
-              ),
-            ),
-          ],
+      gradient: const LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [Color(0xFF08615D), Color(0xFF064844)],
+      ),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: const Color(0xFF2AA89D), width: 1.4),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFF002F30).withValues(alpha: 0.18),
+          blurRadius: 12,
+          offset: const Offset(0, 5),
         ),
       ],
     ),
-  );
-}
-
-class _HeroDivider extends StatelessWidget {
-  const _HeroDivider();
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 1,
-    height: 60,
-    color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.35),
-  );
-}
-
-class _DateColumn extends StatelessWidget {
-  const _DateColumn({
-    required this.icon,
-    required this.value,
-    required this.label,
-  });
-  final IconData icon;
-  final String value;
-  final String label;
-  @override
-  Widget build(BuildContext context) => Expanded(
-    child: Column(
-      children: [
-        Icon(icon, color: Theme.of(context).colorScheme.onPrimary, size: 18),
-        const SizedBox(height: 3),
-        Text(
-          value,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onPrimary,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 1),
-        Text(
-          label,
-          style: TextStyle(
-            color: Theme.of(
-              context,
-            ).colorScheme.onPrimary.withValues(alpha: 0.78),
-            fontSize: 10,
-          ),
-        ),
-      ],
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth >= 520;
+        return Row(
+          children: [
+            Icon(
+              Icons.mosque_rounded,
+              size: wide ? 54 : 30,
+              color: const Color(0xFF35AFA5).withValues(alpha: 0.78),
+            ),
+            SizedBox(width: wide ? 14 : 7),
+            Expanded(
+              flex: wide ? 6 : 7,
+              child: _ReferenceDateBlock(
+                now: now,
+                schedule: schedule,
+                language: language,
+                wide: wide,
+              ),
+            ),
+            _ReferenceDivider(height: wide ? 92 : 86),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: wide ? 18 : 8),
+              child: Icon(
+                Icons.wb_sunny_rounded,
+                size: wide ? 54 : 38,
+                color: const Color(0xFFFFE79A),
+                shadows: const [
+                  Shadow(color: Color(0x55FFE79A), blurRadius: 12),
+                ],
+              ),
+            ),
+            _ReferenceDivider(height: wide ? 92 : 86),
+            SizedBox(
+              width: wide ? 230 : 82,
+              child: wide
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: _ReferenceSunStat(
+                            label: appText(language, 'সূর্যোদয়', 'Sunrise'),
+                            time: schedule?.sunrise,
+                            language: language,
+                            wide: true,
+                          ),
+                        ),
+                        const _ReferenceDivider(height: 68),
+                        Expanded(
+                          child: _ReferenceSunStat(
+                            label: appText(language, 'সূর্যাস্ত', 'Sunset'),
+                            time: schedule?.sunset,
+                            language: language,
+                            wide: true,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _ReferenceSunStat(
+                          label: appText(language, 'সূর্যোদয়', 'Sunrise'),
+                          time: schedule?.sunrise,
+                          language: language,
+                        ),
+                        const SizedBox(height: 7),
+                        Container(
+                          height: 1,
+                          color: const Color(
+                            0xFF2AA89D,
+                          ).withValues(alpha: 0.45),
+                        ),
+                        const SizedBox(height: 7),
+                        _ReferenceSunStat(
+                          label: appText(language, 'সূর্যাস্ত', 'Sunset'),
+                          time: schedule?.sunset,
+                          language: language,
+                        ),
+                      ],
+                    ),
+            ),
+          ],
+        );
+      },
     ),
   );
 }
 
-class _SunLine extends StatelessWidget {
-  const _SunLine({
-    required this.icon,
-    required this.label,
-    required this.time,
+class _ReferenceDateBlock extends StatelessWidget {
+  const _ReferenceDateBlock({
+    required this.now,
+    required this.schedule,
     required this.language,
+    required this.wide,
   });
-  final IconData icon;
-  final String label;
-  final DateTime? time;
+  final DateTime now;
+  final PrayerSchedule? schedule;
   final AppLanguage language;
+  final bool wide;
+
   @override
-  Widget build(BuildContext context) => Row(
+  Widget build(BuildContext context) => Column(
     mainAxisAlignment: MainAxisAlignment.center,
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Icon(icon, color: Theme.of(context).colorScheme.onPrimary, size: 20),
-      const SizedBox(width: 5),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      Row(
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: Theme.of(
-                context,
-              ).colorScheme.onPrimary.withValues(alpha: 0.78),
-              fontSize: 11,
+          Icon(
+            Icons.nights_stay_rounded,
+            size: wide ? 22 : 17,
+            color: const Color(0xFFF7FCF8),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              localHijriDate(schedule?.hijriDateAt(now) ?? '—', language),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: const Color(0xFFF7FCF8),
+                fontSize: wide ? 20 : 14,
+                height: 1.2,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-          Text(
-            localClock(time, language),
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onPrimary,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+        ],
+      ),
+      SizedBox(height: wide ? 7 : 5),
+      Text(
+        _homeWeekdayDate(now, language),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: const Color(0xFF9DE29D),
+          fontSize: wide ? 15 : 11,
+          height: 1.2,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      SizedBox(height: wide ? 5 : 3),
+      Row(
+        children: [
+          Icon(
+            Icons.calendar_month_rounded,
+            size: wide ? 17 : 13,
+            color: const Color(0xFF9DE29D),
+          ),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Text(
+              banglaCalendarDate(now, english: language == AppLanguage.english),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: const Color(0xFF9DE29D),
+                fontSize: wide ? 14 : 11,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -682,20 +704,121 @@ class _SunLine extends StatelessWidget {
   );
 }
 
-class _NextPrayerCard extends StatelessWidget {
-  const _NextPrayerCard({
+class _ReferenceDivider extends StatelessWidget {
+  const _ReferenceDivider({required this.height});
+  final double height;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 1,
+    height: height,
+    color: const Color(0xFF2AA89D).withValues(alpha: 0.72),
+  );
+}
+
+class _ReferenceSunStat extends StatelessWidget {
+  const _ReferenceSunStat({
+    required this.label,
+    required this.time,
+    required this.language,
+    this.wide = false,
+  });
+  final String label;
+  final DateTime? time;
+  final AppLanguage language;
+  final bool wide;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          localClock(time, language),
+          maxLines: 1,
+          style: TextStyle(
+            color: const Color(0xFFF7FCF8),
+            fontSize: wide ? 20 : 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      const SizedBox(height: 2),
+      Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: const Color(0xFF9DE29D),
+          fontSize: wide ? 13 : 10,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ],
+  );
+}
+
+String _homeWeekdayDate(DateTime value, AppLanguage language) {
+  const banglaDays = [
+    'সোমবার',
+    'মঙ্গলবার',
+    'বুধবার',
+    'বৃহস্পতিবার',
+    'শুক্রবার',
+    'শনিবার',
+    'রবিবার',
+  ];
+  const englishDays = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+  final day = language == AppLanguage.bangla
+      ? banglaDays[value.weekday - 1]
+      : englishDays[value.weekday - 1];
+  return '$day - ${localGregorianDate(value, language)}';
+}
+
+class _CurrentPrayerCard extends StatelessWidget {
+  const _CurrentPrayerCard({
+    required this.current,
     required this.next,
     required this.now,
     required this.onTap,
     required this.language,
   });
+  final ({String name, DateTime end})? current;
   final ({String name, DateTime time})? next;
   final DateTime now;
   final VoidCallback onTap;
   final AppLanguage language;
+
   @override
   Widget build(BuildContext context) {
-    final remaining = next?.time.difference(now);
+    final hasCurrent = current != null;
+    final targetTime = hasCurrent ? current!.end : next?.time;
+    final remaining = targetTime?.difference(now);
+    final title = hasCurrent
+        ? appText(language, 'বর্তমান সলাত', 'Current Prayer')
+        : appText(language, 'এখন সলাতের সময় নয়', 'Prayer break');
+    final name = hasCurrent
+        ? localPrayerName(current!.name, language)
+        : next == null
+        ? '—'
+        : '${appText(language, 'পরবর্তী', 'Next')}: ${localPrayerName(next!.name, language)}';
+    final timeLabel = hasCurrent
+        ? appText(language, 'শেষ হবে', 'Ends at')
+        : appText(language, 'শুরু হবে', 'Starts at');
+    final countdownLabel = hasCurrent
+        ? appText(language, 'শেষ হতে বাকি', 'Ends in')
+        : appText(language, 'শুরু হতে বাকি', 'Starts in');
+
     return _Panel(
       child: InkWell(
         onTap: onTap,
@@ -711,7 +834,7 @@ class _NextPrayerCard extends StatelessWidget {
                 color: Theme.of(context).colorScheme.primaryContainer,
               ),
               child: Icon(
-                Icons.mosque_rounded,
+                hasCurrent ? Icons.mosque_rounded : Icons.schedule_rounded,
                 color: Theme.of(context).colorScheme.primary,
                 size: 24,
               ),
@@ -722,7 +845,7 @@ class _NextPrayerCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    appText(language, 'পরবর্তী সলাত', 'Next Prayer'),
+                    title,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
                       fontSize: 12,
@@ -730,18 +853,20 @@ class _NextPrayerCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    next == null ? '—' : localPrayerName(next!.name, language),
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
-                    localClock(next?.time, language),
+                    '$timeLabel ${localClock(targetTime, language)}',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -750,21 +875,19 @@ class _NextPrayerCard extends StatelessWidget {
             ),
             Container(
               width: 1,
-              height: 44,
+              height: 48,
               color: Theme.of(context).colorScheme.outlineVariant,
             ),
             const SizedBox(width: 10),
             Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  appText(language, 'শুরু হতে বাকি', 'Starts in'),
-                  style: const TextStyle(fontSize: 11),
-                ),
+                Text(countdownLabel, style: const TextStyle(fontSize: 11)),
                 Text(
                   remaining == null ? '—' : localCountdown(remaining, language),
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
-                    fontSize: 18,
+                    fontSize: 17,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

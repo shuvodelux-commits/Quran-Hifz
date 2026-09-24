@@ -189,7 +189,16 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text('নাটোর, বাংলাদেশ'), findsOneWidget);
-      expect(find.text('পরবর্তী সলাত'), findsOneWidget);
+      final activePrayer = schedule.currentPrayer(DateTime.now());
+      expect(
+        find.text(activePrayer == null ? 'এখন সলাতের সময় নয়' : 'বর্তমান সলাত'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(activePrayer == null ? 'শুরু হবে' : 'শেষ হবে'),
+        findsOneWidget,
+      );
+      expect(find.text('পরবর্তী সলাত'), findsNothing);
       expect(find.textContaining('০৪:১১ – ০৫:৩২'), findsOneWidget);
       final list = tester.widget<ListView>(find.byType(ListView));
       expect(list.padding, const EdgeInsets.fromLTRB(12, 8, 12, 16));
@@ -201,8 +210,9 @@ void main() {
         find.byKey(const ValueKey('home-date-summary')),
       );
       final decoration = hero.decoration! as BoxDecoration;
-      expect(decoration.gradient, isNull);
-      expect(decoration.borderRadius, BorderRadius.circular(12));
+      expect(decoration.gradient, isNotNull);
+      expect(decoration.borderRadius, BorderRadius.circular(18));
+      expect(decoration.border, isNotNull);
       final prayerTime = tester.widget<Text>(
         find.textContaining('০৪:১১ – ০৫:৩২'),
       );
