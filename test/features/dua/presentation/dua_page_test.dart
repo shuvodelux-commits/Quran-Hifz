@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/app/app_theme.dart';
 import 'package:quran_hifz/features/dua/application/dua_providers.dart';
+import 'package:quran_hifz/features/dua/domain/custom_dua.dart';
+import 'package:quran_hifz/features/dua/domain/custom_dua_repository.dart';
 import 'package:quran_hifz/features/dua/domain/dua.dart';
 import 'package:quran_hifz/features/dua/domain/dua_favorites_repository.dart';
 import 'package:quran_hifz/features/dua/domain/dua_repository.dart';
@@ -11,22 +13,7 @@ import 'package:quran_hifz/features/settings/application/app_preferences_control
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 
 void main() {
-  testWidgets('Bangla landing page shows daily duas in configured order', (
-    tester,
-  ) async {
-    final favorites = _MemoryFavoritesRepository();
-    await _pump(tester, language: AppLanguage.bangla, favorites: favorites);
-
-    expect(find.text('দোয়া'), findsOneWidget);
-    expect(find.byKey(const ValueKey('dua-search-field')), findsOneWidget);
-    expect(find.text('দৈনিক দোয়া'), findsOneWidget);
-
-    final wakeY = tester.getTopLeft(find.text('ঘুম থেকে ওঠা')).dy;
-    final sleepY = tester.getTopLeft(find.text('ঘুমানোর আগে')).dy;
-    expect(wakeY, lessThan(sleepY));
-  });
-
-  testWidgets('English search finds the whole catalog and empty state clears', (
+  testWidgets('default Dua feed is Favorite Duas with add-favorite guidance', (
     tester,
   ) async {
     await _pump(
@@ -35,28 +22,173 @@ void main() {
       favorites: _MemoryFavoritesRepository(),
     );
 
+    expect(find.text('Favorite Duas'), findsOneWidget);
+    expect(find.text('Daily Duas'), findsNothing);
+    expect(find.text('Add favorite duas to show them here.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('dua-favorites-filter')), findsNothing);
+    expect(find.byKey(const ValueKey('dua-custom-filter')), findsOneWidget);
+    expect(find.byKey(const ValueKey('custom-dua-add')), findsOneWidget);
+  });
+
+  testWidgets('Bangla default feed shows localized Favorite guidance', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      language: AppLanguage.bangla,
+      favorites: _MemoryFavoritesRepository(),
+    );
+
+    expect(find.text('ফেভারিট দোয়া'), findsOneWidget);
+    expect(find.text('ফেভারিটে দোয়া যোগ করুন—এখানে দেখাবে।'), findsOneWidget);
+  });
+
+  testWidgets('verified favorite appears immediately in default feed', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      language: AppLanguage.english,
+      favorites: _MemoryFavoritesRepository({'wake'}),
+    );
+
+    expect(find.text('Upon waking'), findsOneWidget);
+    expect(find.text('Before sleeping'), findsNothing);
+  });
+
+  testWidgets('Add Dua opens the five-field custom form', (tester) async {
+    await _pump(
+      tester,
+      language: AppLanguage.english,
+      favorites: _MemoryFavoritesRepository(),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('custom-dua-add')));
+    await tester.pumpAndSettle();
+
+    for (final key in const [
+      ValueKey('custom-dua-title'),
+      ValueKey('custom-dua-arabic'),
+      ValueKey('custom-dua-transliteration'),
+      ValueKey('custom-dua-meaning'),
+      ValueKey('custom-dua-reference'),
+    ]) {
+      expect(find.byKey(key), findsOneWidget);
+    }
+  });
+
+  testWidgets('Custom Duas mode lists custom entries independent of favorite', (
+    tester,
+  ) async {
+    final custom = _MemoryCustomDuaRepository([
+      _custom(
+        id: 'custom:one',
+        title: 'Waking personal dua',
+        meaning: 'Travel protection',
+      ),
+    ]);
+    await _pump(
+      tester,
+      language: AppLanguage.english,
+      favorites: _MemoryFavoritesRepository(),
+      customRepository: custom,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('dua-custom-filter')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Custom Duas'), findsWidgets);
+    expect(find.text('Waking personal dua'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('dua-custom-filter')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Favorite Duas'), findsOneWidget);
+    expect(find.text('Waking personal dua'), findsNothing);
+  });
+
+  testWidgets('global search includes verified and custom entries', (
+    tester,
+  ) async {
+    final custom = _MemoryCustomDuaRepository([
+      _custom(
+        id: 'custom:one',
+        title: 'Personal note',
+        meaning: 'Travel protection',
+      ),
+    ]);
+    await _pump(
+      tester,
+      language: AppLanguage.english,
+      favorites: _MemoryFavoritesRepository(),
+      customRepository: custom,
+    );
+
     await tester.enterText(
       find.byKey(const ValueKey('dua-search-field')),
-      'Travel',
+      'travel',
     );
     await tester.pumpAndSettle();
 
     expect(find.text('Travel dua'), findsOneWidget);
-    expect(find.text('Upon waking'), findsNothing);
+    expect(find.text('Personal note'), findsOneWidget);
+  });
 
+  testWidgets('verified category search excludes custom entries', (
+    tester,
+  ) async {
+    final custom = _MemoryCustomDuaRepository([
+      _custom(
+        id: 'custom:one',
+        title: 'Waking personal dua',
+        meaning: 'Upon waking',
+      ),
+    ]);
+    await _pump(
+      tester,
+      language: AppLanguage.english,
+      favorites: _MemoryFavoritesRepository(),
+      customRepository: custom,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('dua-category-daily')));
     await tester.enterText(
       find.byKey(const ValueKey('dua-search-field')),
-      'not-present',
+      'waking',
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('No duas found'), findsOneWidget);
-    await tester.tap(find.text('Clear filters'));
-    await tester.pumpAndSettle();
-    expect(find.text('Daily Duas'), findsOneWidget);
+    expect(find.text('Upon waking'), findsOneWidget);
+    expect(find.text('Waking personal dua'), findsNothing);
   });
 
-  testWidgets('category chip filters results', (tester) async {
+  testWidgets('Custom mode search excludes verified entries', (tester) async {
+    final custom = _MemoryCustomDuaRepository([
+      _custom(
+        id: 'custom:one',
+        title: 'Waking personal dua',
+        meaning: 'Personal waking meaning',
+      ),
+    ]);
+    await _pump(
+      tester,
+      language: AppLanguage.english,
+      favorites: _MemoryFavoritesRepository(),
+      customRepository: custom,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('dua-custom-filter')));
+    await tester.enterText(
+      find.byKey(const ValueKey('dua-search-field')),
+      'waking',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Waking personal dua'), findsOneWidget);
+    expect(find.text('Upon waking'), findsNothing);
+  });
+
+  testWidgets('category chip still filters verified results', (tester) async {
     await _pump(
       tester,
       language: AppLanguage.english,
@@ -70,35 +202,107 @@ void main() {
     expect(find.text('Upon waking'), findsNothing);
   });
 
-  testWidgets('favorite toggles immediately and Favorites filter persists it', (
+  testWidgets('search empty state clears back to Favorite default', (
     tester,
   ) async {
-    final favorites = _MemoryFavoritesRepository();
-    await _pump(tester, language: AppLanguage.english, favorites: favorites);
-
-    await tester.tap(find.byKey(const ValueKey('dua-favorite-wake')));
-    await tester.pumpAndSettle();
-    expect(await favorites.load(), {'wake'});
-
-    await tester.tap(find.byKey(const ValueKey('dua-favorites-filter')));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Upon waking'), findsOneWidget);
-    expect(find.text('Before sleeping'), findsNothing);
-  });
-
-  testWidgets('empty Favorites gives localized guidance', (tester) async {
     await _pump(
       tester,
       language: AppLanguage.english,
       favorites: _MemoryFavoritesRepository(),
     );
 
-    await tester.tap(find.byKey(const ValueKey('dua-favorites-filter')));
+    await tester.enterText(
+      find.byKey(const ValueKey('dua-search-field')),
+      'not-present',
+    );
     await tester.pumpAndSettle();
 
-    expect(find.text('No favorite duas yet'), findsOneWidget);
+    expect(find.text('No duas found'), findsOneWidget);
+    await tester.tap(find.text('Clear filters'));
+    await tester.pumpAndSettle();
+    expect(find.text('Favorite Duas'), findsOneWidget);
   });
+
+  testWidgets(
+    'custom dua can be created favorited edited and deleted from Dua tab',
+    (tester) async {
+      final favorites = _MemoryFavoritesRepository();
+      final custom = _MemoryCustomDuaRepository();
+      await _pump(
+        tester,
+        language: AppLanguage.english,
+        favorites: favorites,
+        customRepository: custom,
+      );
+
+      expect(find.text('Favorite Duas'), findsOneWidget);
+      expect(find.text('Add favorite duas to show them here.'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('custom-dua-add')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('custom-dua-title')),
+        'My saved dua',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('custom-dua-arabic')),
+        'اللهم اغفر لي',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('custom-dua-transliteration')),
+        'Allahummaghfir li',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('custom-dua-meaning')),
+        'Forgive me',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('custom-dua-reference')),
+        'My notebook',
+      );
+      await tester.ensureVisible(find.byKey(const ValueKey('custom-dua-save')));
+      await tester.tap(find.byKey(const ValueKey('custom-dua-save')));
+      await tester.pumpAndSettle();
+
+      final id = custom.items.single.id;
+
+      await tester.tap(find.byKey(const ValueKey('dua-custom-filter')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(ValueKey('dua-card-$id')), findsOneWidget);
+
+      await tester.tap(find.byKey(ValueKey('dua-favorite-$id')));
+      await tester.pumpAndSettle();
+      expect(await favorites.load(), contains(id));
+
+      await tester.tap(find.byKey(const ValueKey('dua-custom-filter')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(ValueKey('dua-card-$id')), findsOneWidget);
+
+      await tester.tap(find.byKey(ValueKey('dua-card-$id')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('custom-dua-detail-edit')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('custom-dua-meaning')),
+        'Edited meaning',
+      );
+      await tester.ensureVisible(find.byKey(const ValueKey('custom-dua-save')));
+      await tester.tap(find.byKey(const ValueKey('custom-dua-save')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Edited meaning'), findsOneWidget);
+      expect(await favorites.load(), contains(id));
+
+      await tester.tap(find.byKey(const ValueKey('custom-dua-detail-delete')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(ValueKey('dua-card-$id')), findsNothing);
+      expect(await favorites.load(), isNot(contains(id)));
+      expect(custom.items, isEmpty);
+    },
+  );
 
   testWidgets('landing page renders at 360px with elevated text scaling', (
     tester,
@@ -115,6 +319,7 @@ void main() {
       textScaler: const TextScaler.linear(1.3),
     );
 
+    expect(find.text('ফেভারিট দোয়া'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -128,8 +333,11 @@ void main() {
         favorites: _MemoryFavoritesRepository(),
       );
 
+      await tester.tap(find.byKey(const ValueKey('dua-custom-filter')));
+      await tester.pumpAndSettle();
+
       final chip = tester.widget<FilterChip>(
-        find.byKey(const ValueKey('dua-category-daily')),
+        find.byKey(const ValueKey('dua-custom-filter')),
       );
       expect(chip.selectedColor, appTheme(theme).colorScheme.primaryContainer);
       expect(tester.takeException(), isNull, reason: '$theme');
@@ -142,6 +350,7 @@ Future<void> _pump(
   Key? key,
   required AppLanguage language,
   required _MemoryFavoritesRepository favorites,
+  _MemoryCustomDuaRepository? customRepository,
   AppThemePreference theme = AppThemePreference.light,
   TextScaler textScaler = TextScaler.noScaling,
 }) async {
@@ -152,6 +361,12 @@ Future<void> _pump(
         appLanguageProvider.overrideWithValue(language),
         duaRepositoryProvider.overrideWithValue(_FakeDuaRepository()),
         duaFavoritesRepositoryProvider.overrideWithValue(favorites),
+        customDuaRepositoryProvider.overrideWithValue(
+          customRepository ?? _MemoryCustomDuaRepository(),
+        ),
+        customDuaIdGeneratorProvider.overrideWithValue(
+          () => 'custom:generated',
+        ),
       ],
       child: MaterialApp(
         theme: appTheme(theme, language: language),
@@ -227,8 +442,25 @@ Dua _dua({
   dailyOrder: order,
 );
 
+CustomDua _custom({
+  required String id,
+  required String title,
+  required String meaning,
+}) => CustomDua(
+  id: id,
+  title: title,
+  arabic: 'اللهم بارك لي',
+  transliteration: 'Allahumma barik li',
+  meaning: meaning,
+  reference: 'My notebook',
+  createdAt: DateTime.utc(2026, 9, 24),
+  updatedAt: DateTime.utc(2026, 9, 24),
+);
+
 class _MemoryFavoritesRepository implements DuaFavoritesRepository {
-  Set<String> value = {};
+  _MemoryFavoritesRepository([Set<String>? initial]) : value = {...?initial};
+
+  Set<String> value;
 
   @override
   Future<Set<String>> load() async => Set.unmodifiable(value);
@@ -236,5 +468,35 @@ class _MemoryFavoritesRepository implements DuaFavoritesRepository {
   @override
   Future<void> save(Set<String> ids) async {
     value = {...ids};
+  }
+}
+
+class _MemoryCustomDuaRepository implements CustomDuaRepository {
+  _MemoryCustomDuaRepository([List<CustomDua>? initial])
+    : _items = {for (final dua in initial ?? const <CustomDua>[]) dua.id: dua};
+
+  final Map<String, CustomDua> _items;
+
+  List<CustomDua> get items => _items.values.toList();
+
+  @override
+  Future<void> delete(String id) async {
+    _items.remove(id);
+  }
+
+  @override
+  Future<CustomDua?> getById(String id) async => _items[id];
+
+  @override
+  Future<void> insert(CustomDua dua) async {
+    _items[dua.id] = dua;
+  }
+
+  @override
+  Future<List<CustomDua>> listAll() async => _items.values.toList();
+
+  @override
+  Future<void> update(CustomDua dua) async {
+    _items[dua.id] = dua;
   }
 }

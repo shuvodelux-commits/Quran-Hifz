@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/features/dua/data/bundled_dua_repository.dart';
 import 'package:quran_hifz/features/dua/domain/dua.dart';
+import 'package:quran_hifz/features/dua/domain/custom_dua.dart';
 import 'package:quran_hifz/features/dua/domain/dua_search.dart';
 
 void main() {
@@ -18,6 +19,11 @@ void main() {
 
     for (final dua in duas) {
       expect(dua.arabic.trim(), isNotEmpty, reason: dua.id);
+      expect(
+        dua.id.startsWith(customDuaIdPrefix),
+        isFalse,
+        reason: 'verified catalog ID uses reserved custom namespace: ${dua.id}',
+      );
       expect(dua.banglaPronunciation.trim(), isNotEmpty, reason: dua.id);
       expect(dua.banglaPronunciation.contains('আআ'), isFalse, reason: dua.id);
       expect(dua.banglaPronunciation.contains('্ই'), isFalse, reason: dua.id);
