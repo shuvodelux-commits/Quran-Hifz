@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "categories": [
+    {"id": "daily", "bn": "দৈনন্দিন", "en": "Daily Routine"}
+  ],
+  "duas": [
+    {
+      "id": "fixture-dua",
+      "title_bn": "পরীক্ষার দোয়া",
+      "title_en": "Fixture dua",
+      "arabic": "رَبَّنَا",
+      "pronunciation_bn": "রব্বানা",
+      "meaning_bn": "হে আমাদের রব",
+      "transliteration_en": "Rabbana",
+      "meaning_en": "Our Lord",
+      "category_ids": ["daily"],
+      "tags_bn": ["পরীক্ষা"],
+      "tags_en": ["test"],
+      "daily_order": 10,
+      "sources": [
+        {
+          "type": "hadith",
+          "collection": "Sahih al-Bukhari",
+          "reference": "6324",
+          "grade": "sahih"
+        }
+      ]
+    }
+  ]
+}

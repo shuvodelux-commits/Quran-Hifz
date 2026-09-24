@@ -45,6 +45,7 @@ flutter:
     - assets/audio/
     - assets/audio/chapters_v1/
     - assets/images/
+    - assets/dua/
   fonts:
     - family: Inter
       fonts:
