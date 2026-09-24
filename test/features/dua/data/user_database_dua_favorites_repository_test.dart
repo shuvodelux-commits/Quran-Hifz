@@ -24,21 +24,18 @@ void main() {
     expect(await recreated.load(), {'sleep', 'wake'});
   });
 
-  test(
-    'save collapses duplicates and stores deterministic sorted JSON',
-    () async {
-      final database = UserDatabase.forTesting(NativeDatabase.memory());
-      addTearDown(database.close);
-      final repository = UserDatabaseDuaFavoritesRepository(database);
+  test('save stores deterministic sorted JSON', () async {
+    final database = UserDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final repository = UserDatabaseDuaFavoritesRepository(database);
 
-      await repository.save({'z-last', 'a-first', 'z-last'});
+    await repository.save({'z-last', 'a-first'});
 
-      final raw = await database.getSetting(
-        UserDatabaseDuaFavoritesRepository.settingKey,
-      );
-      expect(jsonDecode(raw!), ['a-first', 'z-last']);
-    },
-  );
+    final raw = await database.getSetting(
+      UserDatabaseDuaFavoritesRepository.settingKey,
+    );
+    expect(jsonDecode(raw!), ['a-first', 'z-last']);
+  });
 
   test('malformed persisted JSON safely loads an empty set', () async {
     final database = UserDatabase.forTesting(NativeDatabase.memory());
@@ -58,7 +55,7 @@ void main() {
     addTearDown(database.close);
     await database.saveSetting(
       UserDatabaseDuaFavoritesRepository.settingKey,
-      jsonEncode(['wake', 42, '', '  ', 'sleep']),
+      jsonEncode(['wake', 42, '', '  ', 'sleep', 'wake']),
     );
 
     final repository = UserDatabaseDuaFavoritesRepository(database);
