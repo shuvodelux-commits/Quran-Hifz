@@ -104,7 +104,13 @@ void main() {
 
   test('punctuation-only query preserves catalog order', () {
     expect(
-      _ids(filterDuas(duas: duas, categories: categories, query: '... ---')),
+      _ids(
+        filterDuas(
+          duas: duas,
+          categories: categories,
+          query: '... --- ، ؛ ؟ ۔ ।',
+        ),
+      ),
       ['wake', 'sleep', 'wake-short', 'other'],
     );
   });

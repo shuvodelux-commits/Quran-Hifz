@@ -27,7 +27,19 @@ class BundledDuaRepository implements DuaRepository {
       (await _loadCatalog()).categories;
 
   Future<_DuaCatalog> _loadCatalog() {
-    return _catalogFuture ??= _parseCatalog();
+    final cached = _catalogFuture;
+    if (cached != null) return cached;
+
+    late final Future<_DuaCatalog> future;
+    future = _parseCatalog().then(
+      (catalog) => catalog,
+      onError: (Object error, StackTrace stackTrace) {
+        if (identical(_catalogFuture, future)) _catalogFuture = null;
+        Error.throwWithStackTrace(error, stackTrace);
+      },
+    );
+    _catalogFuture = future;
+    return future;
   }
 
   Future<_DuaCatalog> _parseCatalog() async {

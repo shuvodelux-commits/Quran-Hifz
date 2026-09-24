@@ -12,7 +12,10 @@ String normalizeDuaQuery(String input) {
   return buffer
       .toString()
       .toLowerCase()
-      .replaceAll(RegExp(r'''[\s\-_.,!?;:'"()[\]{}\/\\|+*=~`@#%^&<>]+'''), ' ')
+      .replaceAll(
+        RegExp(r'''[\s\-_.,!?;:'"()[\]{}\/\\|+*=~`@#%^&<>،؛؟۔।]+'''),
+        ' ',
+      )
       .trim()
       .replaceAll(RegExp(r'\s+'), ' ');
 }

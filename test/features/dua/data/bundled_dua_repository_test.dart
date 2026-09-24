@@ -121,6 +121,19 @@ void main() {
     await expectLater(repository.loadAll(), throwsFormatException);
   });
 
+  test('retries asset loading after a transient failure', () async {
+    final bundle = _FlakyAssetBundle(
+      jsonEncode(_catalog([_dua(id: 'retry-success')])),
+    );
+    final repository = BundledDuaRepository(bundle: bundle);
+
+    await expectLater(repository.loadAll(), throwsFlutterError);
+    final duas = await repository.loadAll();
+
+    expect(duas.single.id, 'retry-success');
+    expect(bundle.loadCount, 2);
+  });
+
   test('returns an unmodifiable catalog', () async {
     final repository = _repository(_catalog([_dua(id: 'immutable')]));
 
@@ -184,6 +197,21 @@ class _MapAssetBundle extends CachingAssetBundle {
     final value = assets[key];
     if (value == null) throw FlutterError('Missing fake asset: $key');
     final bytes = Uint8List.fromList(utf8.encode(value));
+    return ByteData.sublistView(bytes);
+  }
+}
+
+class _FlakyAssetBundle extends CachingAssetBundle {
+  _FlakyAssetBundle(this.asset);
+
+  final String asset;
+  int loadCount = 0;
+
+  @override
+  Future<ByteData> load(String key) async {
+    loadCount++;
+    if (loadCount == 1) throw FlutterError('Transient fake asset failure');
+    final bytes = Uint8List.fromList(utf8.encode(asset));
     return ByteData.sublistView(bytes);
   }
 }

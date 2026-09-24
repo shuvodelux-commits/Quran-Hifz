@@ -22,12 +22,23 @@ void main() {
       expect(dua.banglaPronunciation.contains('আআ'), isFalse, reason: dua.id);
       expect(dua.banglaPronunciation.contains('্ই'), isFalse, reason: dua.id);
       expect(
+        RegExp(r'[()]').hasMatch(dua.banglaPronunciation),
+        isFalse,
+        reason: dua.id,
+      );
+      expect(
         dua.banglaPronunciation.contains(String.fromCharCode(96)),
         isFalse,
         reason: dua.id,
       );
       expect(dua.banglaMeaning.trim(), isNotEmpty, reason: dua.id);
       expect(dua.englishTransliteration.trim(), isNotEmpty, reason: dua.id);
+      expect(dua.englishTransliteration.contains('AA'), isFalse, reason: dua.id);
+      expect(
+        dua.englishTransliteration.contains(String.fromCharCode(96)),
+        isFalse,
+        reason: dua.id,
+      );
       expect(dua.englishMeaning.trim(), isNotEmpty, reason: dua.id);
       expect(dua.categoryIds, isNotEmpty, reason: dua.id);
       expect(dua.sources, isNotEmpty, reason: dua.id);
