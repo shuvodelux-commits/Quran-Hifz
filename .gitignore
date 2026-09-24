@@ -33,3 +33,5 @@ quran_hifz_v1-ai-review.zip
 # Local Cloudflare Wrangler state/cache
 .wrangler/
 backend/.wrangler/
+
+.worktrees/
