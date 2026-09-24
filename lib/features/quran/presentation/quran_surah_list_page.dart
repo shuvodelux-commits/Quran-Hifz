@@ -336,7 +336,7 @@ class _JuzList extends ConsumerWidget {
                     child: Text(localDigits('${juz.number}', language)),
                   ),
                   title: Text(
-                    '${appText(language, 'জুজ', 'Juz')} ${localDigits('${juz.number}', language)}',
+                    '${appText(language, 'পারা', 'Juz')} ${localDigits('${juz.number}', language)}',
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                   subtitle: Text(

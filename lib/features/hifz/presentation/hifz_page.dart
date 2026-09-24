@@ -30,11 +30,17 @@ class HifzPage extends ConsumerStatefulWidget {
   const HifzPage({
     super.key,
     this.initialPage = 1,
+    this.initialSurahNumber,
     this.initialConfig,
     this.openSetupOnStart = false,
-  }) : assert(initialPage >= 1 && initialPage <= 604);
+  }) : assert(initialPage >= 1 && initialPage <= 604),
+       assert(
+         initialSurahNumber == null ||
+             (initialSurahNumber >= 1 && initialSurahNumber <= 114),
+       );
 
   final int initialPage;
+  final int? initialSurahNumber;
   final HifzSessionConfig? initialConfig;
   final bool openSetupOnStart;
 
@@ -76,6 +82,7 @@ class _HifzPageState extends ConsumerState<HifzPage>
     super.initState();
     _systemUi = ref.read(hifzSystemUiProvider);
     _selectedPage = widget.initialPage;
+    _selectedSurahNumber = widget.initialSurahNumber ?? 1;
     final initialConfig = widget.initialConfig;
     if (initialConfig != null) {
       _selectedSurahNumber = initialConfig.start.surahNumber;

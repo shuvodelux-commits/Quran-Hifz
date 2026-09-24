@@ -40,6 +40,28 @@ void main() {
     expect(find.text('আল-বাকারা'), findsNothing);
   });
 
+  testWidgets('Bangla Quran labels Juz as Para in tab list and reader', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+
+    expect(find.text('পারা'), findsOneWidget);
+    expect(find.text('জুজ'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('quran-tab-juz')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('পারা ১'), findsOneWidget);
+    expect(find.textContaining('জুজ'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('juz-1')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('পারা ১'), findsOneWidget);
+    expect(find.textContaining('জুজ'), findsNothing);
+  });
+
   testWidgets('Juz tab opens a cross-Surah bounded reader', (tester) async {
     await tester.pumpWidget(_app());
     await tester.pumpAndSettle();

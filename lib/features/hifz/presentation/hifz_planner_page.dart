@@ -34,6 +34,10 @@ class HifzPlannerPage extends ConsumerWidget {
             _PlannerError(onRetry: () => ref.invalidate(hifzPlansProvider)),
         data: (items) => items.isEmpty
             ? _EmptyPlanner(
+                onStart: surahs.value == null
+                    ? null
+                    : () =>
+                          _startWithoutPlan(context, ref, surahs.requireValue),
                 onCreate: surahs.value == null
                     ? null
                     : () => _createPlan(context, ref, surahs.requireValue),
@@ -80,6 +84,37 @@ class HifzPlannerPage extends ConsumerWidget {
       if (surah.number == number) return surah;
     }
     return null;
+  }
+
+  Future<void> _startWithoutPlan(
+    BuildContext context,
+    WidgetRef ref,
+    List<QuranSurahSummary> surahs,
+  ) async {
+    if (surahs.isEmpty) return;
+    final selected = await showModalBottomSheet<QuranSurahSummary>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _QuickStartSurahSheet(surahs: surahs),
+    );
+    if (selected == null || !context.mounted) return;
+
+    final session = ref.read(hifzSessionControllerProvider);
+    if (session.status == HifzSessionStatus.running ||
+        session.status == HifzSessionStatus.paused) {
+      await ref.read(hifzSessionControllerProvider.notifier).stop();
+    }
+    if (!context.mounted) return;
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => HifzPage(
+          initialPage: selected.pageStart,
+          initialSurahNumber: selected.number,
+        ),
+      ),
+    );
   }
 
   Future<void> _createPlan(
@@ -257,8 +292,9 @@ class _PlanCard extends StatelessWidget {
 }
 
 class _EmptyPlanner extends StatelessWidget {
-  const _EmptyPlanner({required this.onCreate});
+  const _EmptyPlanner({required this.onStart, required this.onCreate});
 
+  final VoidCallback? onStart;
   final VoidCallback? onCreate;
 
   @override
@@ -285,10 +321,62 @@ class _EmptyPlanner extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           FilledButton.icon(
+            key: const ValueKey('hifz-start-without-plan'),
+            onPressed: onStart,
+            icon: const Icon(Icons.menu_book_rounded),
+            label: const Text('Start Hifz'),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
             key: const ValueKey('hifz-create-first-plan'),
             onPressed: onCreate,
             icon: const Icon(Icons.add_rounded),
             label: const Text('Create plan'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _QuickStartSurahSheet extends StatelessWidget {
+  const _QuickStartSurahSheet({required this.surahs});
+
+  final List<QuranSurahSummary> surahs;
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    top: false,
+    child: SizedBox(
+      height: MediaQuery.sizeOf(context).height * 0.7,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Choose Surah',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.separated(
+              itemCount: surahs.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                final surah = surahs[index];
+                return ListTile(
+                  key: ValueKey('hifz-quick-start-surah-${surah.number}'),
+                  leading: CircleAvatar(child: Text('${surah.number}')),
+                  title: Text(surah.nameEnglish),
+                  subtitle: Text(surah.nameArabic),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => Navigator.of(context).pop(surah),
+                );
+              },
+            ),
           ),
         ],
       ),

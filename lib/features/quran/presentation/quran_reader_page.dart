@@ -396,7 +396,7 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
                 next: nextSurah,
                 language: language,
                 centerLabel: _scope is JuzReaderScope
-                    ? '${appText(language, 'জুজ', 'Juz')} ${localDigits('${(_scope as JuzReaderScope).juz.number}', language)} · ${localizedSurahName(activeSurah, language)}'
+                    ? '${appText(language, 'পারা', 'Juz')} ${localDigits('${(_scope as JuzReaderScope).juz.number}', language)} · ${localizedSurahName(activeSurah, language)}'
                     : null,
                 onSelected: _openSurahScope,
               ),

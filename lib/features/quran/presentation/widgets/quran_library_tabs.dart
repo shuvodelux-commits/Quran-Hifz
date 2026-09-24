@@ -28,7 +28,7 @@ class QuranLibraryTabs extends StatelessWidget {
       ),
       _Tab(
         key: const ValueKey('quran-tab-juz'),
-        label: appText(language, 'জুজ', 'Juz'),
+        label: appText(language, 'পারা', 'Juz'),
         selected: selected == QuranLibraryTab.juz,
         onTap: () => onSelected(QuranLibraryTab.juz),
       ),
