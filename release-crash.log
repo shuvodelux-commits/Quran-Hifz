@@ -1,0 +1,267 @@
+--------- beginning of main
+09-17 12:20:25.927  1485  1656 D OppoSlaNetlinkHelper_RTT: Received message:OPPO_SLA_NOTIFY_SPEED_RTT:1000kB/s 47ms; 0kB/s 0ms oppo_sla_enable=0 tcp_rx = 254708 tcp_tx = 201761
+09-17 12:20:25.939  1485  1485 D OppoSlaNetlinkHelper_RSRP: onSignalStrengthsChanged oldRsrp=-107 newRsrp=-113
+09-17 12:20:25.957   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:25.962 21945 22249 E SubscriptionManagerWrapper: java.lang.NoSuchMethodException: android.telephony.SubscriptionManager.getActiveDataSubscriptionId []
+09-17 12:20:26.002 21945 22249 I chatty  : uid=10079(com.android.systemui) SysUiBg identical 2 lines
+09-17 12:20:26.020 21945 22249 E SubscriptionManagerWrapper: java.lang.NoSuchMethodException: android.telephony.SubscriptionManager.getActiveDataSubscriptionId []
+09-17 12:20:26.023  1485  1648 D WifiClientModeImpl: fetchRssiLinkSpeedAndFrequencyNative rssi=-38 TxLinkspeed=433 freq=5180 RxLinkSpeed=0
+09-17 12:20:26.023  1485  1648 D OppoRssiMonitor: update rssi:-38
+09-17 12:20:26.023  1485  1648 D OppoScanResultsProxy: make sure UI show last ap list!!
+09-17 12:20:26.024  1485  1648 D OppoScanResultsProxy: getScanResults() callingUid=1010 packageName:android mReportCache = true size:7
+09-17 12:20:26.027  1485  1648 D WifiClientModeImpl:  L2ConnectedState CMD_RSSI_POLL screen=on 407 0 "KubeCraft_5G" 1c:4d:89:91:26:22 rssi=-38 f=5180 sc=0 link=433 tx=43.9, 0.0, 0.0  rx=33.4 bcn=0 [on:0 tx:0 rx:0 period:3020] from screen [on:0 period:8259739] score=0
+09-17 12:20:26.035  1485  3896 I WifiService: getCurrentNetwork uid=10079
+09-17 12:20:26.058   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:26.460   966  1038 I chatty  : uid=1000(system) ata_acm identical 3 lines
+09-17 12:20:26.560   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:26.718  1485  1648 D WN_S    : DT,tP=201761, dTP=47, rP=254708, dRP=38 mIR=true, mRPLC=0
+09-17 12:20:26.761   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:26.768  1485  1648 D WifiClientModeImpl: fetchRssiLinkSpeedAndFrequencyNative rssi=-38 TxLinkspeed=433 freq=5180 RxLinkSpeed=0
+09-17 12:20:26.768  1485  1648 D OppoRssiMonitor: update rssi:-38
+09-17 12:20:26.768  1485  1648 D OppoScanResultsProxy: make sure UI show last ap list!!
+09-17 12:20:26.769  1485  1648 D OppoScanResultsProxy: getScanResults() callingUid=1010 packageName:android mReportCache = true size:7
+09-17 12:20:26.774  1485  1648 D WifiClientModeImpl:  L2ConnectedState RSSI_PKTCNT_FETCH screen=on uid=1000 1 0 "KubeCraft_5G" 1c:4d:89:91:26:22 rssi=-38 f=5180 sc=0 link=433 tx=43.9, 0.0, 0.0  rx=33.4 bcn=0 [on:0 tx:0 rx:0 period:746] from screen [on:0 period:8260486] score=0
+09-17 12:20:26.776  1485  1648 W OppoSlaNetlinkHelper_RTT: getRttAndSpeed(5):[1000, 47, 0, 0, 1000, 47, 0, 0, 1000, 47, 0, 0, 1000, 47, 0, 0, 1000, 47, 0, 0]
+09-17 12:20:26.776  1485  1648 D WN_S    : speed and rtt decreased 0 points.
+09-17 12:20:26.779  1485  1648 D OppoHistoryRecordQueue: AP: 1c:4d:89:91:26:22 is5G: true yearDay256: [24:1176,0,0][27:4728,0,0][30:17971,0,0][33:14909,0,0][36:33324,0,0][39:4146,0,0][42:3268,3,0.09][45:151,0,0][48:282,0,0][51:246,0,0][54:49219,0,0][57:31068,0,0][60:15284,0,0][63:116,0,0][69:10,0,0][72:25,1,3.85][78:22,1,4.35][81:44,7,13.73][84:6,6,50][90:4,14,77.78]
+09-17 12:20:26.781  1485  1648 D OppoHistoryRecordQueue: AP: 1c:4d:89:91:26:22 is5G: true yearDay257: [18:7735,0,0][21:7060,0,0][24:21607,0,0][27:54347,0,0][30:141974,0,0][33:139709,0,0][36:378233,0,0][39:205648,0,0][42:126870,0,0][45:14757,0,0][48:858,0,0]
+09-17 12:20:26.783  1485  1648 D OppoHistoryRecordQueue: AP: 1c:4d:89:91:26:22 is5G: true yearDay258: [21:60,0,0][24:13877,0,0][27:38555,0,0][30:58918,19,0.03][33:59291,0,0][36:161101,0,0][39:214743,0,0][42:74785,0,0][45:3018,0,0][48:469,0,0][51:40,0,0][54:427,0,0]
+09-17 12:20:26.784  1485  1648 D OppoHistoryRecordQueue: AP: 1c:4d:89:91:26:22 is5G: true yearDay259: [24:9,0,0][27:78,0,0][30:7945,0,0][33:33087,0,0][36:62810,0,0][39:167540,0,0][42:59927,0,0][45:3485,0,0][48:15,0,0]
+09-17 12:20:26.787  1485  1648 D WN_S    : urLQ key:"KubeCraft_5G"-WPA_PSK,ri=-38,tb=0,tg=206224,db=0,dg=221,dt=221,blc=0,ls=0,mLDTs= 1049,tstat:0,dex=1,sc=79,hls=false,mis=true,mcs=0,mqgc=0
+09-17 12:20:26.788  1485  1648 D WN_S    : cQ=79,cS=79,wit=40,mcnt=false,mtd=true,mtod=false,ri=-38
+09-17 12:20:26.788  1485  1648 D OppoSlaNetlinkHelper_score: After sendWifiScoreToKernel:result=true score=79
+09-17 12:20:26.788  1485  1648 D WN_S    : smart switch disable
+09-17 12:20:26.861   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:26.951  1485  1656 D OppoSlaNetlinkHelper_RTT: Received message:OPPO_SLA_NOTIFY_SPEED_RTT:1000kB/s 47ms; 0kB/s 0ms oppo_sla_enable=0 tcp_rx = 254740 tcp_tx = 201801
+09-17 12:20:26.962   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:27.766   966  1038 I chatty  : uid=1000(system) ata_acm identical 6 lines
+09-17 12:20:27.967   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:27.976  1485  1656 D OppoSlaNetlinkHelper_RTT: Received message:OPPO_SLA_NOTIFY_SPEED_RTT:1000kB/s 47ms; 0kB/s 0ms oppo_sla_enable=0 tcp_rx = 254744 tcp_tx = 201807
+--------- beginning of system
+09-17 12:20:27.983  1485  1485 D TorchManagerService: mTorchReceiver action: android.intent.action.BATTERY_CHANGED
+09-17 12:20:27.983  1485  1485 D TorchManagerService: temperature: 350, bTorchMode: false, switchOn: true, threshold: 460, showing: false, mbIsSafetyTemperatureScene: false, isNotifyIn: false
+09-17 12:20:28.008  4008  4053 W mk_broadcast: onReceive:android.intent.action.BATTERY_CHANGED,6
+09-17 12:20:28.018  2168  3982 E OppoGuardElf: ChargeProtectionUtils: First Alarm is Thu Sep 17 04:50:00 GMT+06:00 2026, nowRtc  = Thu Sep 17 12:20:28 GMT+06:00 2026, too close , ignore it.
+09-17 12:20:28.031  1485  2433 I WifiService: getWifiEnabledState uid=1000
+09-17 12:20:28.032  1485  3896 I WifiService: getWifiApEnabledState uid=1000
+09-17 12:20:28.036  1485  2433 I WifiService: getConnectionInfo uid=1000
+09-17 12:20:28.067   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:28.069 21945 22249 E SubscriptionManagerWrapper: java.lang.NoSuchMethodException: android.telephony.SubscriptionManager.getActiveDataSubscriptionId []
+09-17 12:20:28.085 21945 22249 E SubscriptionManagerWrapper: java.lang.NoSuchMethodException: android.telephony.SubscriptionManager.getActiveDataSubscriptionId []
+09-17 12:20:28.168   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:28.202 21945 21945 I ndroid.systemu: Explicit concurrent copying GC freed 3664(245KB) AllocSpace objects, 0(0B) LOS objects, 66% free, 10MB/30MB, paused 375us total 310.377ms
+09-17 12:20:28.329 12047 12047 I VoiceInputManagerWrapper: VoiceInputManagerWrapper.shutdownVoiceInternal():154 shutdownVoiceInternal() [RD]
+09-17 12:20:28.330 12047 12047 W NotificationCenter: NotificationCenter.unregisterListener():474 Listener khf@63028c was not registered for notification class qry
+09-17 12:20:28.364   546   555 W TeeEndorsementInstaller: Endorsement token not found, wait a bit longer [vendor/mediatek/proprietary/trustzone/trustonic/source/external/mobicore/common/410/Daemon/src/EndorsementInstaller.cpp:105]
+09-17 12:20:28.369   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:28.469   966  1038 I chatty  : uid=1000(system) ata_acm identical 1 line
+09-17 12:20:28.570   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:28.640  1485  1648 D WN_S    : ConnectedState{ when=-1ms what=200711 target=com.android.internal.util.StateMachine$SmHandler }
+09-17 12:20:28.640  1485  1648 D WN_S    : needToDetectInternet, switch is off
+09-17 12:20:28.719  1485  1648 D WN_S    : DT,tP=201807, dTP=46, rP=254744, dRP=36 mIR=true, mRPLC=0
+09-17 12:20:28.771   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:28.814 31936 10739 I ADB_SERVICES: post waitpid (pid=10738) status=0000
+09-17 12:20:28.814 31936 31936 I ADB_SERVICES: for fd 30, revents = 2011
+09-17 12:20:28.814 31936 31936 I ADB_SERVICES: for fd 30, revents = 2011
+09-17 12:20:28.871   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:28.972   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:28.998  1485  1656 D OppoSlaNetlinkHelper_RTT: Received message:OPPO_SLA_NOTIFY_SPEED_RTT:1000kB/s 47ms; 0kB/s 0ms oppo_sla_enable=0 tcp_rx = 254783 tcp_tx = 201858
+09-17 12:20:29.017   710   710 D Zygote  : Forked child process 10740
+09-17 12:20:29.024  1485  1524 I ActivityManager: Start proc 10740:com.google.process.gapps/u0a153 for content provider {com.google.android.gsf/com.google.android.gsf.settings.GoogleSettingsProvider}
+09-17 12:20:29.037  1485  1648 D WifiClientModeImpl: fetchRssiLinkSpeedAndFrequencyNative rssi=-39 TxLinkspeed=433 freq=5180 RxLinkSpeed=0
+09-17 12:20:29.038  1485  1648 D OppoRssiMonitor: update rssi:-38
+09-17 12:20:29.038  1485  1648 D OppoScanResultsProxy: make sure UI show last ap list!!
+09-17 12:20:29.038  1485  1648 D OppoScanResultsProxy: getScanResults() callingUid=1010 packageName:android mReportCache = true size:7
+09-17 12:20:29.041  1485  1648 D WifiClientModeImpl:  L2ConnectedState CMD_RSSI_POLL screen=on 407 0 "KubeCraft_5G" 1c:4d:89:91:26:22 rssi=-38 f=5180 sc=0 link=433 tx=36.2, 0.0, 0.0  rx=27.7 bcn=0 [on:0 tx:0 rx:0 period:2265] from screen [on:0 period:8262752] score=0
+09-17 12:20:29.044  1485  3896 I WifiService: getCurrentNetwork uid=10079
+09-17 12:20:29.059 10740 10740 E e.process.gapp: Not starting debugger since process cannot load the jdwp agent.
+09-17 12:20:29.077 10740 10740 E RefClass: java.lang.reflect.InvocationTargetException
+09-17 12:20:29.085  1485  3896 V ActivityManager: New death recipient com.android.server.am.ActivityManagerService$AppDeathRecipient@1aca401 for thread android.os.BinderProxy@a4052a6, pid:10740,mApp:null
+09-17 12:20:29.092  1485  3896 D DEBUG_VISIBILITY: mOccluded:false lastOccluded:false
+09-17 12:20:29.130 10740 10740 I e.process.gapp: The ClassLoaderContext is a special shared library.
+09-17 12:20:29.172   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:29.224 10740 10740 I GoogleHttpClient: GMS http client unavailable, use old client
+09-17 12:20:29.228 10740 10740 D AndroidHttpClient: AndroidHttpClient newInstanceAndroid-GData/1.1 (OP4F2F QP1A.190711.020); gzip
+09-17 12:20:29.273   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:29.289 10740 10759 W System  : ClassLoader referenced unknown path: /system/framework/mediatek-cta.jar
+09-17 12:20:29.291 10740 10759 W CtaManagerFactory: CtaManagerFactoryImpl not found
+09-17 12:20:29.294  1485  2433 W PackageManager: notifyDexLoad loadingPackageName: com.google.android.gsf,(dexUseInfoMap BeforeNotify () is null? :true,(dexUseInfoMap AfterNotify () is null? :true,  backgroundDexopt: true
+09-17 12:20:29.374   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:29.538 10709 10731 E libc    : Access denied finding property "ro.com.google.clientidbase.wal"
+09-17 12:20:29.537 10709 10709 W com.google.android.partnersetup: type=1400 audit(0.0:267936): avc: denied { read } for comm=426C6F636B696E6720546872656164 name="u:object_r:google_clientid_prop:s0" dev="tmpfs" ino=193 scontext=u:r:priv_app:s0:c512,c768 tcontext=u:object_r:google_clientid_prop:s0 tclass=file permissive=0
+09-17 12:20:29.575   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:29.716  1485  1528 D AppOps  : checkOperation: uid reject #1 for code 87 uid 10164 package com.android.chrome
+09-17 12:20:29.675   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:29.761   710   710 D Zygote  : Forked child process 10762
+09-17 12:20:29.768  1485  1524 I ActivityManager: Start proc 10762:com.android.chrome/u0a164 for broadcast {com.android.chrome/com.google.android.apps.chrome.rlz.RevenueStatsConfigurationUpdateReceiver}
+09-17 12:20:29.776   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:29.813 10762 10762 E .android.chrom: Not starting debugger since process cannot load the jdwp agent.
+09-17 12:20:29.834 10762 10762 E RefClass: java.lang.reflect.InvocationTargetException
+09-17 12:20:29.841  1485  2433 V ActivityManager: New death recipient com.android.server.am.ActivityManagerService$AppDeathRecipient@d9e60a7 for thread android.os.BinderProxy@60c3954, pid:10762,mApp:null
+09-17 12:20:29.848  1485  2433 D DEBUG_VISIBILITY: mOccluded:false lastOccluded:false
+09-17 12:20:29.915 10762 10762 W .android.chrom: JIT profile information will not be recorded: profile file does not exits.
+09-17 12:20:29.954  1485  3896 I ActivityManager: Killing 10592:com.facebook.services/u0a81 (adj 965): empty #7
+09-17 12:20:29.974 10762 10762 I cr_SplitCompatApp: version=152.0.7977.82 (797708204) minSdkVersion=29 processName=com.android.chrome isIsolatedProcess=false splits=chrome,config.en,dev_ui,on_demand,stack_unwinder
+09-17 12:20:29.976   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:29.986  1485  3896 V ActivityManager: Death received in com.android.server.am.ActivityManagerService$AppDeathRecipient@9e320f8 for thread android.os.BinderProxy@190c9d1, mPid:10592,mApp:ProcessRecord{c0ac197 10592:com.facebook.services/u0a81}
+09-17 12:20:29.989   710   710 I Zygote  : Process 10592 exited due to signal 9 (Killed)
+09-17 12:20:29.991 21964 22080 I DCS-BackgroundAppData: sendAppBgEvent: has no pkgName=com.facebook.services
+09-17 12:20:29.994  1485  1525 I libprocessgroup: Successfully killed process cgroup uid 10081 pid 10592 in 34ms
+09-17 12:20:30.022  1485  1656 D OppoSlaNetlinkHelper_RTT: Received message:OPPO_SLA_NOTIFY_SPEED_RTT:1000kB/s 47ms; 0kB/s 0ms oppo_sla_enable=0 tcp_rx = 254851 tcp_tx = 201939
+09-17 12:20:30.041 10762 10762 W linker  : Warning: "/data/app/com.android.chrome-v2plo_RZK5SP0g7S5K3Lnw==/base.apk!/lib/arm64-v8a/libchrome.so" unused DT entry: unknown processor-specific (type 0x70000001 arg 0x0) (ignoring)
+09-17 12:20:30.077   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:30.090  1485  3896 W PackageManager: notifyDexLoad loadingPackageName: com.android.chrome,(dexUseInfoMap BeforeNotify (/data/app/com.android.chrome-v2plo_RZK5SP0g7S5K3Lnw==/split_chrome.apk) is null? :true,(dexUseInfoMap AfterNotify (/data/app/com.android.chrome-v2plo_RZK5SP0g7S5K3Lnw==/split_chrome.apk) is null? :true,  backgroundDexopt: true
+09-17 12:20:30.157 10762 10762 I cr_LibraryLoader: Successfully loaded native library
+09-17 12:20:30.177   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:30.178 10762 10762 I cr_CachingUmaRecorder: Flushed 7 samples from 7 histograms, 0 samples were dropped.
+09-17 12:20:30.265 10762 10762 I cr_CombinedPProvider: #linkNativeInternal() 0
+09-17 12:20:30.265 10762 10762 I cr_PolicyProvider: #setManagerAndSource() 0
+09-17 12:20:30.271 10762 10762 I cr_PolicyCacheProvider: #refresh() true
+09-17 12:20:30.378   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:30.413 10762 10762 I cr_SplitCompatClassLoader: Splits: null
+09-17 12:20:30.441 16970 16995 I FontLog : (REDACTED) Received query %s, URI %s
+09-17 12:20:30.442 16970 16995 I FontLog : (REDACTED) Query [%s] resolved to %s
+09-17 12:20:30.445 16970 16995 I FontLog : (REDACTED) Font PFD returned from cache for %s
+09-17 12:20:30.446 16970 16995 I FontLog : (REDACTED) Fetch %s end status %s
+09-17 12:20:30.456 16970 16995 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+09-17 12:20:30.474 16970 16995 I FontLog : (REDACTED) Received query %s, URI %s
+09-17 12:20:30.475 16970 16995 I FontLog : (REDACTED) Query [%s] resolved to %s
+09-17 12:20:30.478 16970 16995 I FontLog : (REDACTED) Font PFD returned from cache for %s
+09-17 12:20:30.479 16970 16995 I FontLog : (REDACTED) Fetch %s end status %s
+09-17 12:20:30.479   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:30.490 16970 16995 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+09-17 12:20:30.491  1485  2437 I ActivityManager: Killing 6991:com.google.android.gms/u0a153 (adj 965): empty #7
+09-17 12:20:30.496   710   710 I Zygote  : Process 6991 exited due to signal 9 (Killed)
+09-17 12:20:30.502  1485  1525 I libprocessgroup: Successfully killed process cgroup uid 10153 pid 6991 in 7ms
+09-17 12:20:30.516 16970 16995 I FontLog : (REDACTED) Received query %s, URI %s
+09-17 12:20:30.517 16970 16995 I FontLog : (REDACTED) Query [%s] resolved to %s
+09-17 12:20:30.519 16970 16995 I FontLog : (REDACTED) Font PFD returned from cache for %s
+09-17 12:20:30.520 16970 16995 I FontLog : (REDACTED) Fetch %s end status %s
+09-17 12:20:30.525 16970 16995 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+09-17 12:20:30.540 16970 16995 I FontLog : (REDACTED) Received query %s, URI %s
+09-17 12:20:30.540 16970 16995 I FontLog : (REDACTED) Query [%s] resolved to %s
+09-17 12:20:30.543 16970 16995 I FontLog : (REDACTED) Font PFD returned from cache for %s
+09-17 12:20:30.543 16970 16995 I FontLog : (REDACTED) Fetch %s end status %s
+09-17 12:20:30.547 16970 17107 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+09-17 12:20:30.547 10709 10726 V ClearcutMetricXmitter: Transmission is done.
+09-17 12:20:30.558 16970 17107 I FontLog : (REDACTED) Received query %s, URI %s
+09-17 12:20:30.558 16970 17107 I FontLog : (REDACTED) Query [%s] resolved to %s
+09-17 12:20:30.560 16970 17107 I FontLog : (REDACTED) Font PFD returned from cache for %s
+09-17 12:20:30.560 16970 17107 I FontLog : (REDACTED) Fetch %s end status %s
+09-17 12:20:30.564 16970 17107 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+09-17 12:20:30.568  1485  3900 V ActivityManager: Death received in com.android.server.am.ActivityManagerService$AppDeathRecipient@45c77c4 for thread android.os.BinderProxy@d74e6ad, mPid:6991,mApp:ProcessRecord{cca29db 6991:com.google.android.gms/u0a153}
+09-17 12:20:30.570 21964 22080 I DCS-BackgroundAppData: sendAppBgEvent: has no pkgName=com.google.android.gms&com.google.android.gsf&com.google.android.gsf.login&com.google.android.syncadapters.contacts
+09-17 12:20:30.579   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:30.721  1485  1648 D WN_S    : DT,tP=201939, dTP=132, rP=254851, dRP=107 mIR=true, mRPLC=0
+09-17 12:20:30.780   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:30.881   966  1038 I chatty  : uid=1000(system) ata_acm identical 1 line
+09-17 12:20:30.982   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:31.044  1485  3900 I WifiService: getWifiEnabledState uid=1000
+09-17 12:20:31.046  1485  3900 I WifiService: getWifiApEnabledState uid=1000
+09-17 12:20:31.047  1485  1656 D OppoSlaNetlinkHelper_RTT: Received message:OPPO_SLA_NOTIFY_SPEED_RTT:1000kB/s 47ms; 0kB/s 0ms oppo_sla_enable=0 tcp_rx = 254917 tcp_tx = 202014
+09-17 12:20:31.047  1485  2433 I WifiService: getConnectionInfo uid=1000
+09-17 12:20:31.064  1485  1485 D OppoSlaNetlinkHelper_RSRP: onSignalStrengthsChanged oldRsrp=-107 newRsrp=-113
+09-17 12:20:31.091 21945 22249 E SubscriptionManagerWrapper: java.lang.NoSuchMethodException: android.telephony.SubscriptionManager.getActiveDataSubscriptionId []
+09-17 12:20:31.110 21945 22249 E SubscriptionManagerWrapper: java.lang.NoSuchMethodException: android.telephony.SubscriptionManager.getActiveDataSubscriptionId []
+09-17 12:20:31.183   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:31.585   966  1038 I chatty  : uid=1000(system) ata_acm identical 3 lines
+09-17 12:20:31.686   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:31.781  1485  1648 D WifiClientModeImpl: fetchRssiLinkSpeedAndFrequencyNative rssi=-40 TxLinkspeed=433 freq=5180 RxLinkSpeed=0
+09-17 12:20:31.781  1485  1648 D OppoRssiMonitor: update rssi:-38
+09-17 12:20:31.782  1485  1648 D OppoScanResultsProxy: make sure UI show last ap list!!
+09-17 12:20:31.782  1485  1648 D OppoScanResultsProxy: getScanResults() callingUid=1010 packageName:android mReportCache = true size:7
+09-17 12:20:31.787   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:31.788  1485  1648 D WifiClientModeImpl:  L2ConnectedState RSSI_PKTCNT_FETCH screen=on uid=1000 1 0 "KubeCraft_5G" 1c:4d:89:91:26:22 rssi=-38 f=5180 sc=0 link=433 tx=36.2, 0.0, 0.0  rx=27.7 bcn=0 [on:0 tx:0 rx:0 period:2746] from screen [on:0 period:8265500] score=0
+09-17 12:20:31.790  1485  1648 W OppoSlaNetlinkHelper_RTT: getRttAndSpeed(5):[1000, 47, 0, 0, 1000, 47, 0, 0, 1000, 47, 0, 0, 1000, 47, 0, 0, 1000, 47, 0, 0]
+09-17 12:20:31.790  1485  1648 D WN_S    : speed and rtt decreased 0 points.
+09-17 12:20:31.793  1485  1648 D OppoHistoryRecordQueue: AP: 1c:4d:89:91:26:22 is5G: true yearDay256: [24:1176,0,0][27:4728,0,0][30:17971,0,0][33:14909,0,0][36:33324,0,0][39:4146,0,0][42:3268,3,0.09][45:151,0,0][48:282,0,0][51:246,0,0][54:49219,0,0][57:31068,0,0][60:15284,0,0][63:116,0,0][69:10,0,0][72:25,1,3.85][78:22,1,4.35][81:44,7,13.73][84:6,6,50][90:4,14,77.78]
+09-17 12:20:31.795  1485  1648 D OppoHistoryRecordQueue: AP: 1c:4d:89:91:26:22 is5G: true yearDay257: [18:7735,0,0][21:7060,0,0][24:21607,0,0][27:54347,0,0][30:141974,0,0][33:139709,0,0][36:378233,0,0][39:205648,0,0][42:126870,0,0][45:14757,0,0][48:858,0,0]
+09-17 12:20:31.797  1485  1648 D OppoHistoryRecordQueue: AP: 1c:4d:89:91:26:22 is5G: true yearDay258: [21:60,0,0][24:13877,0,0][27:38555,0,0][30:58918,19,0.03][33:59291,0,0][36:161101,0,0][39:214743,0,0][42:74785,0,0][45:3018,0,0][48:469,0,0][51:40,0,0][54:427,0,0]
+09-17 12:20:31.799  1485  1648 D OppoHistoryRecordQueue: AP: 1c:4d:89:91:26:22 is5G: true yearDay259: [24:9,0,0][27:78,0,0][30:7945,0,0][33:33087,0,0][36:63049,0,0][39:167540,0,0][42:59927,0,0][45:3485,0,0][48:15,0,0]
+09-17 12:20:31.801  1485  1648 D WN_S    : urLQ key:"KubeCraft_5G"-WPA_PSK,ri=-38,tb=0,tg=206463,db=0,dg=239,dt=239,blc=0,ls=0,mLDTs= 1050,tstat:0,dex=2,sc=79,hls=false,mis=true,mcs=0,mqgc=0
+09-17 12:20:31.802  1485  1648 D WN_S    : cQ=79,cS=79,wit=40,mcnt=false,mtd=true,mtod=false,ri=-38
+09-17 12:20:31.802  1485  1648 D OppoSlaNetlinkHelper_score: After sendWifiScoreToKernel:result=true score=79
+09-17 12:20:31.803  1485  1648 D WN_S    : smart switch disable
+09-17 12:20:31.988   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:32.053  1485  1648 D WifiClientModeImpl: fetchRssiLinkSpeedAndFrequencyNative rssi=-40 TxLinkspeed=433 freq=5180 RxLinkSpeed=0
+09-17 12:20:32.053  1485  1648 D OppoRssiMonitor: update rssi:-38
+09-17 12:20:32.053  1485  1648 D OppoScanResultsProxy: make sure UI show last ap list!!
+09-17 12:20:32.053  1485  1648 D OppoScanResultsProxy: getScanResults() callingUid=1010 packageName:android mReportCache = true size:7
+09-17 12:20:32.057  1485  1648 D WifiClientModeImpl:  L2ConnectedState CMD_RSSI_POLL screen=on 407 0 "KubeCraft_5G" 1c:4d:89:91:26:22 rssi=-38 f=5180 sc=0 link=433 tx=50.1, 0.0, 0.0  rx=41.3 bcn=0 [on:0 tx:0 rx:0 period:267] from screen [on:0 period:8265768] score=0
+09-17 12:20:32.061  1485  2433 I WifiService: getCurrentNetwork uid=10079
+09-17 12:20:32.070  1485  1656 D OppoSlaNetlinkHelper_RTT: Received message:OPPO_SLA_NOTIFY_SPEED_RTT:1000kB/s 47ms; 0kB/s 0ms oppo_sla_enable=0 tcp_rx = 254943 tcp_tx = 202047
+09-17 12:20:32.088   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:32.189   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:32.204 21945 21945 I ndroid.systemu: Explicit concurrent copying GC freed 3462(255KB) AllocSpace objects, 2(40KB) LOS objects, 66% free, 10MB/30MB, paused 411us total 285.616ms
+09-17 12:20:32.390   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:32.490   966  1038 I chatty  : uid=1000(system) ata_acm identical 1 line
+09-17 12:20:32.591   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:32.723  1485  1648 D WN_S    : DT,tP=202047, dTP=108, rP=254943, dRP=92 mIR=true, mRPLC=0
+09-17 12:20:32.791   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:32.838  1485  1485 D TorchManagerService: mTorchReceiver action: android.intent.action.BATTERY_CHANGED
+09-17 12:20:32.838  1485  1485 D TorchManagerService: temperature: 350, bTorchMode: false, switchOn: true, threshold: 460, showing: false, mbIsSafetyTemperatureScene: false, isNotifyIn: false
+09-17 12:20:32.853  2168  3982 E OppoGuardElf: ChargeProtectionUtils: First Alarm is Thu Sep 17 04:50:00 GMT+06:00 2026, nowRtc  = Thu Sep 17 12:20:32 GMT+06:00 2026, too close , ignore it.
+09-17 12:20:32.863  4008  4053 W mk_broadcast: onReceive:android.intent.action.BATTERY_CHANGED,6
+09-17 12:20:32.870  1485  1485 D TorchManagerService: mTorchReceiver action: android.intent.action.BATTERY_CHANGED
+09-17 12:20:32.870  1485  1485 D TorchManagerService: temperature: 350, bTorchMode: false, switchOn: true, threshold: 460, showing: false, mbIsSafetyTemperatureScene: false, isNotifyIn: false
+09-17 12:20:32.886  2168  3982 E OppoGuardElf: ChargeProtectionUtils: First Alarm is Thu Sep 17 04:50:00 GMT+06:00 2026, nowRtc  = Thu Sep 17 12:20:32 GMT+06:00 2026, too close , ignore it.
+09-17 12:20:32.887  4008  4053 W mk_broadcast: onReceive:android.intent.action.BATTERY_CHANGED,6
+09-17 12:20:32.892   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:32.992   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:33.095  1485  1656 D OppoSlaNetlinkHelper_RTT: Received message:OPPO_SLA_NOTIFY_SPEED_RTT:1000kB/s 47ms; 0kB/s 0ms oppo_sla_enable=0 tcp_rx = 254967 tcp_tx = 202078
+09-17 12:20:33.190 21945 22249 E SubscriptionManagerWrapper: java.lang.NoSuchMethodException: android.telephony.SubscriptionManager.getActiveDataSubscriptionId []
+09-17 12:20:33.194   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:33.212 21945 22249 E SubscriptionManagerWrapper: java.lang.NoSuchMethodException: android.telephony.SubscriptionManager.getActiveDataSubscriptionId []
+09-17 12:20:33.295   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:33.395   966  1038 I chatty  : uid=1000(system) ata_acm identical 1 line
+09-17 12:20:33.596   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:33.642  1485  1648 D WN_S    : ConnectedState{ when=-1ms what=200711 target=com.android.internal.util.StateMachine$SmHandler }
+09-17 12:20:33.642  1485  1648 D WN_S    : needToDetectInternet, switch is off
+09-17 12:20:33.697   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:33.797   966  1038 I chatty  : uid=1000(system) ata_acm identical 1 line
+09-17 12:20:33.998   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:34.060  1485  2433 I WifiService: getWifiEnabledState uid=1000
+09-17 12:20:34.063  1485  2433 I WifiService: getWifiApEnabledState uid=1000
+09-17 12:20:34.065  1485  2433 I WifiService: getConnectionInfo uid=1000
+09-17 12:20:34.099   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:34.119  1485  1656 D OppoSlaNetlinkHelper_RTT: Received message:OPPO_SLA_NOTIFY_SPEED_RTT:1000kB/s 47ms; 0kB/s 0ms oppo_sla_enable=0 tcp_rx = 254990 tcp_tx = 202108
+09-17 12:20:34.199   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:34.501   966  1038 I chatty  : uid=1000(system) ata_acm identical 2 lines
+09-17 12:20:34.601   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:34.653  3115  3168 E horae   : -4.01, +(2910), 1 ,37600,35000,36100,36200
+09-17 12:20:34.724  1485  1648 D WN_S    : DT,tP=202108, dTP=61, rP=254990, dRP=47 mIR=true, mRPLC=0
+09-17 12:20:34.802   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:34.903   966  1038 I chatty  : uid=1000(system) ata_acm identical 1 line
+09-17 12:20:35.003   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:35.074  1485  1648 D WifiClientModeImpl: fetchRssiLinkSpeedAndFrequencyNative rssi=-40 TxLinkspeed=433 freq=5180 RxLinkSpeed=0
+09-17 12:20:35.075  1485  1648 D OppoRssiMonitor: update rssi:-39
+09-17 12:20:35.075  1485  1648 D OppoScanResultsProxy: make sure UI show last ap list!!
+09-17 12:20:35.075  1485  1648 D OppoScanResultsProxy: getScanResults() callingUid=1010 packageName:android mReportCache = true size:7
+09-17 12:20:35.080  1485  1648 D WifiClientModeImpl:  L2ConnectedState CMD_RSSI_POLL screen=on 407 0 "KubeCraft_5G" 1c:4d:89:91:26:22 rssi=-39 f=5180 sc=0 link=433 tx=36.2, 0.0, 0.0  rx=28.6 bcn=0 [on:0 tx:0 rx:0 period:3022] from screen [on:0 period:8268792] score=0
+09-17 12:20:35.082  1485  2433 I WifiService: getCurrentNetwork uid=10079
+09-17 12:20:35.143  1485  1656 D OppoSlaNetlinkHelper_RTT: Received message:OPPO_SLA_NOTIFY_SPEED_RTT:1000kB/s 45ms; 0kB/s 0ms oppo_sla_enable=0 tcp_rx = 255006 tcp_tx = 202132
+09-17 12:20:35.204   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:36.008   966  1038 I chatty  : uid=1000(system) ata_acm identical 6 lines
+09-17 12:20:36.108   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:36.166  1485  1656 D OppoSlaNetlinkHelper_RTT: Received message:OPPO_SLA_NOTIFY_SPEED_RTT:1000kB/s 45ms; 0kB/s 0ms oppo_sla_enable=0 tcp_rx = 255010 tcp_tx = 202138
+09-17 12:20:36.197 21945 21945 I ndroid.systemu: Explicit concurrent copying GC freed 3757(303KB) AllocSpace objects, 4(80KB) LOS objects, 66% free, 10MB/30MB, paused 384us total 291.398ms
+09-17 12:20:36.209   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:36.510   966  1038 I chatty  : uid=1000(system) ata_acm identical 2 lines
+09-17 12:20:36.611   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED
+09-17 12:20:36.726  1485  1648 D WN_S    : DT,tP=202138, dTP=30, rP=255010, dRP=20 mIR=true, mRPLC=0
+09-17 12:20:36.769  1485  1648 D WifiClientModeImpl: fetchRssiLinkSpeedAndFrequencyNative rssi=-41 TxLinkspeed=433 freq=5180 RxLinkSpeed=0
+09-17 12:20:36.770  1485  1648 D OppoRssiMonitor: update rssi:-39
+09-17 12:20:36.770  1485  1648 D OppoScanResultsProxy: make sure UI show last ap list!!
+09-17 12:20:36.770  1485  1648 D OppoScanResultsProxy: getScanResults() callingUid=1010 packageName:android mReportCache = true size:7
+09-17 12:20:36.775  1485  1648 D WifiClientModeImpl:  L2ConnectedState RSSI_PKTCNT_FETCH screen=on uid=1000 1 0 "KubeCraft_5G" 1c:4d:89:91:26:22 rssi=-39 f=5180 sc=0 link=433 tx=36.2, 0.0, 0.0  rx=28.6 bcn=0 [on:0 tx:0 rx:0 period:1694] from screen [on:0 period:8270487] score=0
+09-17 12:20:36.777  1485  1648 W OppoSlaNetlinkHelper_RTT: getRttAndSpeed(5):[1000, 45, 0, 0, 1000, 45, 0, 0, 1000, 47, 0, 0, 1000, 47, 0, 0, 1000, 47, 0, 0]
+09-17 12:20:36.777  1485  1648 D WN_S    : speed and rtt decreased 0 points.
+09-17 12:20:36.781  1485  1648 D OppoHistoryRecordQueue: AP: 1c:4d:89:91:26:22 is5G: true yearDay256: [24:1176,0,0][27:4728,0,0][30:17971,0,0][33:14909,0,0][36:33324,0,0][39:4146,0,0][42:3268,3,0.09][45:151,0,0][48:282,0,0][51:246,0,0][54:49219,0,0][57:31068,0,0][60:15284,0,0][63:116,0,0][69:10,0,0][72:25,1,3.85][78:22,1,4.35][81:44,7,13.73][84:6,6,50][90:4,14,77.78]
+09-17 12:20:36.782  1485  1648 D OppoHistoryRecordQueue: AP: 1c:4d:89:91:26:22 is5G: true yearDay257: [18:7735,0,0][21:7060,0,0][24:21607,0,0][27:54347,0,0][30:141974,0,0][33:139709,0,0][36:378233,0,0][39:205648,0,0][42:126870,0,0][45:14757,0,0][48:858,0,0]
+09-17 12:20:36.784  1485  1648 D OppoHistoryRecordQueue: AP: 1c:4d:89:91:26:22 is5G: true yearDay258: [21:60,0,0][24:13877,0,0][27:38555,0,0][30:58918,19,0.03][33:59291,0,0][36:161101,0,0][39:214743,0,0][42:74785,0,0][45:3018,0,0][48:469,0,0][51:40,0,0][54:427,0,0]
+09-17 12:20:36.786  1485  1648 D OppoHistoryRecordQueue: AP: 1c:4d:89:91:26:22 is5G: true yearDay259: [24:9,0,0][27:78,0,0][30:7945,0,0][33:33087,0,0][36:63049,0,0][39:167664,0,0][42:59927,0,0][45:3485,0,0][48:15,0,0]
+09-17 12:20:36.788  1485  1648 D WN_S    : urLQ key:"KubeCraft_5G"-WPA_PSK,ri=-39,tb=0,tg=206587,db=0,dg=124,dt=124,blc=0,ls=0,mLDTs= 1051,tstat:0,dex=0,sc=79,hls=false,mis=true,mcs=0,mqgc=0
+09-17 12:20:36.789  1485  1648 D WN_S    : cQ=79,cS=79,wit=40,mcnt=false,mtd=true,mtod=false,ri=-39
+09-17 12:20:36.790  1485  1648 D OppoSlaNetlinkHelper_score: After sendWifiScoreToKernel:result=true score=79
+09-17 12:20:36.790  1485  1648 D WN_S    : smart switch disable
+09-17 12:20:36.812   966  1038 D factoryInterface_common: factoryInterface, is_usb_state_plugin(): usb state is not CONFIGURED

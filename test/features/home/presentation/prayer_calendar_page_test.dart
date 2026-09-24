@@ -1,0 +1,89 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_hifz/core/localization/app_locale_text.dart';
+import 'package:quran_hifz/features/home/data/prayer_schedule.dart';
+import 'package:quran_hifz/features/home/presentation/home_page.dart';
+import 'package:quran_hifz/features/home/presentation/prayer_calendar_page.dart';
+import 'package:quran_hifz/features/settings/application/app_preferences_controller.dart';
+import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
+
+void main() {
+  testWidgets('current month opens on today so calendar matches home', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 780);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final days = [
+      for (var day = 1; day <= DateTime(now.year, now.month + 1, 0).day; day++)
+        _scheduleFor(DateTime(now.year, now.month, day)),
+    ];
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWithValue(AppLanguage.bangla),
+          asrSchoolProvider.overrideWithValue(AsrSchool.hanafi),
+          prayerScheduleProvider.overrideWith(
+            (ref) async => _scheduleFor(today),
+          ),
+          prayerScheduleRepositoryProvider.overrideWithValue(
+            _CalendarRepository(days),
+          ),
+        ],
+        child: const MaterialApp(home: PrayerCalendarPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining(localGregorianDate(today, AppLanguage.bangla)),
+      findsOneWidget,
+    );
+    expect(find.text('০৫:৫৩–০৬:০৮'), findsOneWidget);
+  });
+}
+
+class _CalendarRepository extends PrayerScheduleRepository {
+  const _CalendarRepository(this.days);
+
+  final List<PrayerSchedule> days;
+
+  @override
+  Future<List<PrayerSchedule>> loadMonth({
+    required int year,
+    required int month,
+    required String location,
+    required double latitude,
+    required double longitude,
+    int utcOffsetMinutes = 360,
+    AsrSchool school = AsrSchool.hanafi,
+  }) async {
+    return days;
+  }
+}
+
+PrayerSchedule _scheduleFor(DateTime day) {
+  final isToday = DateUtils.isSameDay(day, DateTime.now());
+  final sunsetMinute = isToday ? 8 : 23;
+  return PrayerSchedule(
+    location: 'Natore, Bangladesh',
+    latitude: 24.42,
+    longitude: 88.99,
+    hijriDate: '19 Rabi al-Awwal 1448 AH',
+    sunrise: DateTime(day.year, day.month, day.day, 5, 45),
+    sunset: DateTime(day.year, day.month, day.day, 18, sunsetMinute),
+    times: {
+      'Fajr': DateTime(day.year, day.month, day.day, 4, 27),
+      'Dhuhr': DateTime(day.year, day.month, day.day, 12, 5),
+      'Asr': DateTime(day.year, day.month, day.day, 15, 23),
+      'Maghrib': DateTime(day.year, day.month, day.day, 18, sunsetMinute),
+      'Isha': DateTime(day.year, day.month, day.day, 19, 40),
+    },
+    tomorrowFajr: DateTime(day.year, day.month, day.day + 1, 4, 27),
+  );
+}

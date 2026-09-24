@@ -1,0 +1,7 @@
+Quran Tajweed + IndoPak + Bismillah display patch
+
+This is a changed-files patch. Extract it in the Flutter project root.
+After extraction, regenerate the verified Quran content database so IndoPak and Tajweed fields are populated.
+See the chat instructions for the exact commands.
+
+Important: this patch does not bundle third-party font binaries. It uses system font-family preferences/fallbacks.

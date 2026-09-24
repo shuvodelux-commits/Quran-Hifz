@@ -1,0 +1,75 @@
+name: quran_hifz
+description: Quran learning and memorization Android app starter with offline Quran audio sync.
+publish_to: "none"
+version: 0.3.0+3
+
+environment:
+  sdk: ">=3.12.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  crypto: ^3.0.7
+  drift: ^2.34.4
+  drift_flutter: ^0.3.1
+  disk_capacity: ^1.2.0
+  flutter_riverpod: ^3.4.3
+  flutter_quran: ^0.0.5
+  just_audio: ^0.10.6
+  just_audio_background: ^0.0.1-beta.17
+  path: ^1.9.1
+  path_provider: ^2.1.6
+  sqlite3: ^3.5.2
+  share_plus: ^13.3.0
+  http: ^1.6.0
+  geolocator: ^14.0.3
+  geocoding: ^5.0.0
+  adhan_dart: ^2.0.1
+  hijri_core: ^1.1.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  build_runner: ^2.16.1
+  drift_dev: ^2.34.6
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/database/
+    - assets/audio/
+    - assets/audio/chapters_v1/
+    - assets/images/
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter.ttf
+    - family: SolaimanLipi
+      fonts:
+        - asset: assets/fonts/SolaimanLipi.ttf
+    - family: PDMS Saleem Quran
+      fonts:
+        - asset: assets/fonts/PDMS-Saleem-QuranFont.ttf
+    - family: Indopak Nastaleeq
+      fonts:
+        - asset: assets/fonts/Indopak-Nastaleeq.ttf
+    - family: Quran DigitalKhatt IndoPak
+      fonts:
+        - asset: assets/fonts/DigitalKhattIndoPak.otf
+    - family: AlQalamQuranMajeed
+      fonts:
+        - asset: assets/fonts/Al-Qalam-Quran-Majeed.ttf
+    - family: Muhammadi Quranic
+      fonts:
+        - asset: assets/fonts/Muhammadi-Quran.ttf
+    - family: KFGQPC Hafs Uthmanic
+      fonts:
+        - asset: assets/fonts/KFGQPC-Uthmanic-Script-HAFS-Regular.otf
+    - family: Noto Naskh Arabic
+      fonts:
+        - asset: assets/fonts/NotoNaskhArabic.ttf

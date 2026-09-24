@@ -1,0 +1,48 @@
+{
+  "schema_version": 2,
+  "content_version": "2026.09.14-tajweed-indopak-v1",
+  "database_sha256": "05d22441ddbc52ed856944cc8a1688bafefbf821555b4db8c722b87f4e243f41",
+  "database_size_bytes": 24735744,
+  "sources": {
+    "quran": {
+      "name": "Quran Foundation Content API",
+      "version": "content-api-v4-production (2026.09.14-tajweed-indopak-v1)",
+      "file_name": "verified-quran.json",
+      "sha256": "033708d803c1bf7d8ef6e34a3d57db56f53fc158dcd234e8a635ba19484946e0"
+    },
+    "words": {
+      "name": "Quran Foundation Content API word data",
+      "version": "content-api-v4-production (2026.09.14-tajweed-indopak-v1)",
+      "file_name": "verified-words.json",
+      "sha256": "8bea8b43b06f86309fefe49a1e9be9706f448cea7e421d2a00f516711c54afaf"
+    },
+    "translation": {
+      "name": "QuranEnc.com - Bengali translation by Dr. Abu Bakr Muhammad Zakaria",
+      "version": "1.1.1 (catalog 2021-05-22)",
+      "file_name": "verified-bangla.json",
+      "sha256": "4ee0b42a0e481f35361d2952cbff1665c6d95668495d59d81b32d04c6e8c29cf"
+    },
+    "indopak_db": {
+      "name": "QUL IndoPak script",
+      "version": "input-file",
+      "file_name": "qul-indopak-59.sqlite",
+      "sha256": "6b4ca5897ac0c637dbd8dcca206e7d563ca7aed9be5f7ffbd9165c0c4127f0f5"
+    },
+    "layout_db": {
+      "name": "QUL PDMS layout",
+      "version": "input-file",
+      "file_name": "qul-pdms-layout-3.sqlite",
+      "sha256": "12ea15c8bd19989478a230481bb7bb3be6adc4bc108586bbb24b5e3149f1d59e"
+    }
+  },
+  "translation_resource_id": 1,
+  "translation_language": "bn",
+  "integrity": {
+    "valid": true,
+    "surah_count": 114,
+    "ayah_count": 6236,
+    "word_count": 77429,
+    "translation_count": 6236,
+    "errors": []
+  }
+}

@@ -1,0 +1,35 @@
+.dart_tool/
+.packages
+.pub/
+build/
+coverage/
+*.iml
+.idea/
+.vscode/
+.worktrees/
+.superpowers/
+backend/node_modules/
+backend/.dev.vars
+.worktrees/
+.worktrees/
+.worktrees/
+
+# Python tooling caches
+__pycache__/
+*.py[cod]
+
+# Generated Quran source imports (rebuild from approved upstream sources)
+tool/quran_content/source/*.json
+tool/quran_content/source/*.tmp
+
+# Android release signing secrets
+android/key.properties
+android/app/*.jks
+android/app/*.keystore
+
+# Local review archive exceeds GitHub 100 MB file limit
+quran_hifz_v1-ai-review.zip
+
+# Local Cloudflare Wrangler state/cache
+.wrangler/
+backend/.wrangler/

@@ -1,0 +1,9 @@
+QF_CLIENT_ID=replace_me
+QF_CLIENT_SECRET=replace_me
+QF_ENV=prelive
+
+# Generated after building and hosting the verified Zakaria package.
+TAFSIR_ZAKARIA_URL=https://cdn.example.com/tafsir/zakaria-1.1.1.sqlite
+TAFSIR_ZAKARIA_SHA256=replace_with_64_hex_sha256
+TAFSIR_ZAKARIA_SIZE_BYTES=replace_with_exact_byte_count
+TAFSIR_ZAKARIA_VERSION=1.1.1
