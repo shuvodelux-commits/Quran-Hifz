@@ -223,6 +223,87 @@ void main() {
     expect(find.text('Favorite Duas'), findsOneWidget);
   });
 
+  testWidgets(
+    'custom dua can be created favorited edited and deleted from Dua tab',
+    (tester) async {
+      final favorites = _MemoryFavoritesRepository();
+      final custom = _MemoryCustomDuaRepository();
+      await _pump(
+        tester,
+        language: AppLanguage.english,
+        favorites: favorites,
+        customRepository: custom,
+      );
+
+      expect(find.text('Favorite Duas'), findsOneWidget);
+      expect(find.text('Add favorite duas to show them here.'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('custom-dua-add')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('custom-dua-title')),
+        'My saved dua',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('custom-dua-arabic')),
+        'اللهم اغفر لي',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('custom-dua-transliteration')),
+        'Allahummaghfir li',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('custom-dua-meaning')),
+        'Forgive me',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('custom-dua-reference')),
+        'My notebook',
+      );
+      await tester.ensureVisible(find.byKey(const ValueKey('custom-dua-save')));
+      await tester.tap(find.byKey(const ValueKey('custom-dua-save')));
+      await tester.pumpAndSettle();
+
+      final id = custom.items.single.id;
+
+      await tester.tap(find.byKey(const ValueKey('dua-custom-filter')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(ValueKey('dua-card-$id')), findsOneWidget);
+
+      await tester.tap(find.byKey(ValueKey('dua-favorite-$id')));
+      await tester.pumpAndSettle();
+      expect(await favorites.load(), contains(id));
+
+      await tester.tap(find.byKey(const ValueKey('dua-custom-filter')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(ValueKey('dua-card-$id')), findsOneWidget);
+
+      await tester.tap(find.byKey(ValueKey('dua-card-$id')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('custom-dua-detail-edit')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('custom-dua-meaning')),
+        'Edited meaning',
+      );
+      await tester.ensureVisible(find.byKey(const ValueKey('custom-dua-save')));
+      await tester.tap(find.byKey(const ValueKey('custom-dua-save')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Edited meaning'), findsOneWidget);
+      expect(await favorites.load(), contains(id));
+
+      await tester.tap(find.byKey(const ValueKey('custom-dua-detail-delete')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(ValueKey('dua-card-$id')), findsNothing);
+      expect(await favorites.load(), isNot(contains(id)));
+      expect(custom.items, isEmpty);
+    },
+  );
+
   testWidgets('landing page renders at 360px with elevated text scaling', (
     tester,
   ) async {
@@ -395,6 +476,8 @@ class _MemoryCustomDuaRepository implements CustomDuaRepository {
     : _items = {for (final dua in initial ?? const <CustomDua>[]) dua.id: dua};
 
   final Map<String, CustomDua> _items;
+
+  List<CustomDua> get items => _items.values.toList();
 
   @override
   Future<void> delete(String id) async {
