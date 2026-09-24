@@ -176,10 +176,9 @@ class DuaCategoryController extends Notifier<String?> {
   }
 }
 
-final duaCustomOnlyProvider =
-    NotifierProvider<DuaCustomOnlyController, bool>(
-      DuaCustomOnlyController.new,
-    );
+final duaCustomOnlyProvider = NotifierProvider<DuaCustomOnlyController, bool>(
+  DuaCustomOnlyController.new,
+);
 
 class DuaCustomOnlyController extends Notifier<bool> {
   @override
@@ -219,9 +218,10 @@ final visibleDuaEntriesProvider = FutureProvider<List<DuaEntry>>((ref) async {
 
   if (customOnly) {
     final custom = await ref.watch(customDuasProvider.future);
-    return filterCustomDuas(duas: custom, query: query)
-        .map(CustomDuaEntry.new)
-        .toList(growable: false);
+    return filterCustomDuas(
+      duas: custom,
+      query: query,
+    ).map(CustomDuaEntry.new).toList(growable: false);
   }
 
   final verified = await ref.watch(duaCatalogProvider.future);
@@ -257,46 +257,4 @@ final visibleDuaEntriesProvider = FutureProvider<List<DuaEntry>>((ref) async {
   }
 
   return ref.watch(favoriteDuaEntriesProvider.future);
-});
-
-// Compatibility providers retained until DuaPage migrates to the combined
-// verified/custom entry model.
-final duaFavoritesOnlyProvider =
-    NotifierProvider<DuaFavoritesOnlyController, bool>(
-      DuaFavoritesOnlyController.new,
-    );
-
-class DuaFavoritesOnlyController extends Notifier<bool> {
-  @override
-  bool build() => false;
-
-  void setEnabled(bool value) {
-    state = value;
-  }
-
-  void toggle() {
-    state = !state;
-  }
-}
-
-final filteredDuasProvider = FutureProvider<List<Dua>>((ref) async {
-  final query = ref.watch(duaQueryProvider);
-  final categoryId = ref.watch(duaCategoryProvider);
-  final favoritesOnly = ref.watch(duaFavoritesOnlyProvider);
-  final duas = await ref.watch(duaCatalogProvider.future);
-  final categories = await ref.watch(duaCategoriesProvider.future);
-  final favorites = await ref.watch(duaFavoriteIdsProvider.future);
-
-  return filterDuas(
-    duas: duas,
-    categories: categories,
-    query: query,
-    categoryId: categoryId,
-    favoriteIds: favorites,
-    favoritesOnly: favoritesOnly,
-  );
-});
-
-final dailyDuasProvider = FutureProvider<List<Dua>>((ref) async {
-  return dailyDuas(await ref.watch(duaCatalogProvider.future));
 });

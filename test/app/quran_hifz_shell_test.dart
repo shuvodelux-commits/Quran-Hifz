@@ -68,7 +68,12 @@ void main() {
       expect(find.text('সলাত'), findsNothing, reason: '$theme old prayer tab');
       await tester.tap(find.text('দোয়া').last);
       await tester.pumpAndSettle();
-      expect(find.text('দৈনিক দোয়া'), findsOneWidget, reason: '$theme dua');
+      expect(find.text('ফেভারিট দোয়া'), findsOneWidget, reason: '$theme dua');
+      expect(
+        find.text('ফেভারিটে দোয়া যোগ করুন—এখানে দেখাবে।'),
+        findsOneWidget,
+        reason: '$theme dua empty state',
+      );
       await tester.tap(find.text('ক্যালেন্ডার').last);
       await tester.pump();
       await tester.pump();

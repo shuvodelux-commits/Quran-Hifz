@@ -7,21 +7,16 @@ import '../../domain/dua_entry.dart';
 import '../dua_source_label.dart';
 
 class DuaCard extends StatelessWidget {
-  DuaCard({
+  const DuaCard({
     super.key,
-    DuaEntry? entry,
-    Dua? dua,
+    required this.entry,
     required this.language,
     required this.isFavorite,
     required this.onFavorite,
     required this.onTap,
     this.onEdit,
     this.onDelete,
-  }) : assert(
-         (entry == null) != (dua == null),
-         'Provide exactly one of entry or dua.',
-       ),
-       entry = entry ?? VerifiedDuaEntry(dua!);
+  });
 
   final DuaEntry entry;
   final AppLanguage language;
