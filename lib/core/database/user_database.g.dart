@@ -8523,6 +8523,519 @@ class AppSettingsCompanion extends UpdateCompanion<AppSettingRecord> {
   }
 }
 
+class $CustomDuasTable extends CustomDuas
+    with TableInfo<$CustomDuasTable, CustomDuaRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CustomDuasTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _arabicMeta = const VerificationMeta('arabic');
+  @override
+  late final GeneratedColumn<String> arabic = GeneratedColumn<String>(
+    'arabic',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _transliterationMeta = const VerificationMeta(
+    'transliteration',
+  );
+  @override
+  late final GeneratedColumn<String> transliteration = GeneratedColumn<String>(
+    'transliteration',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _meaningMeta = const VerificationMeta(
+    'meaning',
+  );
+  @override
+  late final GeneratedColumn<String> meaning = GeneratedColumn<String>(
+    'meaning',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _referenceMeta = const VerificationMeta(
+    'reference',
+  );
+  @override
+  late final GeneratedColumn<String> reference = GeneratedColumn<String>(
+    'reference',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    title,
+    arabic,
+    transliteration,
+    meaning,
+    reference,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'custom_duas';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CustomDuaRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('arabic')) {
+      context.handle(
+        _arabicMeta,
+        arabic.isAcceptableOrUnknown(data['arabic']!, _arabicMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_arabicMeta);
+    }
+    if (data.containsKey('transliteration')) {
+      context.handle(
+        _transliterationMeta,
+        transliteration.isAcceptableOrUnknown(
+          data['transliteration']!,
+          _transliterationMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_transliterationMeta);
+    }
+    if (data.containsKey('meaning')) {
+      context.handle(
+        _meaningMeta,
+        meaning.isAcceptableOrUnknown(data['meaning']!, _meaningMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_meaningMeta);
+    }
+    if (data.containsKey('reference')) {
+      context.handle(
+        _referenceMeta,
+        reference.isAcceptableOrUnknown(data['reference']!, _referenceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_referenceMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CustomDuaRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CustomDuaRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      arabic: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}arabic'],
+      )!,
+      transliteration: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transliteration'],
+      )!,
+      meaning: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}meaning'],
+      )!,
+      reference: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reference'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CustomDuasTable createAlias(String alias) {
+    return $CustomDuasTable(attachedDatabase, alias);
+  }
+}
+
+class CustomDuaRow extends DataClass implements Insertable<CustomDuaRow> {
+  final String id;
+  final String title;
+  final String arabic;
+  final String transliteration;
+  final String meaning;
+  final String reference;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const CustomDuaRow({
+    required this.id,
+    required this.title,
+    required this.arabic,
+    required this.transliteration,
+    required this.meaning,
+    required this.reference,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['title'] = Variable<String>(title);
+    map['arabic'] = Variable<String>(arabic);
+    map['transliteration'] = Variable<String>(transliteration);
+    map['meaning'] = Variable<String>(meaning);
+    map['reference'] = Variable<String>(reference);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  CustomDuasCompanion toCompanion(bool nullToAbsent) {
+    return CustomDuasCompanion(
+      id: Value(id),
+      title: Value(title),
+      arabic: Value(arabic),
+      transliteration: Value(transliteration),
+      meaning: Value(meaning),
+      reference: Value(reference),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory CustomDuaRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CustomDuaRow(
+      id: serializer.fromJson<String>(json['id']),
+      title: serializer.fromJson<String>(json['title']),
+      arabic: serializer.fromJson<String>(json['arabic']),
+      transliteration: serializer.fromJson<String>(json['transliteration']),
+      meaning: serializer.fromJson<String>(json['meaning']),
+      reference: serializer.fromJson<String>(json['reference']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'title': serializer.toJson<String>(title),
+      'arabic': serializer.toJson<String>(arabic),
+      'transliteration': serializer.toJson<String>(transliteration),
+      'meaning': serializer.toJson<String>(meaning),
+      'reference': serializer.toJson<String>(reference),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  CustomDuaRow copyWith({
+    String? id,
+    String? title,
+    String? arabic,
+    String? transliteration,
+    String? meaning,
+    String? reference,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => CustomDuaRow(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    arabic: arabic ?? this.arabic,
+    transliteration: transliteration ?? this.transliteration,
+    meaning: meaning ?? this.meaning,
+    reference: reference ?? this.reference,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  CustomDuaRow copyWithCompanion(CustomDuasCompanion data) {
+    return CustomDuaRow(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      arabic: data.arabic.present ? data.arabic.value : this.arabic,
+      transliteration: data.transliteration.present
+          ? data.transliteration.value
+          : this.transliteration,
+      meaning: data.meaning.present ? data.meaning.value : this.meaning,
+      reference: data.reference.present ? data.reference.value : this.reference,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CustomDuaRow(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('arabic: $arabic, ')
+          ..write('transliteration: $transliteration, ')
+          ..write('meaning: $meaning, ')
+          ..write('reference: $reference, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    title,
+    arabic,
+    transliteration,
+    meaning,
+    reference,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CustomDuaRow &&
+          other.id == this.id &&
+          other.title == this.title &&
+          other.arabic == this.arabic &&
+          other.transliteration == this.transliteration &&
+          other.meaning == this.meaning &&
+          other.reference == this.reference &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class CustomDuasCompanion extends UpdateCompanion<CustomDuaRow> {
+  final Value<String> id;
+  final Value<String> title;
+  final Value<String> arabic;
+  final Value<String> transliteration;
+  final Value<String> meaning;
+  final Value<String> reference;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const CustomDuasCompanion({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.arabic = const Value.absent(),
+    this.transliteration = const Value.absent(),
+    this.meaning = const Value.absent(),
+    this.reference = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CustomDuasCompanion.insert({
+    required String id,
+    required String title,
+    required String arabic,
+    required String transliteration,
+    required String meaning,
+    required String reference,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       title = Value(title),
+       arabic = Value(arabic),
+       transliteration = Value(transliteration),
+       meaning = Value(meaning),
+       reference = Value(reference),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<CustomDuaRow> custom({
+    Expression<String>? id,
+    Expression<String>? title,
+    Expression<String>? arabic,
+    Expression<String>? transliteration,
+    Expression<String>? meaning,
+    Expression<String>? reference,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (title != null) 'title': title,
+      if (arabic != null) 'arabic': arabic,
+      if (transliteration != null) 'transliteration': transliteration,
+      if (meaning != null) 'meaning': meaning,
+      if (reference != null) 'reference': reference,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CustomDuasCompanion copyWith({
+    Value<String>? id,
+    Value<String>? title,
+    Value<String>? arabic,
+    Value<String>? transliteration,
+    Value<String>? meaning,
+    Value<String>? reference,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return CustomDuasCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      arabic: arabic ?? this.arabic,
+      transliteration: transliteration ?? this.transliteration,
+      meaning: meaning ?? this.meaning,
+      reference: reference ?? this.reference,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (arabic.present) {
+      map['arabic'] = Variable<String>(arabic.value);
+    }
+    if (transliteration.present) {
+      map['transliteration'] = Variable<String>(transliteration.value);
+    }
+    if (meaning.present) {
+      map['meaning'] = Variable<String>(meaning.value);
+    }
+    if (reference.present) {
+      map['reference'] = Variable<String>(reference.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CustomDuasCompanion(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('arabic: $arabic, ')
+          ..write('transliteration: $transliteration, ')
+          ..write('meaning: $meaning, ')
+          ..write('reference: $reference, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$UserDatabase extends GeneratedDatabase {
   _$UserDatabase(QueryExecutor e) : super(e);
   $UserDatabaseManager get managers => $UserDatabaseManager(this);
@@ -8549,6 +9062,7 @@ abstract class _$UserDatabase extends GeneratedDatabase {
     this,
   );
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
+  late final $CustomDuasTable customDuas = $CustomDuasTable(this);
   late final Index hifzProgressDueIdx = Index(
     'hifz_progress_due_idx',
     'CREATE INDEX hifz_progress_due_idx ON hifz_progress_entries (profile_key, next_review_at)',
@@ -8590,6 +9104,7 @@ abstract class _$UserDatabase extends GeneratedDatabase {
     installedTafsirPackages,
     readingProgress,
     appSettings,
+    customDuas,
     hifzProgressDueIdx,
     hifzReviewDateIdx,
     hifzPlansProfileIdx,
@@ -13106,6 +13621,274 @@ typedef $$AppSettingsTableProcessedTableManager =
       AppSettingRecord,
       PrefetchHooks Function()
     >;
+typedef $$CustomDuasTableCreateCompanionBuilder =
+    CustomDuasCompanion Function({
+      required String id,
+      required String title,
+      required String arabic,
+      required String transliteration,
+      required String meaning,
+      required String reference,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$CustomDuasTableUpdateCompanionBuilder =
+    CustomDuasCompanion Function({
+      Value<String> id,
+      Value<String> title,
+      Value<String> arabic,
+      Value<String> transliteration,
+      Value<String> meaning,
+      Value<String> reference,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$CustomDuasTableFilterComposer
+    extends Composer<_$UserDatabase, $CustomDuasTable> {
+  $$CustomDuasTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get arabic => $composableBuilder(
+    column: $table.arabic,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get transliteration => $composableBuilder(
+    column: $table.transliteration,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get meaning => $composableBuilder(
+    column: $table.meaning,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reference => $composableBuilder(
+    column: $table.reference,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CustomDuasTableOrderingComposer
+    extends Composer<_$UserDatabase, $CustomDuasTable> {
+  $$CustomDuasTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get arabic => $composableBuilder(
+    column: $table.arabic,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get transliteration => $composableBuilder(
+    column: $table.transliteration,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get meaning => $composableBuilder(
+    column: $table.meaning,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reference => $composableBuilder(
+    column: $table.reference,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CustomDuasTableAnnotationComposer
+    extends Composer<_$UserDatabase, $CustomDuasTable> {
+  $$CustomDuasTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get arabic =>
+      $composableBuilder(column: $table.arabic, builder: (column) => column);
+
+  GeneratedColumn<String> get transliteration => $composableBuilder(
+    column: $table.transliteration,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get meaning =>
+      $composableBuilder(column: $table.meaning, builder: (column) => column);
+
+  GeneratedColumn<String> get reference =>
+      $composableBuilder(column: $table.reference, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$CustomDuasTableTableManager
+    extends
+        RootTableManager<
+          _$UserDatabase,
+          $CustomDuasTable,
+          CustomDuaRow,
+          $$CustomDuasTableFilterComposer,
+          $$CustomDuasTableOrderingComposer,
+          $$CustomDuasTableAnnotationComposer,
+          $$CustomDuasTableCreateCompanionBuilder,
+          $$CustomDuasTableUpdateCompanionBuilder,
+          (
+            CustomDuaRow,
+            BaseReferences<_$UserDatabase, $CustomDuasTable, CustomDuaRow>,
+          ),
+          CustomDuaRow,
+          PrefetchHooks Function()
+        > {
+  $$CustomDuasTableTableManager(_$UserDatabase db, $CustomDuasTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CustomDuasTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CustomDuasTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CustomDuasTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> arabic = const Value.absent(),
+                Value<String> transliteration = const Value.absent(),
+                Value<String> meaning = const Value.absent(),
+                Value<String> reference = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CustomDuasCompanion(
+                id: id,
+                title: title,
+                arabic: arabic,
+                transliteration: transliteration,
+                meaning: meaning,
+                reference: reference,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String title,
+                required String arabic,
+                required String transliteration,
+                required String meaning,
+                required String reference,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => CustomDuasCompanion.insert(
+                id: id,
+                title: title,
+                arabic: arabic,
+                transliteration: transliteration,
+                meaning: meaning,
+                reference: reference,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CustomDuasTable, CustomDuaRow>(table),
+                  BaseReferences<
+                    _$UserDatabase,
+                    $CustomDuasTable,
+                    CustomDuaRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CustomDuasTableProcessedTableManager =
+    ProcessedTableManager<
+      _$UserDatabase,
+      $CustomDuasTable,
+      CustomDuaRow,
+      $$CustomDuasTableFilterComposer,
+      $$CustomDuasTableOrderingComposer,
+      $$CustomDuasTableAnnotationComposer,
+      $$CustomDuasTableCreateCompanionBuilder,
+      $$CustomDuasTableUpdateCompanionBuilder,
+      (
+        CustomDuaRow,
+        BaseReferences<_$UserDatabase, $CustomDuasTable, CustomDuaRow>,
+      ),
+      CustomDuaRow,
+      PrefetchHooks Function()
+    >;
 
 class $UserDatabaseManager {
   final _$UserDatabase _db;
@@ -13148,4 +13931,6 @@ class $UserDatabaseManager {
       $$ReadingProgressTableTableManager(_db, _db.readingProgress);
   $$AppSettingsTableTableManager get appSettings =>
       $$AppSettingsTableTableManager(_db, _db.appSettings);
+  $$CustomDuasTableTableManager get customDuas =>
+      $$CustomDuasTableTableManager(_db, _db.customDuas);
 }

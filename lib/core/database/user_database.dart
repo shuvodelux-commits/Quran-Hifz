@@ -260,6 +260,21 @@ class AppSettings extends Table {
   Set<Column<Object>> get primaryKey => {settingKey};
 }
 
+@DataClassName('CustomDuaRow')
+class CustomDuas extends Table {
+  TextColumn get id => text()();
+  TextColumn get title => text()();
+  TextColumn get arabic => text()();
+  TextColumn get transliteration => text()();
+  TextColumn get meaning => text()();
+  TextColumn get reference => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(
   tables: [
     AudioFiles,
@@ -278,6 +293,7 @@ class AppSettings extends Table {
     InstalledTafsirPackages,
     ReadingProgress,
     AppSettings,
+    CustomDuas,
   ],
 )
 class UserDatabase extends _$UserDatabase {
@@ -294,7 +310,7 @@ class UserDatabase extends _$UserDatabase {
   UserDatabase.forTesting(QueryExecutor executor) : super(executor);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -350,6 +366,9 @@ class UserDatabase extends _$UserDatabase {
       }
       if (from < 9) {
         await migrator.createTable(hifzPlans);
+      }
+      if (from < 10) {
+        await migrator.createTable(customDuas);
       }
     },
     beforeOpen: (_) async {

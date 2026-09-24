@@ -209,6 +209,21 @@ void main() {
         );
     expect(await db.select(db.hifzPlans).get(), hasLength(1));
 
+    final customCreated = DateTime.utc(2026, 9, 24, 11);
+    await db.into(db.customDuas).insert(
+      CustomDuasCompanion.insert(
+        id: 'custom:v1-migration',
+        title: 'Migrated custom dua',
+        arabic: 'رَبِّ زِدْنِي عِلْمًا',
+        transliteration: 'Rabbi zidni ilma',
+        meaning: 'Increase me in knowledge',
+        reference: 'Migration test',
+        createdAt: customCreated,
+        updatedAt: customCreated,
+      ),
+    );
+    expect(await db.select(db.customDuas).get(), hasLength(1));
+
     for (final indexName in const [
       'hifz_progress_due_idx',
       'hifz_review_date_idx',
@@ -223,5 +238,51 @@ void main() {
           .getSingleOrNull();
       expect(index, isNotNull, reason: 'missing migration index $indexName');
     }
+  });
+
+
+  test('v9 to current migration adds custom duas without losing settings', () async {
+    final temp = await Directory.systemTemp.createTemp('quran_hifz_v9_');
+    final file = File('${temp.path}/user_data.sqlite');
+
+    final legacy = sqlite3.open(file.path);
+    legacy.execute('''
+      CREATE TABLE app_settings (
+        setting_key TEXT NOT NULL PRIMARY KEY,
+        setting_value TEXT NOT NULL
+      );
+    ''');
+    legacy.execute(
+      "INSERT INTO app_settings(setting_key, setting_value) "
+      "VALUES ('sentinel', 'keep-me');",
+    );
+    legacy.execute('PRAGMA user_version = 9;');
+    legacy.close();
+
+    final db = UserDatabase.forTesting(NativeDatabase(file));
+    addTearDown(() async {
+      await db.close();
+      if (await temp.exists()) await temp.delete(recursive: true);
+    });
+
+    expect(await db.getSetting('sentinel'), 'keep-me');
+
+    final created = DateTime.utc(2026, 9, 24, 12);
+    await db.into(db.customDuas).insert(
+      CustomDuasCompanion.insert(
+        id: 'custom:migration',
+        title: 'Morning',
+        arabic: 'رَبِّ زِدْنِي عِلْمًا',
+        transliteration: 'Rabbi zidni ilma',
+        meaning: 'Increase me in knowledge',
+        reference: 'User reference',
+        createdAt: created,
+        updatedAt: created,
+      ),
+    );
+
+    final row = await db.select(db.customDuas).getSingle();
+    expect(row.id, 'custom:migration');
+    expect(row.title, 'Morning');
   });
 }
