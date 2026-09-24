@@ -6,10 +6,10 @@ enum AppDestination {
     icon: Icons.home_outlined,
     selectedIcon: Icons.home_rounded,
   ),
-  prayer(
-    label: 'Prayer',
-    icon: Icons.mosque_outlined,
-    selectedIcon: Icons.mosque_rounded,
+  dua(
+    label: 'Dua',
+    icon: Icons.volunteer_activism_outlined,
+    selectedIcon: Icons.volunteer_activism_rounded,
   ),
   quran(
     label: 'Quran',

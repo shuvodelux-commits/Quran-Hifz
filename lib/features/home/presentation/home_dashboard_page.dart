@@ -18,13 +18,8 @@ import 'home_page.dart' show prayerScheduleProvider;
 import 'prayer_location_page.dart';
 
 class HomeDashboardPage extends ConsumerStatefulWidget {
-  const HomeDashboardPage({
-    super.key,
-    required this.onMore,
-    required this.onPrayer,
-  });
+  const HomeDashboardPage({super.key, required this.onMore});
   final VoidCallback onMore;
-  final VoidCallback onPrayer;
 
   @override
   ConsumerState<HomeDashboardPage> createState() => _HomeDashboardPageState();
@@ -157,7 +152,6 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                 current: current,
                 next: next,
                 now: _now,
-                onTap: widget.onPrayer,
                 language: language,
               ),
               const SizedBox(height: 8),
@@ -761,13 +755,11 @@ class _CurrentPrayerCard extends StatelessWidget {
     required this.current,
     required this.next,
     required this.now,
-    required this.onTap,
     required this.language,
   });
   final ({String name, DateTime end})? current;
   final ({String name, DateTime time})? next;
   final DateTime now;
-  final VoidCallback onTap;
   final AppLanguage language;
 
   @override
@@ -791,98 +783,89 @@ class _CurrentPrayerCard extends StatelessWidget {
         : appText(language, 'শুরু হতে বাকি', 'Starts in');
 
     return _Panel(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Theme.of(context).colorScheme.primaryContainer,
-              ),
-              child: Icon(
-                hasCurrent ? Icons.mosque_rounded : Icons.schedule_rounded,
-                color: Theme.of(context).colorScheme.primary,
-                size: 24,
-              ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Theme.of(context).colorScheme.primaryContainer,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: language == AppLanguage.english ? 14 : 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 16,
-                      fontWeight: language == AppLanguage.english
-                          ? FontWeight.w500
-                          : FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    '$timeLabel ${localClock(targetTime, language)}',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: language == AppLanguage.english ? 12 : 13,
-                      fontWeight: language == AppLanguage.english
-                          ? FontWeight.w400
-                          : FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+            child: Icon(
+              hasCurrent ? Icons.mosque_rounded : Icons.schedule_rounded,
+              color: Theme.of(context).colorScheme.primary,
+              size: 24,
             ),
-            Container(
-              width: 1,
-              height: 48,
-              color: Theme.of(context).colorScheme.outlineVariant,
-            ),
-            const SizedBox(width: 10),
-            Column(
-              mainAxisSize: MainAxisSize.min,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  countdownLabel,
+                  title,
                   style: TextStyle(
-                    fontSize: language == AppLanguage.english ? 12 : 11,
-                    fontWeight: FontWeight.w400,
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: language == AppLanguage.english ? 14 : 12,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
-                  remaining == null ? '—' : localCountdown(remaining, language),
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontSize: language == AppLanguage.english ? 16 : 17,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 16,
                     fontWeight: language == AppLanguage.english
                         ? FontWeight.w500
                         : FontWeight.w600,
                   ),
                 ),
+                Text(
+                  '$timeLabel ${localClock(targetTime, language)}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: language == AppLanguage.english ? 12 : 13,
+                    fontWeight: language == AppLanguage.english
+                        ? FontWeight.w400
+                        : FontWeight.w500,
+                  ),
+                ),
               ],
             ),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: Theme.of(context).colorScheme.primary,
-              size: 18,
-            ),
-          ],
-        ),
+          ),
+          Container(
+            width: 1,
+            height: 48,
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+          const SizedBox(width: 10),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                countdownLabel,
+                style: TextStyle(
+                  fontSize: language == AppLanguage.english ? 12 : 11,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              Text(
+                remaining == null ? '—' : localCountdown(remaining, language),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontSize: language == AppLanguage.english ? 16 : 17,
+                  fontWeight: language == AppLanguage.english
+                      ? FontWeight.w500
+                      : FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

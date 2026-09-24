@@ -8,9 +8,9 @@ import '../core/localization/app_locale_text.dart';
 import '../features/settings/application/app_preferences_controller.dart';
 import '../features/settings/domain/app_preferences.dart';
 import '../features/home/presentation/home_dashboard_page.dart';
+import '../features/dua/presentation/dua_page.dart';
 import '../features/home/presentation/more_page.dart';
 import '../features/home/presentation/prayer_calendar_page.dart';
-import '../features/home/presentation/prayer_tracker_page.dart';
 import '../features/quran/presentation/quran_surah_list_page.dart';
 import 'app_destination.dart';
 
@@ -39,10 +39,8 @@ class _QuranHifzShellState extends ConsumerState<QuranHifzShell> {
           AppDestination.home => HomeDashboardPage(
             onMore: () =>
                 setState(() => _selectedIndex = AppDestination.more.index),
-            onPrayer: () =>
-                setState(() => _selectedIndex = AppDestination.prayer.index),
           ),
-          AppDestination.prayer => const PrayerTrackerPage(),
+          AppDestination.dua => const DuaPage(),
           AppDestination.quran => const QuranSurahListPage(),
           AppDestination.calendar => const PrayerCalendarPage(),
           AppDestination.more => const MorePage(),
@@ -62,7 +60,7 @@ class _QuranHifzShellState extends ConsumerState<QuranHifzShell> {
                 selectedIcon: Icon(item.selectedIcon),
                 label: appText(language, switch (item) {
                   AppDestination.home => 'হোম',
-                  AppDestination.prayer => 'সলাত',
+                  AppDestination.dua => 'দোয়া',
                   AppDestination.quran => 'কুরআন',
                   AppDestination.calendar => 'ক্যালেন্ডার',
                   AppDestination.more => 'আরও',

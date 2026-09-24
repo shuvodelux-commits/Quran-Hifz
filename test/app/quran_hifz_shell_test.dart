@@ -7,6 +7,9 @@ import 'package:quran_hifz/app/app_theme.dart';
 import 'package:quran_hifz/app/quran_hifz_shell.dart';
 import 'package:quran_hifz/core/database/database_providers.dart';
 import 'package:quran_hifz/core/database/user_database.dart';
+import 'package:quran_hifz/features/dua/application/dua_providers.dart';
+import 'package:quran_hifz/features/dua/domain/dua.dart';
+import 'package:quran_hifz/features/dua/domain/dua_repository.dart';
 import 'package:quran_hifz/features/home/presentation/home_page.dart';
 import 'package:quran_hifz/features/quran/application/quran_providers.dart';
 import 'package:quran_hifz/features/quran/application/reader_controller.dart';
@@ -27,6 +30,7 @@ void main() {
           key: ValueKey(theme),
           overrides: [
             userDatabaseProvider.overrideWithValue(userDatabase),
+            duaRepositoryProvider.overrideWithValue(_ShellDuaRepository()),
             prayerScheduleProvider.overrideWith(
               (ref) async => throw StateError('Location unavailable in test'),
             ),
@@ -61,13 +65,10 @@ void main() {
         findsOneWidget,
         reason: '$theme home',
       );
-      await tester.tap(find.text('সলাত').last);
+      expect(find.text('সলাত'), findsNothing, reason: '$theme old prayer tab');
+      await tester.tap(find.text('দোয়া').last);
       await tester.pumpAndSettle();
-      expect(
-        find.text('সলাত ট্র্যাকার'),
-        findsOneWidget,
-        reason: '$theme prayer',
-      );
+      expect(find.text('দৈনিক দোয়া'), findsOneWidget, reason: '$theme dua');
       await tester.tap(find.text('ক্যালেন্ডার').last);
       await tester.pump();
       await tester.pump();
@@ -180,4 +181,37 @@ class _NoopLocationStore implements ReadingLocationStore {
 
   @override
   Future<void> save(ReadingLocation location) async {}
+}
+
+class _ShellDuaRepository implements DuaRepository {
+  @override
+  Future<List<DuaCategory>> loadCategories() async => const [
+    DuaCategory(id: 'daily', banglaLabel: 'দৈনন্দিন', englishLabel: 'Daily'),
+  ];
+
+  @override
+  Future<List<Dua>> loadAll() async => const [
+    Dua(
+      id: 'shell-dua',
+      titleBangla: 'সকালের দোয়া',
+      titleEnglish: 'Morning dua',
+      arabic: 'رَبَّنَا',
+      banglaPronunciation: 'রব্বানা',
+      banglaMeaning: 'হে আমাদের রব',
+      englishTransliteration: 'Rabbana',
+      englishMeaning: 'Our Lord',
+      categoryIds: ['daily'],
+      tagsBangla: [],
+      tagsEnglish: [],
+      sources: [
+        DuaSource(
+          type: DuaSourceType.quran,
+          surahNumber: 2,
+          ayahStart: 201,
+          ayahEnd: 201,
+        ),
+      ],
+      dailyOrder: 10,
+    ),
+  ];
 }

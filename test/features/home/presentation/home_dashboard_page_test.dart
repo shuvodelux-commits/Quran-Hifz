@@ -42,9 +42,7 @@ void main() {
           ),
           todaysAyahProvider.overrideWith((ref) async => ayah),
         ],
-        child: const MaterialApp(
-          home: HomeDashboardPage(onMore: _noop, onPrayer: _noop),
-        ),
+        child: const MaterialApp(home: HomeDashboardPage(onMore: _noop)),
       ),
     );
     await tester.pumpAndSettle();
@@ -79,7 +77,7 @@ void main() {
           ],
           child: MaterialApp(
             theme: appTheme(preference),
-            home: const HomeDashboardPage(onMore: _noop, onPrayer: _noop),
+            home: const HomeDashboardPage(onMore: _noop),
           ),
         ),
       );
@@ -142,15 +140,23 @@ void main() {
             AppThemePreference.light,
             language: AppLanguage.english,
           ),
-          home: const HomeDashboardPage(onMore: _noop, onPrayer: _noop),
+          home: const HomeDashboardPage(onMore: _noop),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
     final activePrayer = schedule.currentPrayer(DateTime.now());
-    final currentTitle = tester.widget<Text>(
-      find.text(activePrayer == null ? 'Prayer break' : 'Current Prayer'),
+    final currentPrayerTitleFinder = find.text(
+      activePrayer == null ? 'Prayer break' : 'Current Prayer',
+    );
+    final currentTitle = tester.widget<Text>(currentPrayerTitleFinder);
+    expect(
+      find.ancestor(
+        of: currentPrayerTitleFinder,
+        matching: find.byType(InkWell),
+      ),
+      findsNothing,
     );
     final currentTimeLine = tester.widget<Text>(
       find.textContaining(activePrayer == null ? 'Starts at' : 'Ends at'),
@@ -265,7 +271,7 @@ void main() {
             AppThemePreference.light,
             language: AppLanguage.english,
           ),
-          home: const HomeDashboardPage(onMore: _noop, onPrayer: _noop),
+          home: const HomeDashboardPage(onMore: _noop),
         ),
       ),
     );
@@ -332,9 +338,7 @@ void main() {
             userDatabaseProvider.overrideWithValue(database),
             prayerScheduleProvider.overrideWith((ref) async => schedule),
           ],
-          child: const MaterialApp(
-            home: HomeDashboardPage(onMore: _noop, onPrayer: _noop),
-          ),
+          child: const MaterialApp(home: HomeDashboardPage(onMore: _noop)),
         ),
       );
       await tester.pumpAndSettle();
@@ -445,9 +449,7 @@ void main() {
           userDatabaseProvider.overrideWithValue(database),
           prayerScheduleProvider.overrideWith((ref) async => schedule),
         ],
-        child: const MaterialApp(
-          home: HomeDashboardPage(onMore: _noop, onPrayer: _noop),
-        ),
+        child: const MaterialApp(home: HomeDashboardPage(onMore: _noop)),
       ),
     );
     await tester.pumpAndSettle();
@@ -507,9 +509,7 @@ void main() {
           userDatabaseProvider.overrideWithValue(database),
           prayerScheduleProvider.overrideWith((ref) async => schedule),
         ],
-        child: const MaterialApp(
-          home: HomeDashboardPage(onMore: _noop, onPrayer: _noop),
-        ),
+        child: const MaterialApp(home: HomeDashboardPage(onMore: _noop)),
       ),
     );
     await tester.pumpAndSettle();
@@ -583,9 +583,7 @@ void main() {
           prayerScheduleProvider.overrideWith((ref) async => schedule),
           mosquePrayerTimesProvider.overrideWith((ref) => pending.future),
         ],
-        child: const MaterialApp(
-          home: HomeDashboardPage(onMore: _noop, onPrayer: _noop),
-        ),
+        child: const MaterialApp(home: HomeDashboardPage(onMore: _noop)),
       ),
     );
     await tester.pump();
