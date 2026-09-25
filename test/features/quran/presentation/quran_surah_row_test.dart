@@ -36,6 +36,8 @@ void main() {
     expect(find.text('Al-Baqarah'), findsOneWidget);
     expect(find.text('Madani · 286 Verses'), findsOneWidget);
     expect(find.text('سورة البقرة'), findsOneWidget);
+    final arabicName = tester.widget<Text>(find.text('سورة البقرة'));
+    expect(arabicName.style?.fontFamily, 'AlQalamQuranMajeed');
     final englishName = tester.widget<Text>(find.text('Al-Baqarah'));
     expect(englishName.style?.fontSize, 18);
     expect(find.byType(Card), findsNothing);
