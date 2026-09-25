@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "content_version": "2026.09.14-tajweed-indopak-v1",
-  "database_sha256": "05d22441ddbc52ed856944cc8a1688bafefbf821555b4db8c722b87f4e243f41",
-  "database_size_bytes": 24735744,
+  "content_version": "2026.09.26-bangla-words-v1",
+  "database_sha256": "97331c60eda1380afa42438f412aff040282f5df4d358e5a7a34f403b1c72d9f",
+  "database_size_bytes": 27131904,
   "sources": {
     "quran": {
       "name": "Quran Foundation Content API",
@@ -33,6 +33,12 @@
       "version": "input-file",
       "file_name": "qul-pdms-layout-3.sqlite",
       "sha256": "12ea15c8bd19989478a230481bb7bb3be6adc4bc108586bbb24b5e3149f1d59e"
+    },
+    "bangla_words": {
+      "name": "Quran.com Content API v4 Bangla word data",
+      "version": "content-api-v4-public (2026.09.26-bangla-words-v1)",
+      "language": "bn",
+      "endpoint": "https://api.quran.com/api/v4/verses/by_chapter/{surah}"
     }
   },
   "translation_resource_id": 1,
