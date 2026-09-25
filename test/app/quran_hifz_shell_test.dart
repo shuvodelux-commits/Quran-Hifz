@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_hifz/app/app_destination.dart';
 import 'package:quran_hifz/app/app_theme.dart';
 import 'package:quran_hifz/app/quran_hifz_shell.dart';
 import 'package:quran_hifz/core/database/database_providers.dart';
@@ -18,6 +19,19 @@ import 'package:quran_hifz/features/settings/application/app_preferences_control
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 
 void main() {
+  test('primary destinations keep one outline icon language when selected', () {
+    expect(AppDestination.home.icon, Icons.home_outlined);
+    expect(AppDestination.home.selectedIcon, Icons.home_outlined);
+    expect(AppDestination.dua.icon, Icons.volunteer_activism_outlined);
+    expect(AppDestination.dua.selectedIcon, Icons.volunteer_activism_outlined);
+    expect(AppDestination.quran.icon, Icons.menu_book_outlined);
+    expect(AppDestination.quran.selectedIcon, Icons.menu_book_outlined);
+    expect(AppDestination.calendar.icon, Icons.calendar_month_outlined);
+    expect(AppDestination.calendar.selectedIcon, Icons.calendar_month_outlined);
+    expect(AppDestination.more.icon, Icons.grid_view_outlined);
+    expect(AppDestination.more.selectedIcon, Icons.grid_view_outlined);
+  });
+
   testWidgets('all primary destinations render in every app theme', (
     tester,
   ) async {
