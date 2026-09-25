@@ -29,6 +29,8 @@ dependencies:
   geocoding: ^5.0.0
   adhan_dart: ^2.0.1
   hijri_core: ^1.1.0
+  webview_flutter: 4.13.1
+  webview_flutter_android: 4.9.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -46,6 +48,9 @@ flutter:
     - assets/audio/chapters_v1/
     - assets/images/
     - assets/dua/
+    - assets/mushaf/renderer/
+    - assets/mushaf/scripts/
+    - assets/mushaf/layouts/
   fonts:
     - family: Inter
       fonts:
@@ -77,3 +82,6 @@ flutter:
     - family: SurahNameV4
       fonts:
         - asset: assets/fonts/surah-name-v4.ttf
+    - family: DigitalKhattV2
+      fonts:
+        - asset: assets/mushaf/fonts/DigitalKhattV2.otf
