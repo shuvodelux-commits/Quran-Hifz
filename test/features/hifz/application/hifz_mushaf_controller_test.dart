@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/features/hifz/application/hifz_mushaf_controller.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_mushaf_page.dart';
@@ -77,6 +79,64 @@ void main() {
     },
   );
 
+  test('moves to active ayah page when auto-follow is enabled', () async {
+    await controller.openPage(2);
+    pageRepo.pagesByAyah['2:6'] = 3;
+
+    await controller.followPlayback(
+      ayahKey: '2:6',
+      wordPosition: 1,
+      autoFollow: true,
+    );
+
+    expect(controller.currentPage, 3);
+  });
+
+  test('does not force page change when auto-follow is disabled', () async {
+    await controller.openPage(2);
+    pageRepo.pagesByAyah['2:6'] = 3;
+    final loadCount = pageRepo.loaded.length;
+
+    await controller.followPlayback(
+      ayahKey: '2:6',
+      wordPosition: 1,
+      autoFollow: false,
+    );
+
+    expect(controller.currentPage, 2);
+    expect(pageRepo.loaded, hasLength(loadCount));
+  });
+
+  test('stale delayed page cannot restore an older playback page', () async {
+    pageRepo.pagesByAyah['2:6'] = 3;
+    pageRepo.pagesByAyah['2:17'] = 4;
+    final page3 = Completer<void>();
+    final page4 = Completer<void>();
+    pageRepo.delayedPages[3] = page3;
+    pageRepo.delayedPages[4] = page4;
+
+    final first = controller.followPlayback(
+      ayahKey: '2:6',
+      wordPosition: 1,
+      autoFollow: true,
+    );
+    await Future<void>.delayed(Duration.zero);
+    final second = controller.followPlayback(
+      ayahKey: '2:17',
+      wordPosition: 1,
+      autoFollow: true,
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    page4.complete();
+    await Future<void>.delayed(Duration.zero);
+    page3.complete();
+    await Future.wait([first, second]);
+
+    expect(controller.currentPage, 4);
+    expect(controller.generation, greaterThan(0));
+  });
+
   test('unsupported saved Digital palette is effective Light only', () async {
     controller.dispose();
     controller = HifzMushafController(
@@ -101,6 +161,8 @@ class _FakePageRepository implements HifzMushafPageRepository {
   bool digitalAvailable = false;
   final loaded = <(HifzMushafVariant, int)>[];
   final callOrder = <String>[];
+  final pagesByAyah = <String, int>{};
+  final delayedPages = <int, Completer<void>>{};
   List<String>? sharedCallOrder;
 
   @override
@@ -115,6 +177,7 @@ class _FakePageRepository implements HifzMushafPageRepository {
   }) async {
     loaded.add((variant, page));
     (sharedCallOrder ?? callOrder).add('page:${variant.name}:$page');
+    await delayedPages[page]?.future;
     return HifzMushafPage(
       page: page,
       variant: variant,
@@ -126,7 +189,7 @@ class _FakePageRepository implements HifzMushafPageRepository {
   Future<int?> pageForAyah({
     required HifzMushafVariant variant,
     required AyahRef ayah,
-  }) async => null;
+  }) async => pagesByAyah[ayah.verseKey];
 }
 
 class _FakeFontRepository implements MushafPageFontRepository {

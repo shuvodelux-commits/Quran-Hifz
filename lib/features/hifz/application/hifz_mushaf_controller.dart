@@ -3,6 +3,7 @@ import 'dart:async';
 import '../domain/hifz_mushaf_page.dart';
 import '../domain/hifz_mushaf_page_repository.dart';
 import '../domain/hifz_reading_mode.dart';
+import '../domain/hifz_session.dart';
 import '../domain/mushaf_page_font_repository.dart';
 
 sealed class HifzMushafState {
@@ -185,6 +186,28 @@ class HifzMushafController {
     }
   }
 
+  Future<void> followPlayback({
+    required String ayahKey,
+    required int? wordPosition,
+    required bool autoFollow,
+  }) async {
+    _ensureAlive();
+    if (!autoFollow) return;
+    if (wordPosition != null && wordPosition <= 0) {
+      throw ArgumentError.value(wordPosition, 'wordPosition');
+    }
+
+    final ayah = _ayahRefFromKey(ayahKey);
+    final token = ++_requestToken;
+    final page = await _pageRepository.pageForAyah(
+      variant: _variant,
+      ayah: ayah,
+    );
+    if (!_isCurrent(token) || page == null || page == _currentPage) return;
+
+    await openPage(page);
+  }
+
   Future<void> setPalette(HifzMushafPalette palette) async {
     _ensureAlive();
     if (!palette.supports(_variant)) {
@@ -236,6 +259,19 @@ class HifzMushafController {
     if (_disposed) return;
     _state = next;
     _stateChanges.add(next);
+  }
+
+  AyahRef _ayahRefFromKey(String ayahKey) {
+    final parts = ayahKey.split(':');
+    if (parts.length != 2) {
+      throw FormatException('Invalid ayah key: $ayahKey');
+    }
+    final surah = int.tryParse(parts[0]);
+    final ayah = int.tryParse(parts[1]);
+    if (surah == null || ayah == null || surah < 1 || ayah < 1) {
+      throw FormatException('Invalid ayah key: $ayahKey');
+    }
+    return AyahRef(surahNumber: surah, ayahNumber: ayah);
   }
 
   void _ensureAlive() {
