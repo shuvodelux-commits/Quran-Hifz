@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_hifz/app/app_theme.dart';
+import 'package:quran_hifz/core/theme/app_palette.dart';
 import 'package:quran_hifz/features/audio/application/audio_providers.dart';
 import 'package:quran_hifz/features/audio/application/quran_audio_controller.dart';
 import 'package:quran_hifz/features/audio/domain/playback_requests.dart';
@@ -48,15 +50,41 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('reader-surah-header')), findsOneWidget);
-    expect(find.text('১. সূরা আল-ফাতিহা'), findsOneWidget);
-    expect(find.text('২ আয়াত'), findsOneWidget);
-    expect(
-      find.text(
-        'অনুবাদ, তাফসির, তিলাওয়াত, শব্দে-শব্দে অর্থ ও উচ্চারণসহ সূরা আল-ফাতিহা পড়ুন ও শুনুন।',
-      ),
-      findsOneWidget,
+    expect(find.textContaining('আল-ফাতিহা'), findsWidgets);
+    expect(find.textContaining('আয়াত'), findsOneWidget);
+    expect(find.textContaining('Makkah'), findsOneWidget);
+    expect(find.textContaining('English'), findsOneWidget);
+    expect(find.byTooltip('Play Surah'), findsOneWidget);
+    expect(find.byTooltip('Open Tafsir'), findsOneWidget);
+    expect(find.byTooltip('Downloads'), findsOneWidget);
+  });
+
+  testWidgets('Surah information card uses Quran blue and calligraphic name', (
+    tester,
+  ) async {
+    final theme = appTheme(
+      AppThemePreference.light,
+      language: AppLanguage.bangla,
     );
-    expect(find.textContaining('Surah Al-Fatihah'), findsNothing);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: _overrides(),
+        child: MaterialApp(
+          theme: theme,
+          home: const QuranReaderPage(surah: _surah),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final card = tester.widget<Container>(
+      find.byKey(const ValueKey('reader-surah-info-card')),
+    );
+    final decoration = card.decoration! as BoxDecoration;
+    expect(decoration.color, theme.extension<AppPalette>()!.quranHeader);
+
+    final arabic = tester.widget<Text>(find.text('سورة الفاتحة'));
+    expect(arabic.style?.fontFamily, 'AlQalamQuranMajeed');
     expect(find.byTooltip('Play Surah'), findsOneWidget);
     expect(find.byTooltip('Open Tafsir'), findsOneWidget);
     expect(find.byTooltip('Downloads'), findsOneWidget);
@@ -331,7 +359,7 @@ void main() {
       await tester.pumpWidget(_readerApp());
       await tester.pumpAndSettle();
 
-      expect(find.text('الفاتحة'), findsWidgets);
+      expect(find.textContaining('الفاتحة'), findsWidgets);
       expect(find.textContaining('আল-ফাতিহা'), findsWidgets);
       expect(find.byTooltip('Search Quran'), findsNothing);
       expect(find.textContaining('Page '), findsNothing);
