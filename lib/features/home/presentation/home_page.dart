@@ -10,11 +10,17 @@ import '../data/user_database_prayer_location_store.dart';
 import '../../../core/database/database_providers.dart';
 import '../../settings/application/app_preferences_controller.dart';
 
+final prayerLocationStoreProvider = Provider<PrayerLocationStore>(
+  (ref) => UserDatabasePrayerLocationStore(ref.watch(userDatabaseProvider)),
+);
+
+final savedPrayerLocationProvider = FutureProvider<PrayerLocation?>(
+  (ref) => ref.watch(prayerLocationStoreProvider).load(),
+);
+
 final prayerScheduleRepositoryProvider = Provider<PrayerScheduleRepository>(
   (ref) => PrayerScheduleRepository(
-    locationStore: UserDatabasePrayerLocationStore(
-      ref.watch(userDatabaseProvider),
-    ),
+    locationStore: ref.watch(prayerLocationStoreProvider),
   ),
 );
 final prayerScheduleProvider = FutureProvider<PrayerSchedule>(

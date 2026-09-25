@@ -20,6 +20,42 @@ import 'package:quran_hifz/features/settings/application/app_preferences_control
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 
 void main() {
+  testWidgets(
+    'home top location area prompts setup when no location is saved',
+    (tester) async {
+      for (final language in [AppLanguage.bangla, AppLanguage.english]) {
+        final database = UserDatabase.forTesting(NativeDatabase.memory());
+        addTearDown(database.close);
+        await tester.pumpWidget(
+          ProviderScope(
+            key: ValueKey(language),
+            overrides: [
+              userDatabaseProvider.overrideWithValue(database),
+              appLanguageProvider.overrideWithValue(language),
+              savedPrayerLocationProvider.overrideWith((ref) async => null),
+              prayerScheduleProvider.overrideWith(
+                (ref) async => throw StateError('No location'),
+              ),
+            ],
+            child: MaterialApp(
+              theme: appTheme(AppThemePreference.light, language: language),
+              home: const HomeDashboardPage(onMore: _noop),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text(
+            language == AppLanguage.bangla ? 'লোকেশন সেট করুন' : 'Set location',
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('4:35'), findsNothing);
+      }
+    },
+  );
+
   testWidgets('home replaces the fixed dua card with today’s ayah', (
     tester,
   ) async {

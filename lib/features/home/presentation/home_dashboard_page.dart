@@ -14,7 +14,8 @@ import '../data/bangla_calendar.dart';
 import '../data/bangladesh_cities.dart';
 import '../data/mosque_prayer_times_repository.dart';
 import '../data/prayer_schedule.dart';
-import 'home_page.dart' show prayerScheduleProvider;
+import 'home_page.dart'
+    show prayerScheduleProvider, savedPrayerLocationProvider;
 import 'prayer_location_page.dart';
 
 class HomeDashboardPage extends ConsumerStatefulWidget {
@@ -54,6 +55,9 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
     final prayerState = ref.watch(prayerScheduleProvider);
     final language = ref.watch(appLanguageProvider);
     final schedule = prayerState.value;
+    final savedLocation = ref.watch(savedPrayerLocationProvider).value;
+    final prayerCityId = ref.watch(prayerCityIdProvider);
+    final hasConfiguredLocation = prayerCityId != null || savedLocation != null;
     final mosqueTimesState = ref.watch(mosquePrayerTimesProvider);
     final mosqueTimes = mosqueTimesState.value ?? {};
     final mosqueTimesReady = mosqueTimesState.hasValue;
@@ -103,7 +107,17 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                                         schedule?.location,
                                         language,
                                       ) ??
-                                      appText(language, 'অবস্থান', 'Location'),
+                                      (hasConfiguredLocation
+                                          ? appText(
+                                              language,
+                                              'অবস্থান',
+                                              'Location',
+                                            )
+                                          : appText(
+                                              language,
+                                              'লোকেশন সেট করুন',
+                                              'Set location',
+                                            )),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
@@ -117,7 +131,13 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                             ],
                           ),
                           Text(
-                            schedule == null
+                            !hasConfiguredLocation
+                                ? appText(
+                                    language,
+                                    'সঠিক সালাতের সময় দেখতে লোকেশন সেট করুন',
+                                    'Set your location for accurate prayer times',
+                                  )
+                                : schedule == null
                                 ? appText(
                                     language,
                                     'আপনার এলাকার সলাতের সময়',

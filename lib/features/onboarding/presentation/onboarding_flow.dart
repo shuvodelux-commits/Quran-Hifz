@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../application/onboarding_controller.dart';
 import '../domain/onboarding_state.dart';
 import 'language_onboarding_page.dart';
+import 'location_onboarding_page.dart';
 
 class OnboardingFlow extends ConsumerWidget {
   const OnboardingFlow({super.key});
@@ -18,11 +19,9 @@ class OnboardingFlow extends ConsumerWidget {
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       data: (value) => switch (value.step) {
         OnboardingStep.language => const LanguageOnboardingPage(),
-        OnboardingStep.location ||
-        OnboardingStep.developerMessage ||
-        OnboardingStep.completed => const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
+        OnboardingStep.location => const LocationOnboardingPage(),
+        OnboardingStep.developerMessage || OnboardingStep.completed =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       },
     );
   }

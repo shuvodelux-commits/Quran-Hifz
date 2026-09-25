@@ -5,10 +5,15 @@ import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/domain/app_preferences.dart';
 import '../data/bangladesh_cities.dart';
 import 'home_page.dart'
-    show prayerScheduleRepositoryProvider, prayerScheduleProvider;
+    show
+        prayerScheduleRepositoryProvider,
+        prayerScheduleProvider,
+        savedPrayerLocationProvider;
 
 class PrayerLocationPage extends ConsumerStatefulWidget {
-  const PrayerLocationPage({super.key});
+  const PrayerLocationPage({super.key, this.manualOnly = false});
+
+  final bool manualOnly;
 
   @override
   ConsumerState<PrayerLocationPage> createState() => _PrayerLocationPageState();
@@ -31,8 +36,9 @@ class _PrayerLocationPageState extends ConsumerState<PrayerLocationPage> {
       await ref
           .read(appPreferencesControllerProvider.notifier)
           .setPrayerCity(cityId);
+      ref.invalidate(savedPrayerLocationProvider);
       ref.invalidate(prayerScheduleProvider);
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) Navigator.of(context).pop(true);
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -73,13 +79,17 @@ class _PrayerLocationPageState extends ConsumerState<PrayerLocationPage> {
               onChanged: (value) => setState(() => _query = value),
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.my_location_rounded),
-            title: Text(bn ? 'GPS অবস্থান ব্যবহার করুন' : 'Use GPS location'),
-            trailing: selected == null ? const Icon(Icons.check_rounded) : null,
-            onTap: _configuring ? null : () => _selectLocation(null),
-          ),
-          const Divider(height: 1),
+          if (!widget.manualOnly) ...[
+            ListTile(
+              leading: const Icon(Icons.my_location_rounded),
+              title: Text(bn ? 'GPS অবস্থান ব্যবহার করুন' : 'Use GPS location'),
+              trailing: selected == null
+                  ? const Icon(Icons.check_rounded)
+                  : null,
+              onTap: _configuring ? null : () => _selectLocation(null),
+            ),
+            const Divider(height: 1),
+          ],
           Expanded(
             child: ListView.builder(
               itemCount: cities.length,
