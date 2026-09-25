@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/features/audio/application/audio_providers.dart';
 import 'package:quran_hifz/features/audio/application/quran_audio_controller.dart';
 import 'package:quran_hifz/features/audio/domain/quran_audio_state.dart';
+import 'package:quran_hifz/features/quran/data/bengali_word_meanings.dart';
 import 'package:quran_hifz/features/quran/domain/quran_word.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
 import 'package:quran_hifz/features/quran/presentation/quran_reading_colors.dart';
@@ -327,6 +328,41 @@ void main() {
     expect(style.fontFamily, 'PDMS Saleem Quran');
   });
 
+  testWidgets('bundled Bangla meaning never calls fallback service', (
+    tester,
+  ) async {
+    final fallback = _CountingBengaliWordMeanings();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appPreferencesRepositoryProvider.overrideWithValue(
+            _MemoryPreferencesRepository(),
+          ),
+          bengaliWordMeaningsProvider.overrideWithValue(fallback),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(
+            body: QuranWordView(
+              word: QuranWord(
+                position: 1,
+                arabic: 'اللَّه',
+                banglaMeaning: 'আল্লাহ',
+              ),
+              playbackAyahKey: '1:1',
+              onTap: _noop,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('اللَّه'));
+    await tester.pump();
+
+    expect(fallback.calls, 0);
+  });
+
   testWidgets('long press does not trigger word tap audio callback', (
     tester,
   ) async {
@@ -357,6 +393,28 @@ void main() {
     expect(details, 1);
     expect(taps, 0);
   });
+}
+
+void _noop() {}
+
+class _CountingBengaliWordMeanings implements BengaliWordMeanings {
+  int calls = 0;
+
+  @override
+  Future<String?> meaningFor(String ayahKey, int position) async {
+    calls++;
+    return 'fallback';
+  }
+
+  @override
+  Future<bool> isSurahDownloaded(int surahNumber) async => false;
+
+  @override
+  Future<void> downloadSurah(
+    int surahNumber,
+    int ayahCount, {
+    void Function(int completed, int total)? onProgress,
+  }) async {}
 }
 
 class _TestQuranAudioController extends QuranAudioController {

@@ -13,7 +13,6 @@ import '../../settings/domain/app_preferences.dart';
 import '../../settings/presentation/settings_page.dart';
 import '../../study/presentation/bookmarks_page.dart';
 import '../../tafsir/presentation/tafsir_reader_page.dart';
-import '../data/bengali_word_meanings.dart';
 import '../application/quran_providers.dart';
 import '../application/reader_controller.dart';
 import '../application/reader_audio_actions.dart';
@@ -57,9 +56,6 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
   int? _lastPositionedPage;
   int? _lastSavedPage;
   int? _jumpTargetAyah;
-  bool _wordDownloadActive = false;
-  bool _wordDownloaded = false;
-  int _wordDownloadCompleted = 0;
   bool _playerMinimized = false;
   List<QuranSurahSummary> _surahs = const [];
 
@@ -78,42 +74,6 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
   void initState() {
     super.initState();
     Future.microtask(_openSelectedScope);
-  }
-
-  Future<void> _refreshWordDownloadStatus(QuranSurahSummary surah) async {
-    final downloaded = await ref
-        .read(bengaliWordMeaningsProvider)
-        .isSurahDownloaded(surah.number);
-    if (mounted) setState(() => _wordDownloaded = downloaded);
-  }
-
-  Future<void> _downloadBanglaWords() async {
-    if (_wordDownloadActive || _wordDownloaded) return;
-    setState(() {
-      _wordDownloadActive = true;
-      _wordDownloadCompleted = 0;
-    });
-    try {
-      await ref
-          .read(bengaliWordMeaningsProvider)
-          .downloadSurah(
-            _primarySurah.number,
-            _primarySurah.ayahCount,
-            onProgress: (completed, _) {
-              if (mounted) setState(() => _wordDownloadCompleted = completed);
-            },
-          );
-      if (mounted) setState(() => _wordDownloaded = true);
-    } catch (_) {
-      if (mounted)
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Bangla word download failed. Try again.'),
-          ),
-        );
-    } finally {
-      if (mounted) setState(() => _wordDownloadActive = false);
-    }
   }
 
   Future<void> _chooseAyah(int number) async {
@@ -152,7 +112,6 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
     if (!mounted) return;
     setState(() => _surahs = surahs);
     final primary = _primarySurah;
-    unawaited(_refreshWordDownloadStatus(primary));
     final store = ref.read(readingLocationStoreProvider);
     final isSurahScope = _scope is SurahReaderScope;
     final saved = isSurahScope && store is SurahReadingLocationStore
@@ -494,24 +453,6 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
               onTap: () {
                 Navigator.pop(sheetContext);
                 unawaited(_downloadAudio());
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                _wordDownloaded
-                    ? Icons.download_done_rounded
-                    : Icons.translate_rounded,
-              ),
-              title: const Text('বাংলা word download'),
-              subtitle: _wordDownloadActive
-                  ? Text('$_wordDownloadCompleted/${_primarySurah.ayahCount}')
-                  : _wordDownloaded
-                  ? const Text('Ready offline')
-                  : null,
-              enabled: !_wordDownloadActive && !_wordDownloaded,
-              onTap: () {
-                Navigator.pop(sheetContext);
-                unawaited(_downloadBanglaWords());
               },
             ),
             ListTile(
