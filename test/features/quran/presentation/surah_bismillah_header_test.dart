@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quran_hifz/app/app_theme.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/features/quran/application/quran_providers.dart';
 import 'package:quran_hifz/features/quran/domain/bismillah_text.dart';
@@ -14,6 +15,24 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('surah-bismillah-2')), findsOneWidget);
+    expect(find.text(BismillahText.uthmani), findsOneWidget);
+  });
+
+  testWidgets('renders Bismillah inside a clean rounded surface card', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app(2));
+    await tester.pumpAndSettle();
+
+    final card = tester.widget<Container>(
+      find.byKey(const ValueKey('surah-bismillah-card-2')),
+    );
+    final decoration = card.decoration! as BoxDecoration;
+    expect(
+      decoration.color,
+      appTheme(AppThemePreference.light).colorScheme.surfaceContainerLow,
+    );
+    expect(decoration.borderRadius, BorderRadius.circular(11));
     expect(find.text(BismillahText.uthmani), findsOneWidget);
   });
 
@@ -68,6 +87,7 @@ Widget _app(int surahNumber) => ProviderScope(
     tajweedQuranTextAvailableProvider.overrideWith((ref) async => false),
   ],
   child: MaterialApp(
+    theme: appTheme(AppThemePreference.light),
     home: Scaffold(body: SurahBismillahHeader(surahNumber: surahNumber)),
   ),
 );

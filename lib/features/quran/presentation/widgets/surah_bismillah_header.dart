@@ -37,21 +37,37 @@ class SurahBismillahHeader extends ConsumerWidget {
       label: 'Bismillah',
       child: Padding(
         key: ValueKey('surah-bismillah-$surahNumber'),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-        child: DefaultTextStyle(
-          style: QuranTextStyle.forScript(
-            script: script,
-            color: scheme.onSurface,
-            fontSize: (fontSize * 0.92).clamp(24.0, 48.0).toDouble(),
-            lineHeight: lineHeight,
-            font: font,
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+        child: Container(
+          key: ValueKey('surah-bismillah-card-$surahNumber'),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(11),
+            boxShadow: [
+              BoxShadow(
+                color: scheme.shadow.withValues(alpha: 0.035),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          textAlign: TextAlign.center,
-          child: QuranTajweedText(
-            plainText: BismillahText.plainFor(script),
-            markup: BismillahText.uthmaniTajweedMarkup,
-            useTajweedColors: useTajweed,
+          child: DefaultTextStyle(
+            style: QuranTextStyle.forScript(
+              script: script,
+              color: scheme.onSurface,
+              fontSize: (fontSize * 0.92).clamp(24.0, 48.0).toDouble(),
+              lineHeight: lineHeight,
+              font: font,
+            ),
             textAlign: TextAlign.center,
+            child: QuranTajweedText(
+              plainText: BismillahText.plainFor(script),
+              markup: BismillahText.uthmaniTajweedMarkup,
+              useTajweedColors: useTajweed,
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       ),
