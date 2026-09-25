@@ -62,7 +62,7 @@ void main() {
     expect(find.byTooltip('Downloads'), findsOneWidget);
   });
 
-  testWidgets('compact Surah navigation stays fixed while verses scroll', (
+  testWidgets('compact reader top bar stays fixed while verses scroll', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(320, 500);
@@ -72,14 +72,34 @@ void main() {
     await tester.pumpWidget(_readerApp());
     await tester.pumpAndSettle();
 
-    final navigation = find.byKey(const ValueKey('reader-surah-navigation'));
-    final before = tester.getTopLeft(navigation);
+    final topBar = find.byKey(const ValueKey('reader-top-bar'));
+    expect(topBar, findsOneWidget);
+    expect(find.byKey(const ValueKey('reader-surah-navigation')), findsNothing);
+    expect(find.text('১. আল-ফাতিহা'), findsOneWidget);
+    expect(find.byTooltip('Bookmarks'), findsOneWidget);
+    expect(find.byTooltip('Reader settings'), findsOneWidget);
+    final before = tester.getTopLeft(topBar);
+
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -350));
     await tester.pumpAndSettle();
 
-    expect(tester.getTopLeft(navigation), before);
-    expect(tester.getSize(navigation).height, lessThanOrEqualTo(44));
+    expect(tester.getTopLeft(topBar), before);
+    expect(tester.getSize(topBar).height, lessThanOrEqualTo(58));
     expect(find.byKey(const ValueKey('reader-surah-header')), findsNothing);
+  });
+
+  testWidgets('reader title opens the Surah chooser', (tester) async {
+    await tester.pumpWidget(_readerApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('reader-surah-title')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('reader-surah-navigation')),
+      findsOneWidget,
+    );
+    expect(find.text('১. আল-ফাতিহা'), findsWidgets);
   });
 
   testWidgets('reader shows the reference action bar and tapped word meaning', (
@@ -268,20 +288,19 @@ void main() {
     },
   );
 
-  testWidgets('translation toggle hides and restores translation', (
+  testWidgets('reader settings keeps translation controls reachable', (
     tester,
   ) async {
     await tester.pumpWidget(_readerApp());
     await tester.pumpAndSettle();
 
     expect(find.text('Fixture Bangla translation 1'), findsOneWidget);
-    await tester.tap(find.byTooltip('Hide translation'));
-    await tester.pump();
-    expect(find.text('Fixture Bangla translation 1'), findsNothing);
+    expect(find.byTooltip('Hide translation'), findsNothing);
+    await tester.tap(find.byTooltip('Reader settings'));
+    await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Show translation'));
-    await tester.pump();
-    expect(find.text('Fixture Bangla translation 1'), findsOneWidget);
+    expect(find.text('সেটিংস'), findsOneWidget);
+    expect(find.text('অনুবাদ দেখান'), findsOneWidget);
   });
 
   testWidgets(
@@ -313,7 +332,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('الفاتحة'), findsWidgets);
-      expect(find.text('আল-ফাতিহা'), findsOneWidget);
+      expect(find.textContaining('আল-ফাতিহা'), findsWidgets);
       expect(find.byTooltip('Search Quran'), findsNothing);
       expect(find.textContaining('Page '), findsNothing);
       expect(find.byTooltip('Previous page'), findsNothing);

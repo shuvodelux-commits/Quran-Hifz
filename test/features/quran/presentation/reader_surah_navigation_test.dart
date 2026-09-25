@@ -5,17 +5,19 @@ import 'package:quran_hifz/features/quran/presentation/widgets/reader_surah_navi
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 
 void main() {
-  testWidgets('shows localized previous current and next Surahs', (
-    tester,
-  ) async {
+  testWidgets('chooser lists localized Surahs and selects one', (tester) async {
     QuranSurahSummary? selected;
+    final surahs = [
+      _surah(1, 'Al-Fatihah', 'আল-ফাতিহা'),
+      _surah(2, 'Al-Baqarah', 'আল-বাকারা'),
+      _surah(3, "Ali 'Imran", 'আলে ইমরান'),
+    ];
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: ReaderSurahNavigation(
-            previous: _surah(1, 'Al-Fatihah', 'আল-ফাতিহা'),
-            current: _surah(2, 'Al-Baqarah', 'আল-বাকারা'),
-            next: _surah(3, "Ali 'Imran", 'আলে ইমরান'),
+            surahs: surahs,
+            current: surahs[1],
             language: AppLanguage.bangla,
             onSelected: (value) => selected = value,
           ),
@@ -30,46 +32,22 @@ void main() {
     expect(find.text('১. আল-ফাতিহা'), findsOneWidget);
     expect(find.text('২. আল-বাকারা'), findsOneWidget);
     expect(find.text('৩. আলে ইমরান'), findsOneWidget);
-    expect(
-      tester
-          .getSize(find.byKey(const ValueKey('reader-surah-navigation')))
-          .height,
-      lessThanOrEqualTo(44),
-    );
+    expect(find.byKey(const ValueKey('reader-surah-choice-2')), findsOneWidget);
 
-    await tester.tap(find.text('৩. আলে ইমরান'));
+    await tester.tap(find.byKey(const ValueKey('reader-surah-choice-3')));
     expect(selected?.number, 3);
   });
 
-  testWidgets('does not expose absent neighboring Surahs', (tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: ReaderSurahNavigation(
-            previous: null,
-            current: _surah(1, 'Al-Fatihah', 'আল-ফাতিহা'),
-            next: null,
-            language: AppLanguage.english,
-            onSelected: (_) {},
-          ),
-        ),
-      ),
-    );
-
-    expect(find.byTooltip('Previous Surah'), findsNothing);
-    expect(find.byTooltip('Next Surah'), findsNothing);
-  });
-
-  testWidgets('uses canonical Bangla names when database names are absent', (
+  testWidgets('chooser uses canonical Bangla names when absent', (
     tester,
   ) async {
+    final surah = _surah(2, 'Al-Baqarah', null);
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: ReaderSurahNavigation(
-            previous: null,
-            current: _surah(2, 'Al-Baqarah', null),
-            next: null,
+            surahs: [surah],
+            current: surah,
             language: AppLanguage.bangla,
             onSelected: (_) {},
           ),

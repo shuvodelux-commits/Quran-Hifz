@@ -8,116 +8,72 @@ import '../surah_localized_text.dart';
 class ReaderSurahNavigation extends StatelessWidget {
   const ReaderSurahNavigation({
     super.key,
-    required this.previous,
+    required this.surahs,
     required this.current,
-    required this.next,
     required this.language,
     required this.onSelected,
-    this.centerLabel,
   });
 
-  final QuranSurahSummary? previous;
+  final List<QuranSurahSummary> surahs;
   final QuranSurahSummary current;
-  final QuranSurahSummary? next;
   final AppLanguage language;
   final ValueChanged<QuranSurahSummary> onSelected;
-  final String? centerLabel;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return Container(
+    return Material(
       key: const ValueKey('reader-surah-navigation'),
-      height: 44,
-      color: colors.primary,
-      padding: const EdgeInsets.symmetric(horizontal: 2),
-      child: Row(
-        children: [
-          Expanded(
-            child: _Neighbor(
-              surah: previous,
-              language: language,
-              tooltip: 'Previous Surah',
-              icon: Icons.chevron_left_rounded,
-              iconAfter: false,
-              onSelected: onSelected,
-            ),
+      color: colors.surfaceContainerLow,
+      child: SafeArea(
+        top: false,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 520),
+          child: ListView.separated(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+            itemCount: surahs.length,
+            separatorBuilder: (_, __) =>
+                Divider(height: 1, color: colors.outlineVariant),
+            itemBuilder: (context, index) {
+              final surah = surahs[index];
+              final selected = surah.number == current.number;
+              return ListTile(
+                key: ValueKey('reader-surah-choice-${surah.number}'),
+                minTileHeight: 48,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                selected: selected,
+                selectedColor: colors.primary,
+                selectedTileColor: colors.primaryContainer.withValues(
+                  alpha: 0.65,
+                ),
+                leading: SizedBox(
+                  width: 34,
+                  child: Text(
+                    localDigits('${surah.number}', language),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: selected
+                          ? colors.primary
+                          : colors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                title: Text(
+                  _label(surah, language),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: selected
+                    ? Icon(Icons.check_rounded, color: colors.primary)
+                    : null,
+                onTap: () => onSelected(surah),
+              );
+            },
           ),
-          Expanded(
-            child: TextButton(
-              onPressed: () => onSelected(current),
-              style: TextButton.styleFrom(
-                foregroundColor: colors.onPrimary,
-                minimumSize: const Size.fromHeight(40),
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-              ),
-              child: Text(
-                centerLabel ?? _label(current, language),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
-          Expanded(
-            child: _Neighbor(
-              surah: next,
-              language: language,
-              tooltip: 'Next Surah',
-              icon: Icons.chevron_right_rounded,
-              iconAfter: true,
-              onSelected: onSelected,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Neighbor extends StatelessWidget {
-  const _Neighbor({
-    required this.surah,
-    required this.language,
-    required this.tooltip,
-    required this.icon,
-    required this.iconAfter,
-    required this.onSelected,
-  });
-
-  final QuranSurahSummary? surah;
-  final AppLanguage language;
-  final String tooltip;
-  final IconData icon;
-  final bool iconAfter;
-  final ValueChanged<QuranSurahSummary> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final item = surah;
-    if (item == null) return const SizedBox(height: 40);
-    final children = <Widget>[
-      Icon(icon, size: 18),
-      Expanded(
-        child: Text(
-          _label(item, language),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
         ),
-      ),
-    ];
-    return Tooltip(
-      message: tooltip,
-      child: TextButton(
-        onPressed: () => onSelected(item),
-        style: TextButton.styleFrom(
-          foregroundColor: Theme.of(context).colorScheme.onPrimary,
-          minimumSize: const Size.fromHeight(40),
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-        ),
-        child: Row(children: iconAfter ? children.reversed.toList() : children),
       ),
     );
   }

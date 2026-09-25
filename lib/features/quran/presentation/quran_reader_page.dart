@@ -28,6 +28,7 @@ import 'widgets/reader_offline_audio_prompt.dart';
 import 'widgets/reader_playback_panel.dart';
 import 'widgets/reader_surah_header.dart';
 import 'widgets/reader_surah_navigation.dart';
+import 'widgets/reader_top_bar.dart';
 import 'widgets/number_quick_scroll_rail.dart';
 
 class QuranReaderPage extends ConsumerStatefulWidget {
@@ -257,60 +258,6 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
         appText(language, 'কুরআন তিলাওয়াত', 'Quran recitation');
 
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Directionality(
-              textDirection: TextDirection.rtl,
-              child: Text(primary?.nameArabic ?? ''),
-            ),
-            Text(
-              language == AppLanguage.bangla
-                  ? (primary == null
-                        ? 'কুরআন'
-                        : localizedSurahName(primary, language))
-                  : (primary?.nameEnglish ?? 'Quran'),
-              style: Theme.of(context).textTheme.labelMedium,
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: showTranslation ? 'Hide translation' : 'Show translation',
-            onPressed: () => ref
-                .read(appPreferencesControllerProvider.notifier)
-                .setShowTranslation(!showTranslation),
-            icon: Icon(
-              showTranslation
-                  ? Icons.translate_rounded
-                  : Icons.translate_outlined,
-            ),
-          ),
-          IconButton(
-            tooltip: appText(language, 'বুকমার্ক', 'Bookmarks'),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const BookmarksPage()),
-            ),
-            icon: const Icon(Icons.bookmark_border_rounded),
-          ),
-          IconButton(
-            tooltip: appText(language, 'কারি ও অডিও', 'Reciters & audio'),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => SettingsPage(
-                    currentSurahNumber:
-                        primary?.number ?? _scope.initialSurahNumber,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.tune_rounded),
-          ),
-        ],
-      ),
       bottomSheet: showPlayer
           ? (_playerMinimized
                 ? ReaderMinimizedPlaybackBar(onExpand: _expandPlayer)
@@ -381,94 +328,101 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
             (surah) => surah.number == activeSurahNumber,
           );
           final activeSurah = _surahs[activeIndex];
-          final previousSurah = activeIndex > 0
-              ? _surahs[activeIndex - 1]
-              : null;
-          final nextSurah = activeIndex < _surahs.length - 1
-              ? _surahs[activeIndex + 1]
-              : null;
 
-          return Column(
-            children: [
-              ReaderSurahNavigation(
-                previous: previousSurah,
-                current: activeSurah,
-                next: nextSurah,
-                language: language,
-                centerLabel: _scope is JuzReaderScope
-                    ? '${appText(language, 'পারা', 'Juz')} ${localDigits('${(_scope as JuzReaderScope).juz.number}', language)} · ${localizedSurahName(activeSurah, language)}'
-                    : null,
-                onSelected: _openSurahScope,
-              ),
-              Expanded(
-                child: Stack(
-                  children: [
-                    NotificationListener<ScrollNotification>(
-                      onNotification: _handleScrollNotification,
-                      child: CustomScrollView(
-                        key: PageStorageKey(
-                          'quran-reader-${_scope.runtimeType}-${_scope.initialSurahNumber}',
-                        ),
-                        controller: _scrollController,
-                        scrollCacheExtent: const ScrollCacheExtent.pixels(900),
-                        slivers: [
-                          SliverToBoxAdapter(
-                            child: ReaderSurahHeader(
-                              surah: activeSurah,
-                              language: language,
-                              onPlay: () {
-                                _expandPlayer();
-                                unawaited(_playSurahFromStart(activeSurah));
-                              },
-                              onTafsir: () => Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => TafsirReaderPage(
-                                    surahNumber: activeSurah.number,
-                                    ayahNumber: 1,
-                                    wholeSurah: true,
-                                    ayahCount: activeSurah.ayahCount,
+          return SafeArea(
+            child: Column(
+              children: [
+                ReaderTopBar(
+                  current: activeSurah,
+                  language: language,
+                  onBack: () => Navigator.of(context).maybePop(),
+                  onBookmarks: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const BookmarksPage(),
+                    ),
+                  ),
+                  onSettings: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) =>
+                          SettingsPage(currentSurahNumber: activeSurah.number),
+                    ),
+                  ),
+                  onChooseSurah: () => _showSurahChooser(activeSurah, language),
+                ),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      NotificationListener<ScrollNotification>(
+                        onNotification: _handleScrollNotification,
+                        child: CustomScrollView(
+                          key: PageStorageKey(
+                            'quran-reader-${_scope.runtimeType}-${_scope.initialSurahNumber}',
+                          ),
+                          controller: _scrollController,
+                          scrollCacheExtent: const ScrollCacheExtent.pixels(
+                            900,
+                          ),
+                          slivers: [
+                            SliverToBoxAdapter(
+                              child: ReaderSurahHeader(
+                                surah: activeSurah,
+                                language: language,
+                                onPlay: () {
+                                  _expandPlayer();
+                                  unawaited(_playSurahFromStart(activeSurah));
+                                },
+                                onTafsir: () => Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => TafsirReaderPage(
+                                      surahNumber: activeSurah.number,
+                                      ayahNumber: 1,
+                                      wholeSurah: true,
+                                      ayahCount: activeSurah.ayahCount,
+                                    ),
                                   ),
                                 ),
+                                onDownload: _showDownloadMenu,
                               ),
-                              onDownload: _showDownloadMenu,
                             ),
-                          ),
-                          for (final page in windows.keys)
-                            ReaderWindow(
-                              key: _pageKeys[page],
-                              window: windows[page]!,
-                              showTranslation: showTranslation,
-                              onShowPlayer: _expandPlayer,
-                              jumpToAyahNumber:
-                                  windows[page]!.ayahs.any(
-                                    (ayah) =>
-                                        ayah.ayahNumber == _jumpTargetAyah,
-                                  )
-                                  ? _jumpTargetAyah
-                                  : null,
+                            for (final page in windows.keys)
+                              ReaderWindow(
+                                key: _pageKeys[page],
+                                window: windows[page]!,
+                                showTranslation: showTranslation,
+                                onShowPlayer: _expandPlayer,
+                                jumpToAyahNumber:
+                                    windows[page]!.ayahs.any(
+                                      (ayah) =>
+                                          ayah.ayahNumber == _jumpTargetAyah,
+                                    )
+                                    ? _jumpTargetAyah
+                                    : null,
+                              ),
+                            const SliverToBoxAdapter(
+                              child: SizedBox(height: 24),
                             ),
-                          const SliverToBoxAdapter(child: SizedBox(height: 24)),
-                        ],
-                      ),
-                    ),
-                    if (_scope is SurahReaderScope)
-                      Positioned(
-                        top: 8,
-                        right: 1,
-                        bottom: 8,
-                        child: NumberQuickScrollRail(
-                          count: _primarySurah.ayahCount,
-                          semanticLabel: 'Ayah',
-                          current: _jumpTargetAyah,
-                          onPreview: (_) {},
-                          onSelected: (number) =>
-                              unawaited(_chooseAyah(number)),
+                          ],
                         ),
                       ),
-                  ],
+                      if (_scope is SurahReaderScope)
+                        Positioned(
+                          top: 8,
+                          right: 1,
+                          bottom: 8,
+                          child: NumberQuickScrollRail(
+                            count: _primarySurah.ayahCount,
+                            semanticLabel: 'Ayah',
+                            current: _jumpTargetAyah,
+                            onPreview: (_) {},
+                            onSelected: (number) =>
+                                unawaited(_chooseAyah(number)),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
@@ -767,6 +721,26 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
         ),
       );
     });
+  }
+
+  Future<void> _showSurahChooser(
+    QuranSurahSummary current,
+    AppLanguage language,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => ReaderSurahNavigation(
+        surahs: _surahs,
+        current: current,
+        language: language,
+        onSelected: (surah) {
+          Navigator.of(sheetContext).pop();
+          _openSurahScope(surah);
+        },
+      ),
+    );
   }
 
   void _openSurahScope(QuranSurahSummary surah) {
