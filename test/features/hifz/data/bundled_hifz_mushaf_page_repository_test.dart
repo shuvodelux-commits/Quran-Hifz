@@ -82,7 +82,7 @@ void main() {
           'AND line_number = 3',
         );
       } finally {
-        db.dispose();
+        db.close();
       }
 
       await expectLater(
@@ -148,10 +148,10 @@ void main() {
             ]);
           }
         } finally {
-          insert.dispose();
+          insert.close();
         }
       } finally {
-        db.dispose();
+        db.close();
       }
 
       final subject = repository(digitalScriptPath: scriptPath);

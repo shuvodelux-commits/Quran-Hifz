@@ -98,8 +98,8 @@ class BundledHifzMushafPageRepository implements HifzMushafPageRepository {
         'Could not load Mushaf page $page: ${error.message}',
       );
     } finally {
-      layout.dispose();
-      script.dispose();
+      layout.close();
+      script.close();
     }
   }
 
@@ -144,8 +144,8 @@ class BundledHifzMushafPageRepository implements HifzMushafPageRepository {
         'Could not resolve page for ${ayah.verseKey}: ${error.message}',
       );
     } finally {
-      script.dispose();
-      layout.dispose();
+      script.close();
+      layout.close();
     }
   }
 
@@ -244,7 +244,7 @@ class BundledHifzMushafPageRepository implements HifzMushafPageRepository {
     } on Object {
       return false;
     } finally {
-      database?.dispose();
+      database?.close();
     }
   }
 
