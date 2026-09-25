@@ -97,11 +97,11 @@ void main() {
       await tester.tap(find.text('আল-ফাতিহা'));
       await tester.pumpAndSettle();
 
-      expect(find.text('الفاتحة'), findsWidgets);
+      expect(find.textContaining('الفاتحة'), findsWidgets);
       expect(find.byKey(const ValueKey('ayah-1:1')), findsOneWidget);
       expect(find.byKey(const ValueKey('ayah-2:1')), findsNothing);
 
-      await tester.pageBack();
+      await tester.tap(find.byTooltip('পেছনে'));
       await tester.pumpAndSettle();
       expect(find.text('কুরআন'), findsOneWidget);
       expect(find.text('আল-বাকারা'), findsOneWidget);

@@ -348,6 +348,14 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
                     ),
                   ),
                   onChooseSurah: () => _showSurahChooser(activeSurah, language),
+                  contextLabel: _scope is JuzReaderScope
+                      ? appText(language, 'পারা', 'Juz') +
+                            ' ' +
+                            localDigits(
+                              (_scope as JuzReaderScope).juz.number.toString(),
+                              language,
+                            )
+                      : null,
                 ),
                 Expanded(
                   child: Stack(

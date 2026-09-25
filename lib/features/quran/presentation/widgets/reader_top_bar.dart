@@ -14,6 +14,7 @@ class ReaderTopBar extends StatelessWidget {
     required this.onBookmarks,
     required this.onSettings,
     required this.onChooseSurah,
+    this.contextLabel,
   });
 
   final QuranSurahSummary current;
@@ -22,6 +23,7 @@ class ReaderTopBar extends StatelessWidget {
   final VoidCallback onBookmarks;
   final VoidCallback onSettings;
   final VoidCallback onChooseSurah;
+  final String? contextLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -52,21 +54,36 @@ class ReaderTopBar extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(minHeight: 44),
-                  child: Row(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Flexible(
-                        child: Text(
-                          label,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          const Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 19,
+                          ),
+                        ],
+                      ),
+                      if (contextLabel != null)
+                        Text(
+                          contextLabel!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                          style: Theme.of(context).textTheme.labelSmall,
                         ),
-                      ),
-                      const SizedBox(width: 2),
-                      const Icon(Icons.keyboard_arrow_down_rounded, size: 19),
                     ],
                   ),
                 ),
