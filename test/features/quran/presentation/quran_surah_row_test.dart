@@ -35,9 +35,9 @@ void main() {
     expect(find.text('2'), findsOneWidget);
     expect(find.text('Al-Baqarah'), findsOneWidget);
     expect(find.text('Madani · 286 Verses'), findsOneWidget);
-    expect(find.text('سورة البقرة'), findsOneWidget);
-    final arabicName = tester.widget<Text>(find.text('سورة البقرة'));
-    expect(arabicName.style?.fontFamily, 'AlQalamQuranMajeed');
+    expect(find.text('surah002'), findsOneWidget);
+    final arabicName = tester.widget<Text>(find.text('surah002'));
+    expect(arabicName.style?.fontFamily, 'SurahNameV4');
     final englishName = tester.widget<Text>(find.text('Al-Baqarah'));
     expect(englishName.style?.fontSize, 18);
     expect(find.byType(Card), findsNothing);
@@ -47,6 +47,25 @@ void main() {
     );
     await tester.tap(find.text('Al-Baqarah'));
     expect(tapped, isTrue);
+  });
+
+  testWidgets('QUL ligature keeps the Arabic Surah name for accessibility', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      _app(
+        QuranSurahRow(
+          surah: surah,
+          language: AppLanguage.english,
+          onTap: () {},
+        ),
+      ),
+    );
+
+    expect(find.bySemanticsLabel(RegExp('سورة البقرة')), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('surah002')), findsNothing);
+    semantics.dispose();
   });
 
   testWidgets('localizes Bangla labels and digits', (tester) async {

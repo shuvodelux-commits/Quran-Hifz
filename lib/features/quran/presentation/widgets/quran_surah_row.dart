@@ -6,6 +6,7 @@ import '../../../../core/localization/app_locale_text.dart';
 import '../../../settings/domain/app_preferences.dart';
 import '../../domain/quran_surah.dart';
 import '../surah_localized_text.dart';
+import 'surah_name_v4_text.dart';
 
 class QuranSurahRow extends StatelessWidget {
   const QuranSurahRow({
@@ -105,17 +106,10 @@ class QuranSurahRow extends StatelessWidget {
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerRight,
-                      child: Directionality(
-                        textDirection: TextDirection.rtl,
-                        child: Text(
-                          'سورة ${surah.nameArabic}',
-                          maxLines: 1,
-                          style: TextStyle(
-                            color: colors.onSurface,
-                            fontFamily: 'AlQalamQuranMajeed',
-                            fontSize: 28,
-                          ),
-                        ),
+                      child: SurahNameV4Text(
+                        surahNumber: surah.number,
+                        arabicName: surah.nameArabic,
+                        style: TextStyle(color: colors.onSurface, fontSize: 28),
                       ),
                     ),
                   ),

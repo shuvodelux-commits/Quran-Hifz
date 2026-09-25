@@ -83,11 +83,23 @@ void main() {
     final decoration = card.decoration! as BoxDecoration;
     expect(decoration.color, theme.extension<AppPalette>()!.quranHeader);
 
-    final arabic = tester.widget<Text>(find.text('سورة الفاتحة'));
-    expect(arabic.style?.fontFamily, 'AlQalamQuranMajeed');
+    final arabic = tester.widget<Text>(find.text('surah001'));
+    expect(arabic.style?.fontFamily, 'SurahNameV4');
     expect(find.byTooltip('Play Surah'), findsOneWidget);
     expect(find.byTooltip('Open Tafsir'), findsOneWidget);
     expect(find.byTooltip('Downloads'), findsOneWidget);
+  });
+
+  testWidgets('QUL reader ligature keeps the Arabic Surah name in semantics', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(_readerApp());
+    await tester.pumpAndSettle();
+
+    expect(find.bySemanticsLabel(RegExp('سورة الفاتحة')), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('surah001')), findsNothing);
+    semantics.dispose();
   });
 
   testWidgets('compact reader top bar stays fixed while verses scroll', (
@@ -359,7 +371,7 @@ void main() {
       await tester.pumpWidget(_readerApp());
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('الفاتحة'), findsWidgets);
+      expect(find.text('surah001'), findsWidgets);
       expect(find.textContaining('আল-ফাতিহা'), findsWidgets);
       expect(find.byTooltip('Search Quran'), findsNothing);
       expect(find.textContaining('Page '), findsNothing);

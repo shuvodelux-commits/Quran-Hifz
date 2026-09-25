@@ -5,6 +5,7 @@ import '../../../../core/theme/app_palette.dart';
 import '../../../settings/domain/app_preferences.dart';
 import '../../domain/quran_surah.dart';
 import '../surah_localized_text.dart';
+import 'surah_name_v4_text.dart';
 
 class ReaderSurahHeader extends StatelessWidget {
   const ReaderSurahHeader({
@@ -92,18 +93,14 @@ class ReaderSurahHeader extends StatelessWidget {
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.center,
-                      child: Directionality(
-                        textDirection: TextDirection.rtl,
-                        child: Text(
-                          'سورة ${surah.nameArabic}',
-                          maxLines: 1,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: onHeader,
-                            fontFamily: 'AlQalamQuranMajeed',
-                            fontSize: 40,
-                            height: 1.15,
-                          ),
+                      child: SurahNameV4Text(
+                        surahNumber: surah.number,
+                        arabicName: surah.nameArabic,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: onHeader,
+                          fontSize: 40,
+                          height: 1.15,
                         ),
                       ),
                     ),

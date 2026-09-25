@@ -24,7 +24,7 @@ void main() {
     expect(find.text('কুরআন'), findsOneWidget);
     expect(find.text('আল-ফাতিহা'), findsOneWidget);
     expect(find.text('আল-বাকারা'), findsOneWidget);
-    expect(find.text('سورة الفاتحة'), findsOneWidget);
+    expect(find.text('surah001'), findsOneWidget);
 
     expect(find.text('সব'), findsNothing);
     expect(find.text('মাক্কী'), findsNothing);
@@ -97,7 +97,7 @@ void main() {
       await tester.tap(find.text('আল-ফাতিহা'));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('الفاتحة'), findsWidgets);
+      expect(find.text('surah001'), findsWidgets);
       expect(find.byKey(const ValueKey('ayah-1:1')), findsOneWidget);
       expect(find.byKey(const ValueKey('ayah-2:1')), findsNothing);
 

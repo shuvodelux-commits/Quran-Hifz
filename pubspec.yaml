@@ -74,3 +74,6 @@ flutter:
     - family: Noto Naskh Arabic
       fonts:
         - asset: assets/fonts/NotoNaskhArabic.ttf
+    - family: SurahNameV4
+      fonts:
+        - asset: assets/fonts/surah-name-v4.ttf
