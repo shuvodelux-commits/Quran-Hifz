@@ -17,12 +17,18 @@ import '../../study/domain/bookmark.dart';
 import '../../study/presentation/word_details_sheet.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/domain/app_preferences.dart';
+import '../application/hifz_mushaf_controller.dart';
+import '../application/hifz_mushaf_providers.dart';
 import '../application/hifz_session_controller.dart';
+import '../domain/hifz_reading_mode.dart';
 import '../domain/hifz_session.dart';
 import 'hifz_active_player.dart';
 import 'hifz_appearance_sheet.dart';
+import 'hifz_mushaf_appearance_sheet.dart';
+import 'hifz_mushaf_page_view.dart';
 import 'hifz_mushaf_surface.dart';
 import 'hifz_pattern_controls.dart';
+import 'hifz_reading_mode_selector.dart';
 import 'hifz_setup_sheet.dart';
 import 'hifz_system_ui.dart';
 
@@ -69,6 +75,7 @@ class _HifzPageState extends ConsumerState<HifzPage>
   bool _sheetOpen = false;
   bool _appActive = true;
   bool _initialSetupScheduled = false;
+  bool _mushafInitialOpenScheduled = false;
   int? _pendingPageJump;
   String? _lastFollowedAyahKey;
   HifzPatternSelection _pattern = const HifzPatternSelection(
@@ -211,16 +218,25 @@ class _HifzPageState extends ConsumerState<HifzPage>
     final activeAyahKey = ref.watch(activeAyahPlaybackKeyProvider);
     final audio = ref.watch(quranAudioControllerProvider);
     final autoScrollEnabled = ref.watch(hifzAutoScrollEnabledProvider);
-    if (autoScrollEnabled && !_autoScrollTicker.isActive) {
+    final readingMode = ref.watch(hifzReadingModeProvider);
+    final mushafController = ref.watch(hifzMushafControllerProvider);
+    final mushafState =
+        ref.watch(hifzMushafStateProvider).asData?.value ??
+        mushafController.state;
+    final continuousAutoScroll =
+        autoScrollEnabled && readingMode == HifzReadingMode.regular;
+    if (continuousAutoScroll && !_autoScrollTicker.isActive) {
       _autoScrollTicker.start();
-    } else if (!autoScrollEnabled && _autoScrollTicker.isActive) {
+    } else if (!continuousAutoScroll && _autoScrollTicker.isActive) {
       _autoScrollTicker.stop();
       _lastAutoScrollElapsed = null;
     }
 
     ref.listen<String?>(activeAyahPlaybackKeyProvider, (previous, next) {
       if (next == null || next == previous) return;
-      unawaited(_followActiveAyah(next));
+      if (ref.read(hifzReadingModeProvider) == HifzReadingMode.regular) {
+        unawaited(_followActiveAyah(next));
+      }
     });
     ref.listen<HifzSessionState>(hifzSessionControllerProvider, (
       previous,
@@ -230,6 +246,65 @@ class _HifzPageState extends ConsumerState<HifzPage>
       if (config == null || identical(previous?.config, config)) return;
       unawaited(_alignToSession(config));
     });
+    ref.listen<HifzReadingMode>(hifzReadingModeProvider, (previous, next) {
+      if (next == HifzReadingMode.mushaf) {
+        _mushafInitialOpenScheduled = true;
+        unawaited(mushafController.openPage(_selectedPage));
+        return;
+      }
+
+      _mushafInitialOpenScheduled = false;
+      final page = mushafController.currentPage ?? _selectedPage;
+      if (_selectedPage != page && mounted) {
+        setState(() => _selectedPage = page);
+      }
+      unawaited(_jumpToPage(page));
+    });
+    ref.listen<HifzMushafVariant>(hifzMushafVariantProvider, (previous, next) {
+      if (next != mushafController.variant) {
+        unawaited(mushafController.selectVariant(next));
+      }
+    });
+    ref.listen<HifzMushafPalette>(hifzMushafPaletteProvider, (previous, next) {
+      if (next != mushafController.palette &&
+          next.supports(mushafController.variant)) {
+        unawaited(mushafController.setPalette(next));
+      }
+    });
+    ref.listen<AsyncValue<HifzMushafState>>(hifzMushafStateProvider, (
+      previous,
+      next,
+    ) {
+      if (ref.read(hifzReadingModeProvider) != HifzReadingMode.mushaf) return;
+      final state = next.asData?.value;
+      if (state is! HifzMushafReady) return;
+      final surahNumber =
+          _surahNumberForMushafState(state) ?? _selectedSurahNumber;
+      if (state.page.page == _selectedPage &&
+          surahNumber == _selectedSurahNumber) {
+        return;
+      }
+      if (!mounted) return;
+      setState(() {
+        _selectedPage = state.page.page;
+        _selectedSurahNumber = surahNumber;
+      });
+    });
+
+    if (readingMode == HifzReadingMode.mushaf && !_mushafInitialOpenScheduled) {
+      _mushafInitialOpenScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted ||
+            ref.read(hifzReadingModeProvider) != HifzReadingMode.mushaf) {
+          return;
+        }
+        unawaited(
+          ref.read(hifzMushafControllerProvider).openPage(_selectedPage),
+        );
+      });
+    } else if (readingMode == HifzReadingMode.regular) {
+      _mushafInitialOpenScheduled = false;
+    }
 
     return surahs.when(
       loading: () =>
@@ -248,7 +323,16 @@ class _HifzPageState extends ConsumerState<HifzPage>
             body: Center(child: Text('Quran library is unavailable.')),
           );
         }
-        final selectedSurah = _findSurah(items, _selectedSurahNumber);
+        final readyMushaf = mushafState is HifzMushafReady ? mushafState : null;
+        final visiblePage = readingMode == HifzReadingMode.mushaf
+            ? readyMushaf?.page.page ??
+                  mushafController.currentPage ??
+                  _selectedPage
+            : _selectedPage;
+        final visibleSurahNumber = readingMode == HifzReadingMode.mushaf
+            ? _surahNumberForMushafState(readyMushaf) ?? _selectedSurahNumber
+            : _selectedSurahNumber;
+        final selectedSurah = _findSurah(items, visibleSurahNumber);
         if (widget.openSetupOnStart &&
             widget.initialConfig != null &&
             !_initialSetupScheduled) {
@@ -260,6 +344,35 @@ class _HifzPageState extends ConsumerState<HifzPage>
         final playing =
             session.status == HifzSessionStatus.running ||
             session.status == HifzSessionStatus.paused;
+        final reader = switch (readingMode) {
+          HifzReadingMode.regular => _buildContinuousReader(
+            items,
+            playing: playing,
+            activeAyahKey: activeAyahKey,
+          ),
+          HifzReadingMode.mushaf => HifzMushafPageView(
+            controller: mushafController,
+            activeAyahKey: activeAyahKey,
+            activeWordPosition: activeAyahKey == null
+                ? null
+                : audio.activeWordPosition,
+            playbackRunning: playing,
+            autoFollow: autoScrollEnabled,
+            selectedStartAyah: _rangeStartAyah,
+            selectedEndAyah: _rangeEndAyah,
+            onWordTap: (ayahKey, position) =>
+                unawaited(_playMushafWord(ayahKey, position)),
+            onWordLongPress: (ayahKey, position) =>
+                unawaited(_showMushafWordDetails(ayahKey, position)),
+            onAyahSelected: _selectRangeAyah,
+            onToggleControls: _controlsVisible ? _hideControls : _showControls,
+            onUseRegularHifz: () => unawaited(
+              ref
+                  .read(appPreferencesControllerProvider.notifier)
+                  .setHifzReadingMode(HifzReadingMode.regular),
+            ),
+          ),
+        };
 
         return Scaffold(
           body: Column(
@@ -301,10 +414,14 @@ class _HifzPageState extends ConsumerState<HifzPage>
                             ),
                           ],
                         ),
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(12, 0, 12, 6),
+                          child: HifzReadingModeSelector(),
+                        ),
                         if (!playing)
                           _CompactSurahSelector(
                             surah: selectedSurah,
-                            page: _selectedPage,
+                            page: visiblePage,
                             onTap: () => _showSurahPicker(items, selectedSurah),
                           ),
                       ],
@@ -316,18 +433,16 @@ class _HifzPageState extends ConsumerState<HifzPage>
                 child: GestureDetector(
                   key: const ValueKey('hifz-reading-gesture'),
                   behavior: HitTestBehavior.translucent,
-                  onTap: _controlsVisible ? _hideControls : _showControls,
+                  onTap: readingMode == HifzReadingMode.regular
+                      ? (_controlsVisible ? _hideControls : _showControls)
+                      : null,
                   child: SafeArea(
                     top: false,
                     bottom: false,
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 840),
-                        child: _buildContinuousReader(
-                          items,
-                          playing: playing,
-                          activeAyahKey: activeAyahKey,
-                        ),
+                        child: reader,
                       ),
                     ),
                   ),
@@ -370,16 +485,16 @@ class _HifzPageState extends ConsumerState<HifzPage>
                             ),
                           ),
                         _HifzPageControls(
-                          page: _selectedPage,
+                          page: visiblePage,
                           showTools: !playing,
-                          onPrevious: _selectedPage > 1
-                              ? () => _turnPage(_selectedPage - 1)
+                          onPrevious: visiblePage > 1
+                              ? () => _turnPage(visiblePage - 1)
                               : null,
                           onTools: playing
                               ? null
                               : () => _openSetupSheet(selectedSurah),
-                          onNext: _selectedPage < 604
-                              ? () => _turnPage(_selectedPage + 1)
+                          onNext: visiblePage < 604
+                              ? () => _turnPage(visiblePage + 1)
                               : null,
                         ),
                       ],
@@ -445,13 +560,16 @@ class _HifzPageState extends ConsumerState<HifzPage>
   }
 
   void _openSettings() {
+    final readingMode = ref.read(hifzReadingModeProvider);
     unawaited(
       _pauseWhileSheet<void>(
         () => showModalBottomSheet<void>(
           context: context,
           isScrollControlled: true,
           showDragHandle: true,
-          builder: (_) => const HifzAppearanceSheet(),
+          builder: (_) => readingMode == HifzReadingMode.mushaf
+              ? const HifzMushafAppearanceSheet()
+              : const HifzAppearanceSheet(),
         ),
       ),
     );
@@ -873,12 +991,23 @@ class _HifzPageState extends ConsumerState<HifzPage>
       _rangeEndAyah = null;
       _lastFollowedAyahKey = null;
     });
-    unawaited(_jumpToPage(surah.pageStart));
+    if (ref.read(hifzReadingModeProvider) == HifzReadingMode.mushaf) {
+      unawaited(
+        ref.read(hifzMushafControllerProvider).openPage(surah.pageStart),
+      );
+    } else {
+      unawaited(_jumpToPage(surah.pageStart));
+    }
   }
 
   void _turnPage(int page) {
     if (page < 1 || page > 604 || page == _selectedPage) return;
-    unawaited(_jumpToPage(page));
+    if (ref.read(hifzReadingModeProvider) == HifzReadingMode.mushaf) {
+      setState(() => _selectedPage = page);
+      unawaited(ref.read(hifzMushafControllerProvider).openPage(page));
+    } else {
+      unawaited(_jumpToPage(page));
+    }
   }
 
   void _selectRangeAyah(AyahRef ayah) {
@@ -1007,7 +1136,72 @@ class _HifzPageState extends ConsumerState<HifzPage>
         finalRangeRepeatCount: config.preset.finalRangeRepeatCount,
       );
     });
-    await _jumpToPage(_selectedPage);
+    if (ref.read(hifzReadingModeProvider) == HifzReadingMode.mushaf) {
+      await ref.read(hifzMushafControllerProvider).openPage(_selectedPage);
+    } else {
+      await _jumpToPage(_selectedPage);
+    }
+  }
+
+  int? _surahNumberForMushafState(HifzMushafReady? state) {
+    if (state == null) return null;
+    for (final line in state.page.lines) {
+      final surahNumber = line.surahNumber;
+      if (surahNumber != null) return surahNumber;
+      for (final token in line.tokens) {
+        final ayahKey = token.ayahKey;
+        if (ayahKey == null) continue;
+        final separator = ayahKey.indexOf(':');
+        if (separator <= 0) continue;
+        final parsed = int.tryParse(ayahKey.substring(0, separator));
+        if (parsed != null) return parsed;
+      }
+    }
+    return null;
+  }
+
+  Future<void> _playMushafWord(String ayahKey, int wordPosition) async {
+    final target = await _resolveMushafWord(ayahKey, wordPosition);
+    if (target == null) return;
+    await _playWord(target.ayah, target.word);
+  }
+
+  Future<void> _showMushafWordDetails(String ayahKey, int wordPosition) async {
+    final target = await _resolveMushafWord(ayahKey, wordPosition);
+    if (target == null) return;
+    await _showWordDetails(target.ayah, target.word);
+  }
+
+  Future<({QuranAyah ayah, QuranWord word})?> _resolveMushafWord(
+    String ayahKey,
+    int wordPosition,
+  ) async {
+    final parts = ayahKey.split(':');
+    if (parts.length != 2) return null;
+    final surahNumber = int.tryParse(parts[0]);
+    final ayahNumber = int.tryParse(parts[1]);
+    if (surahNumber == null || ayahNumber == null || wordPosition < 1) {
+      return null;
+    }
+
+    final ayah = await ref
+        .read(quranRepositoryProvider)
+        .loadAyah(
+          surahNumber: surahNumber,
+          ayahNumber: ayahNumber,
+          translationResourceId: ref.read(quranTranslationResourceIdProvider),
+        );
+    if (ayah == null) return null;
+
+    QuranWord? selectedWord;
+    for (final word in ayah.words) {
+      if (word.position == wordPosition) {
+        selectedWord = word;
+        break;
+      }
+    }
+    if (selectedWord == null) return null;
+    return (ayah: ayah, word: selectedWord);
   }
 
   Future<void> _playWord(QuranAyah ayah, QuranWord word) async {

@@ -11,12 +11,16 @@ import 'package:quran_hifz/features/audio/domain/quran_audio_state.dart';
 import 'package:quran_hifz/core/database/database_providers.dart';
 import 'package:quran_hifz/core/database/user_database.dart';
 import 'package:quran_hifz/features/hifz/presentation/hifz_page.dart';
+import 'package:quran_hifz/features/hifz/presentation/hifz_mushaf_page_view.dart';
 import 'package:quran_hifz/features/hifz/presentation/hifz_mushaf_surface.dart';
 import 'package:quran_hifz/features/hifz/presentation/hifz_system_ui.dart';
+import 'package:quran_hifz/features/hifz/application/hifz_mushaf_providers.dart';
 import 'package:quran_hifz/features/hifz/application/hifz_session_controller.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_audio_port.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_preset.dart';
+import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_session.dart';
+import 'package:quran_hifz/features/hifz/domain/mushaf_page_font_repository.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_step.dart';
 import 'package:quran_hifz/features/quran/application/quran_providers.dart';
 import 'package:quran_hifz/features/quran/application/reader_audio_actions.dart';
@@ -26,7 +30,6 @@ import 'package:quran_hifz/features/quran/domain/quran_juz.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_line.dart';
 import 'package:quran_hifz/features/quran/domain/quran_page_window.dart';
 import 'package:quran_hifz/features/quran/domain/quran_repository.dart';
-import 'package:quran_hifz/features/quran/domain/quran_script.dart';
 import 'package:quran_hifz/features/quran/domain/quran_surah.dart';
 import 'package:quran_hifz/features/quran/domain/quran_word.dart';
 import 'package:quran_hifz/features/quran/presentation/quran_reading_colors.dart';
@@ -34,11 +37,134 @@ import 'package:quran_hifz/features/quran/presentation/widgets/quran_word_view.d
 import 'package:quran_hifz/features/reciters/application/reciter_catalog_controller.dart';
 import 'package:quran_hifz/features/reciters/domain/chapter_reciter.dart';
 import 'package:quran_hifz/features/settings/application/app_preferences_controller.dart';
+import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
+import 'package:quran_hifz/features/settings/domain/app_preferences_repository.dart';
 import 'package:quran_hifz/features/study/presentation/word_details_sheet.dart';
 
 import '../../../fakes/fake_audio_player_adapter.dart';
 
 void main() {
+  testWidgets('Regular mode keeps the existing continuous Hifz reader', (
+    tester,
+  ) async {
+    final preferences = (const AppPreferences.defaults()).copyWith(
+      hifzReadingMode: HifzReadingMode.regular,
+      hifzLayoutMode: HifzLayoutMode.fixedMushaf,
+    );
+
+    await _pumpHifzPage(tester, preferences: preferences);
+
+    expect(
+      find.byKey(const PageStorageKey('hifz-continuous-reader')),
+      findsOneWidget,
+    );
+    expect(find.byType(HifzMushafPageView), findsNothing);
+  });
+
+  testWidgets(
+    'Mushaf mode shows single-page reader and preserves Hifz controls',
+    (tester) async {
+      final preferences = (const AppPreferences.defaults()).copyWith(
+        hifzReadingMode: HifzReadingMode.mushaf,
+      );
+
+      await _pumpHifzPage(
+        tester,
+        preferences: preferences,
+        mushafFontRepository: _FailingMushafFontRepository(),
+      );
+
+      expect(find.byType(HifzMushafPageView), findsOneWidget);
+      expect(find.byKey(const ValueKey('hifz-top-controls')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('hifz-bottom-controls')),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('Mushaf mode settings opens Mushaf appearance controls', (
+    tester,
+  ) async {
+    final preferences = (const AppPreferences.defaults()).copyWith(
+      hifzReadingMode: HifzReadingMode.mushaf,
+    );
+
+    await _pumpHifzPage(
+      tester,
+      preferences: preferences,
+      mushafFontRepository: _FailingMushafFontRepository(),
+    );
+
+    await tester.tap(find.byTooltip('Hifz settings'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mushaf appearance'), findsOneWidget);
+    expect(find.text('Hifz settings'), findsNothing);
+  });
+
+  testWidgets(
+    'switching reading mode does not restart the active Hifz session',
+    (tester) async {
+      final preferences = (const AppPreferences.defaults()).copyWith(
+        hifzReadingMode: HifzReadingMode.regular,
+      );
+      final audio = _HoldingHifzAudioPort();
+
+      await _pumpHifzPage(
+        tester,
+        preferences: preferences,
+        audioPort: audio,
+        mushafFontRepository: _FailingMushafFontRepository(),
+      );
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(HifzPage)),
+      );
+      const config = HifzSessionConfig(
+        start: AyahRef(surahNumber: 1, ayahNumber: 1),
+        end: AyahRef(surahNumber: 1, ayahNumber: 1),
+        preset: HifzPresets.newMemorization,
+      );
+
+      final running = container
+          .read(hifzSessionControllerProvider.notifier)
+          .start(config);
+      await tester.pump();
+      while (audio.playCount == 0) {
+        await tester.pump(const Duration(milliseconds: 10));
+      }
+
+      final before = container.read(hifzSessionControllerProvider);
+      final playCount = audio.playCount;
+
+      await container
+          .read(appPreferencesControllerProvider.notifier)
+          .setHifzReadingMode(HifzReadingMode.mushaf);
+      await tester.pumpAndSettle();
+
+      final inMushaf = container.read(hifzSessionControllerProvider);
+      expect(identical(inMushaf.config, before.config), isTrue);
+      expect(inMushaf.currentStepIndex, before.currentStepIndex);
+      expect(inMushaf.stepRepeatIndex, before.stepRepeatIndex);
+      expect(audio.playCount, playCount);
+
+      await container
+          .read(appPreferencesControllerProvider.notifier)
+          .setHifzReadingMode(HifzReadingMode.regular);
+      await tester.pumpAndSettle();
+
+      final backInRegular = container.read(hifzSessionControllerProvider);
+      expect(identical(backInRegular.config, before.config), isTrue);
+      expect(backInRegular.currentStepIndex, before.currentStepIndex);
+      expect(backInRegular.stepRepeatIndex, before.stepRepeatIndex);
+      expect(audio.playCount, playCount);
+
+      await container.read(hifzSessionControllerProvider.notifier).stop();
+      await running;
+    },
+  );
+
   testWidgets('opens a saved plan at its range with setup ready', (
     tester,
   ) async {
@@ -566,6 +692,8 @@ Future<void> _pumpHifzPage(
   int initialPage = 1,
   HifzSessionConfig? initialConfig,
   bool openSetupOnStart = false,
+  AppPreferences? preferences,
+  MushafPageFontRepository? mushafFontRepository,
 }) async {
   final database = UserDatabase.forTesting(NativeDatabase.memory());
   addTearDown(database.close);
@@ -598,6 +726,14 @@ Future<void> _pumpHifzPage(
             _CompletedAyahAudioController.new,
           ),
         if (systemUi != null) hifzSystemUiProvider.overrideWithValue(systemUi),
+        if (preferences != null)
+          appPreferencesRepositoryProvider.overrideWithValue(
+            _MemoryAppPreferencesRepository(preferences),
+          ),
+        if (mushafFontRepository != null)
+          hifzMushafPageFontRepositoryProvider.overrideWithValue(
+            mushafFontRepository,
+          ),
       ],
       child: MaterialApp(
         home: HifzPage(
@@ -869,4 +1005,31 @@ class _HoldingHifzAudioPort implements HifzAudioPort {
       _playback.completeError(const HifzPlaybackStoppedException());
     }
   }
+}
+
+class _MemoryAppPreferencesRepository implements AppPreferencesRepository {
+  _MemoryAppPreferencesRepository(this.value);
+
+  AppPreferences value;
+
+  @override
+  Future<AppPreferences> load() async => value;
+
+  @override
+  Future<void> save(AppPreferences preferences) async {
+    value = preferences;
+  }
+}
+
+class _FailingMushafFontRepository implements MushafPageFontRepository {
+  @override
+  Future<Uri> ensurePageFont(int page) async {
+    throw StateError('Mushaf font intentionally unavailable in widget test.');
+  }
+
+  @override
+  Future<bool> isCached(int page) async => false;
+
+  @override
+  Future<void> prefetchNeighbors(int page) async {}
 }
