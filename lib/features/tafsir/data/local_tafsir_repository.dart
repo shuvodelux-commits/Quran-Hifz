@@ -5,6 +5,7 @@ import 'package:sqlite3/sqlite3.dart';
 import '../../../core/database/user_database.dart';
 import '../domain/tafsir_entry.dart';
 import '../domain/tafsir_repository.dart';
+import 'tafsir_text_normalizer.dart';
 
 class LocalTafsirRepository implements TafsirRepository {
   LocalTafsirRepository(this._database);
@@ -39,7 +40,7 @@ class LocalTafsirRepository implements TafsirRepository {
               version: record.version,
               surahNumber: surahNumber,
               ayahNumber: row['ayah_number'] as int,
-              text: _combinedTafsirText(
+              text: combinedTafsirText(
                 translation: row['translation'] as String,
                 footnotes: row['footnotes'] as String,
               ),
@@ -63,7 +64,7 @@ class LocalTafsirRepository implements TafsirRepository {
             version: record.version,
             surahNumber: surahNumber,
             ayahNumber: row['ayah_number'] as int,
-            text: _plainTafsirText(row['text'] as String),
+            text: plainTafsirText(row['text'] as String),
             attribution: record.attribution,
             license: record.license,
           ),
@@ -112,7 +113,7 @@ class LocalTafsirRepository implements TafsirRepository {
           version: record.version,
           surahNumber: surahNumber,
           ayahNumber: ayahNumber,
-          text: _combinedTafsirText(
+          text: combinedTafsirText(
             translation: rows.first['translation'] as String,
             footnotes: rows.first['footnotes'] as String,
           ),
@@ -134,7 +135,7 @@ class LocalTafsirRepository implements TafsirRepository {
         version: record.version,
         surahNumber: surahNumber,
         ayahNumber: ayahNumber,
-        text: _plainTafsirText(rows.first['text']! as String),
+        text: plainTafsirText(rows.first['text']! as String),
         attribution: record.attribution,
         license: record.license,
       );
@@ -152,6 +153,8 @@ class LocalTafsirRepository implements TafsirRepository {
       localPath: record.localPath,
       attribution: record.attribution,
       license: record.license,
+      kind: TafsirSourceKind.downloaded,
+      availableOffline: true,
     );
   }
 }
@@ -163,37 +166,4 @@ bool _hasSourceEntries(Database package) {
         "WHERE type = 'table' AND name = 'source_entries' LIMIT 1",
       )
       .isNotEmpty;
-}
-
-String _combinedTafsirText({
-  required String translation,
-  required String footnotes,
-}) {
-  final plainTranslation = _plainTafsirText(translation);
-  final plainFootnotes = _plainTafsirText(footnotes);
-  if (plainTranslation.isEmpty) return plainFootnotes;
-  if (plainFootnotes.isEmpty) return plainTranslation;
-  return '$plainTranslation\n\n$plainFootnotes';
-}
-
-String _plainTafsirText(String source) {
-  final text = source
-      .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
-      .replaceAll(
-        RegExp(r'</(?:p|div|li|h[1-6])\s*>', caseSensitive: false),
-        '\n',
-      )
-      .replaceAll(RegExp(r'</?[a-z][^>]*>', caseSensitive: false), '')
-      .replaceAll('&nbsp;', ' ')
-      .replaceAll('&amp;', '&')
-      .replaceAll('&lt;', '<')
-      .replaceAll('&gt;', '>')
-      .replaceAll('&quot;', '"')
-      .replaceAll('&#39;', "'");
-
-  return text
-      .split('\n')
-      .map((line) => line.trim())
-      .where((line) => line.isNotEmpty)
-      .join('\n');
 }

@@ -25,3 +25,7 @@ abstract class TafsirRepository {
     return entries;
   }
 }
+
+extension TafsirRepositorySources on TafsirRepository {
+  Future<List<TafsirSource>> listSources() => listInstalledSources();
+}

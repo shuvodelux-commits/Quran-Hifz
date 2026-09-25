@@ -1,3 +1,5 @@
+enum TafsirSourceKind { bundled, downloaded, remote }
+
 class TafsirSource {
   const TafsirSource({
     required this.sourceId,
@@ -7,6 +9,8 @@ class TafsirSource {
     this.localPath = '',
     this.attribution,
     this.license,
+    this.kind = TafsirSourceKind.downloaded,
+    this.availableOffline = true,
   });
 
   final String sourceId;
@@ -16,6 +20,8 @@ class TafsirSource {
   final String localPath;
   final String? attribution;
   final String? license;
+  final TafsirSourceKind kind;
+  final bool availableOffline;
 }
 
 class TafsirEntry {
