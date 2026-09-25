@@ -58,11 +58,13 @@ Live Refero research was unavailable because the connected Refero account has no
 
 ### Preserve
 
-- Primary default blue: approximately #275F70
-- Deeper/pressed companion: approximately #205463
-- Light primary tint: cool, low-saturation blue
-- White/off-white content surfaces
-- Small, restrained gold accents for Islamic emphasis only
+- Main app/header blue sampled from the supplied reference: #27687E
+- Deeper blue sampled from the supplied reference: #205766
+- Quran Surah information-card blue sampled from the supplied close-up: #275F70
+- Gold accent sampled/normalized from the supplied reference: approximately #D5A44B
+- Warm off-white canvas: approximately #F7F6F1
+- Cards: white
+- Light primary tint: a low-saturation tint derived from #27687E
 - Clean outline icon language throughout bottom navigation
 - Minimal, non-illustrative Islamic geometry in onboarding
 - Generous whitespace and compact card radii
@@ -199,7 +201,7 @@ Use:
 - small crescent/star accents
 - restrained gold accent
 - white/off-white canvas
-- primary blue for buttons and key emphasis
+- reference main blue #27687E for buttons and key emphasis
 - compact Bismillah / short Arabic line in the hero area
 - no large decorative mosque illustration
 - no animated ornamental clutter
@@ -210,11 +212,22 @@ Touch targets remain at least 44 logical pixels.
 
 Update the default light theme from the current bright teal family to the approved blue family.
 
-Primary direction:
-- primary: #275F70
-- pressed/deeper state: approximately #205463
-- primary tint: low-saturation cool blue
+Reference-sampled direction:
+- app primary/header: #27687E
+- pressed/deeper state: #205766
+- Quran Surah information card: #275F70
+- gold accent: approximately #D5A44B
+- warm canvas: approximately #F7F6F1
+- card surface: #FFFFFF
+- primary tint: a low-saturation cool tint derived from #27687E
 - on-primary: white
+
+Color-role rule:
+- use #27687E for app-level primary controls, selected navigation, and major blue header/hero surfaces
+- use #205766 only for darker/pressed/depth states
+- use #275F70 specifically for the Quran Surah information card and closely related Quran header treatment
+- use gold only for small metadata/accent details; never as the dominant action color
+- preserve white/off-white surfaces rather than flooding ordinary cards with blue
 
 Apply the primary family consistently to:
 - primary buttons
@@ -286,7 +299,7 @@ Controls may be regrouped for clarity, but none may silently disappear.
 ### Surah information card
 
 Use:
-- approved blue background
+- Quran-card blue #275F70 sampled from the supplied close-up
 - approximately 10–12 logical-pixel radius
 - white primary text
 - restrained gold text only for narrow metadata emphasis
