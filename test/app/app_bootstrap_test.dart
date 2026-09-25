@@ -11,6 +11,9 @@ import 'package:quran_hifz/core/database/database_providers.dart';
 import 'package:quran_hifz/core/database/quran_content_bootstrap.dart';
 import 'package:quran_hifz/core/database/quran_content_database.dart';
 import 'package:quran_hifz/core/database/quran_content_installer.dart';
+import 'package:quran_hifz/features/onboarding/application/onboarding_controller.dart';
+import 'package:quran_hifz/features/onboarding/domain/onboarding_repository.dart';
+import 'package:quran_hifz/features/onboarding/domain/onboarding_state.dart';
 import 'package:quran_hifz/features/quran/application/quran_providers.dart';
 import 'package:quran_hifz/features/quran/application/reader_controller.dart';
 import 'package:quran_hifz/features/settings/application/app_preferences_controller.dart';
@@ -76,6 +79,9 @@ void main() {
       ProviderScope(
         overrides: [
           quranContentBootstrapperProvider.overrideWithValue(bootstrap),
+          onboardingRepositoryProvider.overrideWithValue(
+            _CompletedOnboardingRepository(),
+          ),
           readingLocationStoreProvider.overrideWithValue(_NoopLocationStore()),
           themePreferenceProvider.overrideWithValue(AppThemePreference.light),
           showTranslationPreferenceProvider.overrideWithValue(true),
@@ -91,6 +97,44 @@ void main() {
 
     expect(find.byType(MaterialApp), findsOneWidget);
     expect(find.byType(QuranHifzShell), findsOneWidget);
+  });
+
+  testWidgets('incomplete onboarding appears before the normal shell', (
+    tester,
+  ) async {
+    final database = QuranContentDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final bootstrap = QuranContentBootstrap(
+      manifestLoader: () async => jsonEncode({
+        'content_version': 'test',
+        'schema_version': 1,
+        'database_sha256':
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      }),
+      install: (_) async => const QuranContentInstallResult(
+        databasePath: '/fixture/quran.sqlite',
+        contentVersion: 'test',
+        installedNow: false,
+      ),
+      openDatabase: (_) => database,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          quranContentBootstrapperProvider.overrideWithValue(bootstrap),
+          onboardingRepositoryProvider.overrideWithValue(
+            _IncompleteOnboardingRepository(),
+          ),
+          readingLocationStoreProvider.overrideWithValue(_NoopLocationStore()),
+        ],
+        child: const QuranHifzApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(QuranHifzShell), findsNothing);
+    expect(find.text('আপনার ভাষা নির্বাচন করুন'), findsOneWidget);
   });
 
   testWidgets('opening artwork fills upward before revealing the app', (
@@ -178,4 +222,28 @@ class _NoopLocationStore implements ReadingLocationStore {
 
   @override
   Future<void> save(ReadingLocation location) async {}
+}
+
+class _IncompleteOnboardingRepository implements OnboardingRepository {
+  @override
+  Future<OnboardingState> load() async =>
+      const OnboardingState(step: OnboardingStep.language, completed: false);
+
+  @override
+  Future<void> saveStep(OnboardingStep step) async {}
+
+  @override
+  Future<void> complete() async {}
+}
+
+class _CompletedOnboardingRepository implements OnboardingRepository {
+  @override
+  Future<OnboardingState> load() async =>
+      const OnboardingState(step: OnboardingStep.completed, completed: true);
+
+  @override
+  Future<void> saveStep(OnboardingStep step) async {}
+
+  @override
+  Future<void> complete() async {}
 }

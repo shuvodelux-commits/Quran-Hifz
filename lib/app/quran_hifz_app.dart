@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../features/onboarding/presentation/onboarding_gate.dart';
 import '../features/settings/application/app_preferences_controller.dart';
 import '../features/settings/domain/app_preferences.dart';
 import 'app_theme.dart';
@@ -29,7 +30,9 @@ class QuranHifzApp extends ConsumerWidget {
       darkTheme: appTheme(AppThemePreference.dark, language: language),
       themeMode: themeMode,
       home: const AppOpeningSplash(
-        child: QuranContentBootstrapGate(child: QuranHifzShell()),
+        child: QuranContentBootstrapGate(
+          child: OnboardingGate(completedChild: QuranHifzShell()),
+        ),
       ),
     );
   }
