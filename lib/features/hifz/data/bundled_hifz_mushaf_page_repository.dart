@@ -157,7 +157,10 @@ class BundledHifzMushafPageRepository implements HifzMushafPageRepository {
     if (scriptPath == null || !File(scriptPath).existsSync()) return false;
 
     if (variant == HifzMushafVariant.qpcV4Tajweed) return true;
-    return _hasVerifiedDigitalKhattSchema(scriptPath);
+    return _hasVerifiedDigitalKhattData(
+      layoutPath: paths.layout,
+      scriptPath: scriptPath,
+    );
   }
 
   List<HifzMushafToken> _loadTokens(
@@ -219,32 +222,130 @@ class BundledHifzMushafPageRepository implements HifzMushafPageRepository {
     return tokens;
   }
 
-  bool _hasVerifiedDigitalKhattSchema(String path) {
-    Database? database;
+  bool _hasVerifiedDigitalKhattData({
+    required String layoutPath,
+    required String scriptPath,
+  }) {
+    Database? layout;
+    Database? script;
     try {
-      database = sqlite3.open(path, mode: OpenMode.readOnly);
-      final metadata = database.select(
-        "SELECT value FROM metadata WHERE key = 'script_kind' LIMIT 1",
-      );
-      if (metadata.length != 1 ||
-          metadata.first['value']?.toString() != 'digital_khatt_v2') {
+      layout = sqlite3.open(layoutPath, mode: OpenMode.readOnly);
+      script = sqlite3.open(scriptPath, mode: OpenMode.readOnly);
+
+      final metadata = <String, String>{
+        for (final row in script.select('SELECT key, value FROM metadata'))
+          if (row['key'] != null && row['value'] != null)
+            row['key'].toString(): row['value'].toString(),
+      };
+      if (metadata['script_kind'] != 'digital_khatt_v2' ||
+          metadata['script_type'] != 'text_digital_khatt' ||
+          metadata['font_family'] != 'digitalkhatt-v2' ||
+          metadata['qul_resource_id'] != '48') {
         return false;
       }
-      final columns = database
+
+      final columns = script
           .select('PRAGMA table_info(words)')
           .map((row) => row['name']?.toString())
           .toSet();
-      return const {
+      if (!const {
         'word_index',
         'ayah_key',
         'word_position',
         'char_type',
         'display',
-      }.every(columns.contains);
+      }.every(columns.contains)) {
+        return false;
+      }
+
+      final ranges = layout.select('''
+        SELECT first_word_id, last_word_id
+        FROM pages
+        WHERE line_type = 'ayah'
+        ORDER BY first_word_id, last_word_id
+        ''');
+      if (ranges.isEmpty) return false;
+
+      var expectedFirst = 1;
+      for (final row in ranges) {
+        final first = _optionalInt(row['first_word_id']);
+        final last = _optionalInt(row['last_word_id']);
+        if (first == null ||
+            last == null ||
+            first != expectedFirst ||
+            last < first) {
+          return false;
+        }
+        expectedFirst = last + 1;
+      }
+      final expectedTokenCount = expectedFirst - 1;
+
+      if (int.tryParse(metadata['token_count'] ?? '') != expectedTokenCount) {
+        return false;
+      }
+
+      final stats = script.select('''
+        SELECT
+          COUNT(*) AS token_count,
+          MIN(word_index) AS min_word_index,
+          MAX(word_index) AS max_word_index
+        FROM words
+        ''');
+      if (stats.length != 1) return false;
+      final statsRow = stats.single;
+      if (_optionalInt(statsRow['token_count']) != expectedTokenCount ||
+          _optionalInt(statsRow['min_word_index']) != 1 ||
+          _optionalInt(statsRow['max_word_index']) != expectedTokenCount) {
+        return false;
+      }
+
+      final invalidRows = script.select('''
+        SELECT COUNT(*) AS invalid_count
+        FROM words
+        WHERE ayah_key IS NULL
+           OR ayah_key = ''
+           OR word_position IS NULL
+           OR word_position < 1
+           OR display IS NULL
+           OR display = ''
+        ''');
+      if (_optionalInt(invalidRows.single['invalid_count']) != 0) {
+        return false;
+      }
+
+      const canonicalDisplays = <String>[
+        'أَوْ',
+        'زِدْ',
+        'عَلَيْهِ',
+        'وَرَتِّلِ',
+        'ٱلْقُرْءَانَ',
+        'تَرْتِيلًا',
+        '۝٤',
+      ];
+      final canonical = script.select('''
+        SELECT word_position, char_type, display
+        FROM words
+        WHERE ayah_key = '73:4'
+        ORDER BY word_position
+        ''');
+      if (canonical.length != canonicalDisplays.length) return false;
+      for (var index = 0; index < canonicalDisplays.length; index++) {
+        final row = canonical[index];
+        if (_optionalInt(row['word_position']) != index + 1 ||
+            row['display']?.toString() != canonicalDisplays[index]) {
+          return false;
+        }
+      }
+      if (canonical.last['char_type']?.toString() != 'end') {
+        return false;
+      }
+
+      return true;
     } on Object {
       return false;
     } finally {
-      database?.close();
+      layout?.close();
+      script?.close();
     }
   }
 

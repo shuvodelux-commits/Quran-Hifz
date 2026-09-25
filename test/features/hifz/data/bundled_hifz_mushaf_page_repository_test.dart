@@ -25,12 +25,13 @@ void main() {
 
   BundledHifzMushafPageRepository repository({
     String qpcLayoutPath = qpcLayout,
+    String digitalLayoutPath = digitalLayout,
     String? digitalScriptPath,
   }) {
     return BundledHifzMushafPageRepository.forFiles(
       qpcLayoutPath: qpcLayoutPath,
       qpcScriptPath: qpcScript,
-      digitalKhattLayoutPath: digitalLayout,
+      digitalKhattLayoutPath: digitalLayoutPath,
       digitalKhattScriptPath: digitalScriptPath,
     );
   }
@@ -115,56 +116,159 @@ void main() {
   );
 
   test(
-    'Digital Khatt becomes available when an exact script is injected',
+    'Digital Khatt rejects a partial exact-looking script against full layout',
     () async {
-      final scriptPath = tempDir.uri
-          .resolve('digital-khatt-script.sqlite')
-          .toFilePath();
-      final db = sqlite3.open(scriptPath);
-      try {
-        db.execute('''
-        CREATE TABLE words (
-          word_index INTEGER PRIMARY KEY,
-          ayah_key TEXT,
-          word_position INTEGER,
-          char_type TEXT NOT NULL,
-          display TEXT NOT NULL
-        );
-        CREATE TABLE metadata (
-          key TEXT PRIMARY KEY,
-          value TEXT NOT NULL
-        );
-        INSERT INTO metadata VALUES ('script_kind', 'digital_khatt_v2');
-      ''');
-        final insert = db.prepare('INSERT INTO words VALUES (?, ?, ?, ?, ?)');
-        try {
-          for (var index = 1; index <= 36; index++) {
-            insert.execute([
-              index,
-              '1:1',
-              index,
-              index == 5 ? 'end' : 'word',
-              'glyph-$index',
-            ]);
-          }
-        } finally {
-          insert.close();
-        }
-      } finally {
-        db.close();
-      }
+      final scriptPath = _writeDigitalScriptFixture(
+        tempDir: tempDir,
+        tokenCountMetadata: 7,
+      );
 
       final subject = repository(digitalScriptPath: scriptPath);
       expect(
         await subject.isVariantAvailable(HifzMushafVariant.digitalKhattV2),
+        isFalse,
+      );
+    },
+  );
+
+  test(
+    'Digital Khatt becomes available only when layout and exact script agree',
+    () async {
+      final layoutPath = _writeDigitalLayoutFixture(tempDir);
+      final scriptPath = _writeDigitalScriptFixture(
+        tempDir: tempDir,
+        tokenCountMetadata: 7,
+      );
+
+      final subject = repository(
+        digitalLayoutPath: layoutPath,
+        digitalScriptPath: scriptPath,
+      );
+      expect(
+        await subject.isVariantAvailable(HifzMushafVariant.digitalKhattV2),
         isTrue,
       );
+
       final page = await subject.loadPage(
         variant: HifzMushafVariant.digitalKhattV2,
         page: 1,
       );
       expect(page.page, 1);
-      expect(page.tokens, hasLength(36));
+      expect(page.tokens.map((token) => token.display).toList(), const [
+        'أَوْ',
+        'زِدْ',
+        'عَلَيْهِ',
+        'وَرَتِّلِ',
+        'ٱلْقُرْءَانَ',
+        'تَرْتِيلًا',
+        '۝٤',
+      ]);
     },
   );
+
+  test('Digital Khatt rejects a changed canonical codepoint', () async {
+    final layoutPath = _writeDigitalLayoutFixture(tempDir);
+    final scriptPath = _writeDigitalScriptFixture(
+      tempDir: tempDir,
+      tokenCountMetadata: 7,
+      firstDisplay: 'أَوْ',
+    );
+
+    expect(
+      await repository(
+        digitalLayoutPath: layoutPath,
+        digitalScriptPath: scriptPath,
+      ).isVariantAvailable(HifzMushafVariant.digitalKhattV2),
+      isFalse,
+    );
+  });
+}
+
+String _writeDigitalLayoutFixture(Directory tempDir) {
+  final path = tempDir.uri.resolve('digital-layout.sqlite').toFilePath();
+  final db = sqlite3.open(path);
+  try {
+    db.execute('''
+      CREATE TABLE pages (
+        page_number INTEGER NOT NULL,
+        line_number INTEGER NOT NULL,
+        line_type TEXT NOT NULL,
+        is_centered INTEGER NOT NULL,
+        first_word_id INTEGER,
+        last_word_id INTEGER,
+        surah_number INTEGER
+      );
+      INSERT INTO pages VALUES (1, 1, 'ayah', 0, 1, 7, 73);
+    ''');
+  } finally {
+    db.close();
+  }
+  return path;
+}
+
+String _writeDigitalScriptFixture({
+  required Directory tempDir,
+  required int tokenCountMetadata,
+  String firstDisplay = 'أَوْ',
+}) {
+  final path = tempDir.uri.resolve('digital-script.sqlite').toFilePath();
+  final db = sqlite3.open(path);
+  try {
+    db.execute('''
+      CREATE TABLE words (
+        word_index INTEGER PRIMARY KEY,
+        ayah_key TEXT NOT NULL,
+        word_position INTEGER NOT NULL,
+        char_type TEXT NOT NULL,
+        display TEXT NOT NULL
+      );
+      CREATE TABLE metadata (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      );
+    ''');
+    final metadata = db.prepare(
+      'INSERT INTO metadata(key, value) VALUES (?, ?)',
+    );
+    try {
+      for (final entry in <String, String>{
+        'script_kind': 'digital_khatt_v2',
+        'script_type': 'text_digital_khatt',
+        'font_family': 'digitalkhatt-v2',
+        'qul_resource_id': '48',
+        'token_count': '$tokenCountMetadata',
+      }.entries) {
+        metadata.execute([entry.key, entry.value]);
+      }
+    } finally {
+      metadata.close();
+    }
+
+    final displays = <String>[
+      firstDisplay,
+      'زِدْ',
+      'عَلَيْهِ',
+      'وَرَتِّلِ',
+      'ٱلْقُرْءَانَ',
+      'تَرْتِيلًا',
+      '۝٤',
+    ];
+    final insert = db.prepare('INSERT INTO words VALUES (?, ?, ?, ?, ?)');
+    try {
+      for (var index = 0; index < displays.length; index++) {
+        insert.execute([
+          index + 1,
+          '73:4',
+          index + 1,
+          index == displays.length - 1 ? 'end' : 'word',
+          displays[index],
+        ]);
+      }
+    } finally {
+      insert.close();
+    }
+  } finally {
+    db.close();
+  }
+  return path;
 }
