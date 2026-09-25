@@ -365,7 +365,7 @@ class _HifzPageState extends ConsumerState<HifzPage>
             onWordLongPress: (ayahKey, position) =>
                 unawaited(_showMushafWordDetails(ayahKey, position)),
             onAyahSelected: _selectRangeAyah,
-            onToggleControls: _controlsVisible ? _hideControls : _showControls,
+            onToggleControls: () {},
             onUseRegularHifz: () => unawaited(
               ref
                   .read(appPreferencesControllerProvider.notifier)
@@ -377,58 +377,61 @@ class _HifzPageState extends ConsumerState<HifzPage>
         return Scaffold(
           body: Column(
             children: [
-              Visibility(
-                key: const ValueKey('hifz-top-controls-visibility'),
-                visible: _controlsVisible,
-                maintainAnimation: true,
-                maintainState: true,
-                maintainSize: true,
-                child: Material(
-                  key: const ValueKey('hifz-top-controls'),
-                  color: Theme.of(context).colorScheme.surface,
-                  elevation: 2,
-                  child: SafeArea(
-                    bottom: false,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          children: [
-                            IconButton(
-                              key: const ValueKey('hifz-close'),
-                              tooltip: 'Close Hifz',
-                              onPressed: () => Navigator.of(context).maybePop(),
-                              icon: const Icon(Icons.close_rounded),
-                            ),
-                            const Expanded(
-                              child: Text(
-                                'Hifz',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontWeight: FontWeight.w700),
+              if (readingMode == HifzReadingMode.regular)
+                Visibility(
+                  key: const ValueKey('hifz-top-controls-visibility'),
+                  visible: _controlsVisible,
+                  maintainAnimation: true,
+                  maintainState: true,
+                  maintainSize: true,
+                  child: Material(
+                    key: const ValueKey('hifz-top-controls'),
+                    color: Theme.of(context).colorScheme.surface,
+                    elevation: 2,
+                    child: SafeArea(
+                      bottom: false,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              IconButton(
+                                key: const ValueKey('hifz-close'),
+                                tooltip: 'Close Hifz',
+                                onPressed: () =>
+                                    Navigator.of(context).maybePop(),
+                                icon: const Icon(Icons.close_rounded),
                               ),
-                            ),
-                            IconButton(
-                              tooltip: 'Hifz settings',
-                              onPressed: _openSettings,
-                              icon: const Icon(Icons.settings_outlined),
-                            ),
-                          ],
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(12, 0, 12, 6),
-                          child: HifzReadingModeSelector(),
-                        ),
-                        if (!playing)
-                          _CompactSurahSelector(
-                            surah: selectedSurah,
-                            page: visiblePage,
-                            onTap: () => _showSurahPicker(items, selectedSurah),
+                              const Expanded(
+                                child: Text(
+                                  'Hifz',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                              IconButton(
+                                tooltip: 'Hifz settings',
+                                onPressed: _openSettings,
+                                icon: const Icon(Icons.settings_outlined),
+                              ),
+                            ],
                           ),
-                      ],
+                          const Padding(
+                            padding: EdgeInsets.fromLTRB(12, 0, 12, 6),
+                            child: HifzReadingModeSelector(),
+                          ),
+                          if (!playing)
+                            _CompactSurahSelector(
+                              surah: selectedSurah,
+                              page: visiblePage,
+                              onTap: () =>
+                                  _showSurahPicker(items, selectedSurah),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
               Expanded(
                 child: GestureDetector(
                   key: const ValueKey('hifz-reading-gesture'),
@@ -448,60 +451,67 @@ class _HifzPageState extends ConsumerState<HifzPage>
                   ),
                 ),
               ),
-              Visibility(
-                key: const ValueKey('hifz-bottom-controls-visibility'),
-                visible: _controlsVisible,
-                maintainAnimation: true,
-                maintainState: true,
-                maintainSize: true,
-                child: Material(
-                  key: const ValueKey('hifz-bottom-controls'),
-                  color: Theme.of(context).colorScheme.surface,
-                  elevation: 4,
-                  child: SafeArea(
-                    top: false,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (playing)
-                          HifzActivePlayer(
-                            surah: selectedSurah,
-                            session: session,
-                            audio: audio,
-                            onPause: () => unawaited(
-                              ref
-                                  .read(hifzSessionControllerProvider.notifier)
-                                  .pause(),
+              if (readingMode == HifzReadingMode.regular)
+                Visibility(
+                  key: const ValueKey('hifz-bottom-controls-visibility'),
+                  visible: _controlsVisible,
+                  maintainAnimation: true,
+                  maintainState: true,
+                  maintainSize: true,
+                  child: Material(
+                    key: const ValueKey('hifz-bottom-controls'),
+                    color: Theme.of(context).colorScheme.surface,
+                    elevation: 4,
+                    child: SafeArea(
+                      top: false,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (playing)
+                            HifzActivePlayer(
+                              surah: selectedSurah,
+                              session: session,
+                              audio: audio,
+                              onPause: () => unawaited(
+                                ref
+                                    .read(
+                                      hifzSessionControllerProvider.notifier,
+                                    )
+                                    .pause(),
+                              ),
+                              onResume: () => unawaited(
+                                ref
+                                    .read(
+                                      hifzSessionControllerProvider.notifier,
+                                    )
+                                    .resume(),
+                              ),
+                              onStop: () => unawaited(
+                                ref
+                                    .read(
+                                      hifzSessionControllerProvider.notifier,
+                                    )
+                                    .stop(),
+                              ),
                             ),
-                            onResume: () => unawaited(
-                              ref
-                                  .read(hifzSessionControllerProvider.notifier)
-                                  .resume(),
-                            ),
-                            onStop: () => unawaited(
-                              ref
-                                  .read(hifzSessionControllerProvider.notifier)
-                                  .stop(),
-                            ),
+                          _HifzPageControls(
+                            page: visiblePage,
+                            showTools: !playing,
+                            onPrevious: visiblePage > 1
+                                ? () => _turnPage(visiblePage - 1)
+                                : null,
+                            onTools: playing
+                                ? null
+                                : () => _openSetupSheet(selectedSurah),
+                            onNext: visiblePage < 604
+                                ? () => _turnPage(visiblePage + 1)
+                                : null,
                           ),
-                        _HifzPageControls(
-                          page: visiblePage,
-                          showTools: !playing,
-                          onPrevious: visiblePage > 1
-                              ? () => _turnPage(visiblePage - 1)
-                              : null,
-                          onTools: playing
-                              ? null
-                              : () => _openSetupSheet(selectedSurah),
-                          onNext: visiblePage < 604
-                              ? () => _turnPage(visiblePage + 1)
-                              : null,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         );

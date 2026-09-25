@@ -62,7 +62,7 @@ void main() {
   });
 
   testWidgets(
-    'Mushaf mode shows single-page reader and preserves Hifz controls',
+    'Mushaf mode is full screen and never shows fixed Hifz controls',
     (tester) async {
       final preferences = (const AppPreferences.defaults()).copyWith(
         hifzReadingMode: HifzReadingMode.mushaf,
@@ -75,17 +75,27 @@ void main() {
       );
 
       expect(find.byType(HifzMushafPageView), findsOneWidget);
-      expect(find.byKey(const ValueKey('hifz-top-controls')), findsOneWidget);
+      expect(find.byKey(const ValueKey('hifz-top-controls')), findsNothing);
+      expect(find.byKey(const ValueKey('hifz-bottom-controls')), findsNothing);
       expect(
-        find.byKey(const ValueKey('hifz-bottom-controls')),
-        findsOneWidget,
+        find.byKey(const ValueKey('hifz-reading-mode-selector')),
+        findsNothing,
       );
+
+      final pageRect = tester.getRect(find.byType(HifzMushafPageView));
+      final screen = tester.view.physicalSize / tester.view.devicePixelRatio;
+      expect(pageRect.top, 0);
+      expect(pageRect.bottom, screen.height);
+
+      await tester.tapAt(pageRect.center);
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('hifz-top-controls')), findsNothing);
+      expect(find.byKey(const ValueKey('hifz-bottom-controls')), findsNothing);
     },
   );
 
-  testWidgets('Mushaf mode settings opens Mushaf appearance controls', (
-    tester,
-  ) async {
+  testWidgets('Mushaf mode exposes no fixed settings action', (tester) async {
     final preferences = (const AppPreferences.defaults()).copyWith(
       hifzReadingMode: HifzReadingMode.mushaf,
     );
@@ -96,11 +106,8 @@ void main() {
       mushafFontRepository: _FailingMushafFontRepository(),
     );
 
-    await tester.tap(find.byTooltip('Hifz settings'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Mushaf appearance'), findsOneWidget);
-    expect(find.text('Hifz settings'), findsNothing);
+    expect(find.byTooltip('Hifz settings'), findsNothing);
+    expect(find.text('Mushaf appearance'), findsNothing);
   });
 
   testWidgets(
