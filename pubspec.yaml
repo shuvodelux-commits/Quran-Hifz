@@ -48,6 +48,7 @@ flutter:
     - assets/audio/chapters_v1/
     - assets/images/
     - assets/dua/
+    - assets/tafsir/zakaria/1.1.1/
     - assets/mushaf/renderer/
     - assets/mushaf/scripts/
     - assets/mushaf/layouts/

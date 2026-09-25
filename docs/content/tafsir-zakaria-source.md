@@ -51,3 +51,18 @@ python tool/tafsir/build_zakaria_package.py \
 The builder fetches all 114 Surahs from QuranEnc, verifies every source ayah against the canonical database, runs SQLite `quick_check`, and emits SHA-256 and exact-size manifest metadata.
 
 After uploading the generated SQLite file, copy the generated URL/hash/size/version into the backend's `TAFSIR_ZAKARIA_*` release configuration. Flutter retrieves that trusted manifest and then re-verifies the package locally before installation.
+
+## Bundled compact assets
+
+The production app bundles Zakaria Tafsir as verified per-Surah gzip assets
+under `assets/tafsir/zakaria/1.1.1/`. The builder is
+`tool/tafsir/build_zakaria_assets.py`.
+
+Each Surah payload stores the QuranEnc `translation` and `footnotes`
+strings unchanged. `manifest.json` records the source identity, attribution,
+version, per-Surah ayah counts, byte sizes, and SHA-256 hashes. Runtime code
+reads the requested compressed Surah directly from Flutter assets; it does not
+extract a second 16–29 MB SQLite copy on first launch.
+
+The legacy downloadable SQLite builder remains available for optional
+Cloudflare-delivered updates and backwards compatibility.
