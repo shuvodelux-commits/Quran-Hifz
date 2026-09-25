@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../core/theme/reference_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../settings/application/app_preferences_controller.dart';
@@ -44,7 +46,7 @@ class _DeveloperMessagePageState extends ConsumerState<DeveloperMessagePage> {
     final language = ref.watch(appLanguageProvider);
     final bn = language == AppLanguage.bangla;
     final colors = Theme.of(context).colorScheme;
-    const gold = Color(0xFFD5A44B);
+    const gold = ReferenceColors.goldAccent;
     final email = onboardingSupportEmail?.trim();
     final hasEmail = email != null && email.isNotEmpty;
 

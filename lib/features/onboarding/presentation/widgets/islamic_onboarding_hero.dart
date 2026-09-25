@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/reference_colors.dart';
+
 class IslamicOnboardingHero extends StatelessWidget {
   const IslamicOnboardingHero({
     super.key,
@@ -13,7 +15,7 @@ class IslamicOnboardingHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    const gold = Color(0xFFD5A44B);
+    const gold = ReferenceColors.goldAccent;
     return SizedBox(
       key: const ValueKey('islamic-onboarding-hero'),
       height: 164,
