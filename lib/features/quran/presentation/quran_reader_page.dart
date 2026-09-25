@@ -22,7 +22,6 @@ import '../domain/quran_page_window.dart';
 import '../domain/quran_ayah.dart';
 import '../domain/reader_scope.dart';
 import '../domain/quran_surah.dart';
-import 'surah_localized_text.dart';
 import 'widgets/reader_window.dart';
 import 'widgets/reader_offline_audio_prompt.dart';
 import 'widgets/reader_playback_panel.dart';
@@ -242,7 +241,6 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
       unawaited(_ensurePlaybackAyahLoaded(next));
     });
 
-    final primary = _surahs.isEmpty ? widget.surah : _primarySurah;
     final showPlayer =
         audio.mode == QuranAudioMode.ayah &&
         (audio.status == QuranAudioStatus.loading ||
