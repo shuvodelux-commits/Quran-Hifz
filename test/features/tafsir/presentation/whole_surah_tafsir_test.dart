@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/features/tafsir/application/tafsir_providers.dart';
+import 'package:quran_hifz/features/tafsir/data/tafsir_source_selection_store.dart';
 import 'package:quran_hifz/features/tafsir/domain/tafsir_entry.dart';
 import 'package:quran_hifz/features/tafsir/domain/tafsir_repository.dart';
 import 'package:quran_hifz/features/tafsir/presentation/tafsir_reader_page.dart';
@@ -37,13 +38,30 @@ class _Repository implements TafsirRepository {
   ];
 }
 
+class _MemorySelectionStore implements TafsirSourceSelectionStore {
+  String? value;
+
+  @override
+  Future<String?> read() async => value;
+
+  @override
+  Future<void> write(String sourceId) async {
+    value = sourceId;
+  }
+}
+
 void main() {
   testWidgets('whole-Surah action displays all available Ayah Tafsir entries', (
     tester,
   ) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [tafsirRepositoryProvider.overrideWithValue(_Repository())],
+        overrides: [
+          tafsirRepositoryProvider.overrideWithValue(_Repository()),
+          tafsirSourceSelectionStoreProvider.overrideWithValue(
+            _MemorySelectionStore(),
+          ),
+        ],
         child: const MaterialApp(
           home: TafsirReaderPage(
             surahNumber: 1,

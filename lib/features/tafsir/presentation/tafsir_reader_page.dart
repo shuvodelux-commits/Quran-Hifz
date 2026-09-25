@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,8 +27,6 @@ class TafsirReaderPage extends ConsumerStatefulWidget {
 
 class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
   String? _selectedSourceId;
-  String? _installError;
-  bool _installing = false;
   late Future<_TafsirViewState> _future;
 
   @override
@@ -37,18 +37,24 @@ class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
 
   Future<_TafsirViewState> _load() async {
     final repository = ref.read(tafsirRepositoryProvider);
+    final selectionStore = ref.read(tafsirSourceSelectionStoreProvider);
     final sources = await repository.listInstalledSources();
     if (sources.isEmpty) return const _TafsirViewState(sources: []);
 
+    final saved = _selectedSourceId ?? await selectionStore.read();
     final selected =
-        sources.any((source) => source.sourceId == _selectedSourceId)
-        ? _selectedSourceId!
+        saved != null && sources.any((source) => source.sourceId == saved)
+        ? saved
         : sources.any(
             (source) => source.sourceId == primaryBanglaTafsirSourceId,
           )
         ? primaryBanglaTafsirSourceId
         : sources.first.sourceId;
     _selectedSourceId = selected;
+    if (saved != selected) {
+      await selectionStore.write(selected);
+    }
+
     if (widget.wholeSurah) {
       final entries = await repository.readSurah(
         sourceId: selected,
@@ -64,41 +70,13 @@ class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
     return _TafsirViewState(sources: sources, entry: entry);
   }
 
-  void _selectSource(String sourceId) {
+  Future<void> _selectSource(String sourceId) async {
+    await ref.read(tafsirSourceSelectionStoreProvider).write(sourceId);
+    if (!mounted) return;
     setState(() {
       _selectedSourceId = sourceId;
       _future = _load();
     });
-  }
-
-  Future<void> _installPrimaryBanglaTafsir() async {
-    setState(() {
-      _installing = true;
-      _installError = null;
-    });
-    try {
-      final manifest = await ref
-          .read(tafsirCatalogProvider)
-          .fetchPrimaryBanglaManifest();
-      await ref.read(tafsirPackageInstallerProvider).install(manifest);
-      if (!mounted) return;
-      setState(() {
-        _selectedSourceId = primaryBanglaTafsirSourceId;
-        _future = _load();
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _installError =
-            'Tafsir package could not be installed. Check the connection and try again.';
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _installing = false;
-        });
-      }
-    }
   }
 
   @override
@@ -124,48 +102,12 @@ class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
           }
           final state = snapshot.data ?? const _TafsirViewState(sources: []);
           if (state.sources.isEmpty) {
-            return Center(
+            return const Center(
               child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      primaryBanglaTafsirName,
-                      style: Theme.of(context).textTheme.titleLarge,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Primary Bangla tafsir source. Download once for verified offline reading.',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    FilledButton.icon(
-                      onPressed: _installing
-                          ? null
-                          : _installPrimaryBanglaTafsir,
-                      icon: _installing
-                          ? const SizedBox.square(
-                              dimension: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.download_rounded),
-                      label: Text(
-                        _installing ? 'Installing…' : 'Download tafsir',
-                      ),
-                    ),
-                    if (_installError != null) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        _installError!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ],
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'No Tafsir sources are available.',
+                  textAlign: TextAlign.center,
                 ),
               ),
             );
@@ -199,7 +141,9 @@ class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
                               ),
                           ],
                           onChanged: (value) {
-                            if (value != null) _selectSource(value);
+                            if (value != null) {
+                              unawaited(_selectSource(value));
+                            }
                           },
                         ),
                       Text(
@@ -251,7 +195,9 @@ class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
                       ),
                   ],
                   onChanged: (value) {
-                    if (value != null) _selectSource(value);
+                    if (value != null) {
+                      unawaited(_selectSource(value));
+                    }
                   },
                 ),
               if (state.sources.length > 1) const SizedBox(height: 16),

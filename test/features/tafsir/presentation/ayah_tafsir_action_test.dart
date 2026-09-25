@@ -6,8 +6,21 @@ import 'package:quran_hifz/features/quran/domain/quran_word.dart';
 import 'package:quran_hifz/features/quran/presentation/widgets/ayah_card.dart';
 import 'package:quran_hifz/features/settings/application/app_preferences_controller.dart';
 import 'package:quran_hifz/features/tafsir/application/tafsir_providers.dart';
+import 'package:quran_hifz/features/tafsir/data/tafsir_source_selection_store.dart';
 import 'package:quran_hifz/features/tafsir/domain/tafsir_entry.dart';
 import 'package:quran_hifz/features/tafsir/domain/tafsir_repository.dart';
+
+class _MemorySelectionStore implements TafsirSourceSelectionStore {
+  String? value;
+
+  @override
+  Future<String?> read() async => value;
+
+  @override
+  Future<void> write(String sourceId) async {
+    value = sourceId;
+  }
+}
 
 void main() {
   testWidgets('ayah Tafsir action opens installed source with attribution', (
@@ -20,6 +33,9 @@ void main() {
           defaultPlaybackSpeedProvider.overrideWith((ref) => 1.0),
           tafsirRepositoryProvider.overrideWithValue(
             _FixtureTafsirRepository(),
+          ),
+          tafsirSourceSelectionStoreProvider.overrideWithValue(
+            _MemorySelectionStore(),
           ),
         ],
         child: const MaterialApp(
