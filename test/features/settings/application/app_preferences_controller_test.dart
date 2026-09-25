@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
 import 'package:quran_hifz/features/settings/application/app_preferences_controller.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
@@ -39,6 +40,61 @@ void main() {
     expect(container.read(hifzLayoutModeProvider), HifzLayoutMode.fixedMushaf);
     expect(repository.value.hifzLayoutMode, HifzLayoutMode.fixedMushaf);
   });
+
+  test('persists Hifz reading mode and Mushaf variant', () async {
+    final repository = _MemoryRepository();
+    final container = ProviderContainer(
+      overrides: [
+        appPreferencesRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(appPreferencesControllerProvider.future);
+    final controller = container.read(
+      appPreferencesControllerProvider.notifier,
+    );
+
+    await controller.setHifzReadingMode(HifzReadingMode.mushaf);
+    await controller.setHifzMushafVariant(HifzMushafVariant.qpcV4Tajweed);
+    await controller.setHifzMushafPalette(HifzMushafPalette.p6);
+
+    expect(container.read(hifzReadingModeProvider), HifzReadingMode.mushaf);
+    expect(
+      container.read(hifzMushafVariantProvider),
+      HifzMushafVariant.qpcV4Tajweed,
+    );
+    expect(container.read(hifzMushafPaletteProvider), HifzMushafPalette.p6);
+    expect(repository.value.hifzReadingMode, HifzReadingMode.mushaf);
+  });
+
+  test(
+    'effective Digital Khatt palette normalizes without overwriting saved P6',
+    () async {
+      final repository = _MemoryRepository()
+        ..value = const AppPreferences.defaults().copyWith(
+          hifzMushafPalette: HifzMushafPalette.p6,
+        );
+      final container = ProviderContainer(
+        overrides: [
+          appPreferencesRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(appPreferencesControllerProvider.future);
+      await container
+          .read(appPreferencesControllerProvider.notifier)
+          .setHifzMushafVariant(HifzMushafVariant.digitalKhattV2);
+
+      expect(
+        container.read(effectiveHifzMushafPaletteProvider),
+        HifzMushafPalette.light,
+      );
+      expect(container.read(hifzMushafPaletteProvider), HifzMushafPalette.p6);
+      expect(repository.value.hifzMushafPalette, HifzMushafPalette.p6);
+    },
+  );
 
   test('changing Tajweed preference preserves Quran typography', () async {
     final repository = _MemoryRepository();

@@ -1,4 +1,5 @@
 import '../../../core/database/user_database.dart';
+import '../../hifz/domain/hifz_reading_mode.dart';
 import '../../quran/domain/quran_font_preference.dart';
 import '../domain/app_preferences.dart';
 import '../domain/app_preferences_repository.dart';
@@ -11,6 +12,9 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
   static const quranFontKey = 'quran_font';
   static const hifzQuranFontKey = 'hifz_quran_font';
   static const hifzLayoutModeKey = 'hifz_layout_mode';
+  static const hifzReadingModeKey = 'hifz_reading_mode_v1';
+  static const hifzMushafVariantKey = 'hifz_mushaf_variant_v1';
+  static const hifzMushafPaletteKey = 'hifz_mushaf_palette_v1';
   static const hifzFontSizeKey = 'hifz_font_size';
   static const hifzLineHeightKey = 'hifz_line_height';
   static const hifzAutoScrollEnabledKey = 'hifz_auto_scroll_enabled';
@@ -65,6 +69,9 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       _database.getSetting(hifzLayoutModeKey),
       _database.getSetting(hifzAutoScrollEnabledKey),
       _database.getSetting(hifzAutoScrollSpeedKey),
+      _database.getSetting(hifzReadingModeKey),
+      _database.getSetting(hifzMushafVariantKey),
+      _database.getSetting(hifzMushafPaletteKey),
     ]);
 
     final theme = switch (values[0]) {
@@ -118,6 +125,21 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       hifzLayoutMode: values[22] == HifzLayoutMode.fixedMushaf.name
           ? HifzLayoutMode.fixedMushaf
           : HifzLayoutMode.freeFlow,
+      hifzReadingMode: _enumOr(
+        HifzReadingMode.values,
+        values[25],
+        defaults.hifzReadingMode,
+      ),
+      hifzMushafVariant: _enumOr(
+        HifzMushafVariant.values,
+        values[26],
+        defaults.hifzMushafVariant,
+      ),
+      hifzMushafPalette: _enumOr(
+        HifzMushafPalette.values,
+        values[27],
+        defaults.hifzMushafPalette,
+      ),
       hifzFontSize:
           _isFiniteInRange(
             hifzFontSize,
@@ -225,6 +247,18 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
         preferences.hifzLayoutMode.name,
       );
       await _database.saveSetting(
+        hifzReadingModeKey,
+        preferences.hifzReadingMode.name,
+      );
+      await _database.saveSetting(
+        hifzMushafVariantKey,
+        preferences.hifzMushafVariant.name,
+      );
+      await _database.saveSetting(
+        hifzMushafPaletteKey,
+        preferences.hifzMushafPalette.name,
+      );
+      await _database.saveSetting(
         hifzAutoScrollEnabledKey,
         preferences.hifzAutoScrollEnabled.toString(),
       );
@@ -296,6 +330,13 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
         value.isFinite &&
         value >= minimum &&
         value <= maximum;
+  }
+
+  T _enumOr<T extends Enum>(Iterable<T> values, String? raw, T fallback) {
+    return values.firstWhere(
+      (value) => value.name == raw,
+      orElse: () => fallback,
+    );
   }
 
   QuranFontPreference _fontFromName(

@@ -1,6 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/core/database/user_database.dart';
+import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
 import 'package:quran_hifz/features/settings/data/user_database_app_preferences_repository.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
@@ -98,6 +99,49 @@ void main() {
     expect(restored.hifzAutoScrollSpeed, HifzAutoScrollSpeed.fast);
     expect(restored.arabicFontSize, 27);
     expect(restored.arabicLineHeight, 1.2);
+  });
+
+  test('round trips Mushaf mode and QPC palette', () async {
+    final database = UserDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final repository = UserDatabaseAppPreferencesRepository(database);
+
+    await repository.save(
+      const AppPreferences.defaults().copyWith(
+        hifzReadingMode: HifzReadingMode.mushaf,
+        hifzMushafVariant: HifzMushafVariant.qpcV4Tajweed,
+        hifzMushafPalette: HifzMushafPalette.p6,
+      ),
+    );
+
+    final restored = await repository.load();
+    expect(restored.hifzReadingMode, HifzReadingMode.mushaf);
+    expect(restored.hifzMushafVariant, HifzMushafVariant.qpcV4Tajweed);
+    expect(restored.hifzMushafPalette, HifzMushafPalette.p6);
+  });
+
+  test('unknown Mushaf preference values fail closed to defaults', () async {
+    final database = UserDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final repository = UserDatabaseAppPreferencesRepository(database);
+
+    await database.saveSetting(
+      UserDatabaseAppPreferencesRepository.hifzReadingModeKey,
+      'removed-mode',
+    );
+    await database.saveSetting(
+      UserDatabaseAppPreferencesRepository.hifzMushafVariantKey,
+      'removed-variant',
+    );
+    await database.saveSetting(
+      UserDatabaseAppPreferencesRepository.hifzMushafPaletteKey,
+      'removed-palette',
+    );
+
+    final restored = await repository.load();
+    expect(restored.hifzReadingMode, HifzReadingMode.regular);
+    expect(restored.hifzMushafVariant, HifzMushafVariant.qpcV4Tajweed);
+    expect(restored.hifzMushafPalette, HifzMushafPalette.light);
   });
 
   test('migrates legacy quran script when no global font is saved', () async {

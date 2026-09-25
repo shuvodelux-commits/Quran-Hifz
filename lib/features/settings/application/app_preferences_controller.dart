@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_providers.dart';
+import '../../hifz/domain/hifz_reading_mode.dart';
 import '../../quran/domain/quran_font_preference.dart';
 import '../data/user_database_app_preferences_repository.dart';
 import '../domain/app_preferences.dart';
@@ -59,6 +60,15 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
 
   Future<void> setHifzLayoutMode(HifzLayoutMode value) =>
       _update((current) => current.copyWith(hifzLayoutMode: value));
+
+  Future<void> setHifzReadingMode(HifzReadingMode value) =>
+      _update((current) => current.copyWith(hifzReadingMode: value));
+
+  Future<void> setHifzMushafVariant(HifzMushafVariant value) =>
+      _update((current) => current.copyWith(hifzMushafVariant: value));
+
+  Future<void> setHifzMushafPalette(HifzMushafPalette value) =>
+      _update((current) => current.copyWith(hifzMushafPalette: value));
 
   Future<void> setHifzAutoScrollEnabled(bool value) =>
       _update((current) => current.copyWith(hifzAutoScrollEnabled: value));
@@ -224,6 +234,28 @@ final hifzQuranFontProvider = Provider<QuranFontPreference>((ref) {
 final hifzLayoutModeProvider = Provider<HifzLayoutMode>((ref) {
   return ref.watch(appPreferencesControllerProvider).value?.hifzLayoutMode ??
       HifzLayoutMode.freeFlow;
+});
+
+final hifzReadingModeProvider = Provider<HifzReadingMode>((ref) {
+  return ref.watch(appPreferencesControllerProvider).value?.hifzReadingMode ??
+      HifzReadingMode.regular;
+});
+
+final hifzMushafVariantProvider = Provider<HifzMushafVariant>((ref) {
+  return ref.watch(appPreferencesControllerProvider).value?.hifzMushafVariant ??
+      HifzMushafVariant.qpcV4Tajweed;
+});
+
+final hifzMushafPaletteProvider = Provider<HifzMushafPalette>((ref) {
+  return ref.watch(appPreferencesControllerProvider).value?.hifzMushafPalette ??
+      HifzMushafPalette.light;
+});
+
+final effectiveHifzMushafPaletteProvider = Provider<HifzMushafPalette>((ref) {
+  return effectivePalette(
+    ref.watch(hifzMushafVariantProvider),
+    ref.watch(hifzMushafPaletteProvider),
+  );
 });
 
 final hifzFontSizeProvider = Provider<double>((ref) {

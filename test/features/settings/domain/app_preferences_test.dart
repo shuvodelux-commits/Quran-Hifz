@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 
@@ -25,6 +26,24 @@ void main() {
     expect(preferences.hifzAutoScrollSpeed, HifzAutoScrollSpeed.medium);
     expect(preferences.language, AppLanguage.bangla);
     expect(preferences.asrSchool, AsrSchool.hanafi);
+  });
+
+  test('regular is the default reading mode', () {
+    expect(
+      const AppPreferences.defaults().hifzReadingMode,
+      HifzReadingMode.regular,
+    );
+  });
+
+  test('P palettes are not supported by Digital Khatt', () {
+    expect(
+      HifzMushafPalette.p4.supports(HifzMushafVariant.digitalKhattV2),
+      isFalse,
+    );
+    expect(
+      HifzMushafPalette.sepia.supports(HifzMushafVariant.digitalKhattV2),
+      isTrue,
+    );
   });
 
   test('copyWith changes one field without resetting the others', () {

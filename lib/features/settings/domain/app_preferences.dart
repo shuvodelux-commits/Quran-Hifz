@@ -1,3 +1,4 @@
+import '../../hifz/domain/hifz_reading_mode.dart';
 import '../../quran/domain/quran_font_preference.dart';
 import '../../quran/domain/quran_script.dart';
 
@@ -35,6 +36,9 @@ class AppPreferences {
     required this.arabicLineHeight,
     required this.hifzQuranFont,
     required this.hifzLayoutMode,
+    required this.hifzReadingMode,
+    required this.hifzMushafVariant,
+    required this.hifzMushafPalette,
     required this.hifzFontSize,
     required this.hifzLineHeight,
     required this.hifzAutoScrollEnabled,
@@ -66,6 +70,9 @@ class AppPreferences {
       // Quran font list.
       hifzQuranFont = QuranFontPreference.notoNaskhArabic,
       hifzLayoutMode = HifzLayoutMode.freeFlow,
+      hifzReadingMode = HifzReadingMode.regular,
+      hifzMushafVariant = HifzMushafVariant.qpcV4Tajweed,
+      hifzMushafPalette = HifzMushafPalette.light,
       hifzFontSize = 32,
       hifzLineHeight = 1.35,
       hifzAutoScrollEnabled = false,
@@ -92,6 +99,9 @@ class AppPreferences {
   final double arabicLineHeight;
   final QuranFontPreference hifzQuranFont;
   final HifzLayoutMode hifzLayoutMode;
+  final HifzReadingMode hifzReadingMode;
+  final HifzMushafVariant hifzMushafVariant;
+  final HifzMushafPalette hifzMushafPalette;
   final double hifzFontSize;
   final double hifzLineHeight;
   final bool hifzAutoScrollEnabled;
@@ -119,6 +129,9 @@ class AppPreferences {
     double? arabicLineHeight,
     QuranFontPreference? hifzQuranFont,
     HifzLayoutMode? hifzLayoutMode,
+    HifzReadingMode? hifzReadingMode,
+    HifzMushafVariant? hifzMushafVariant,
+    HifzMushafPalette? hifzMushafPalette,
     double? hifzFontSize,
     double? hifzLineHeight,
     bool? hifzAutoScrollEnabled,
@@ -154,6 +167,9 @@ class AppPreferences {
       arabicLineHeight: arabicLineHeight ?? this.arabicLineHeight,
       hifzQuranFont: hifzQuranFont ?? this.hifzQuranFont,
       hifzLayoutMode: hifzLayoutMode ?? this.hifzLayoutMode,
+      hifzReadingMode: hifzReadingMode ?? this.hifzReadingMode,
+      hifzMushafVariant: hifzMushafVariant ?? this.hifzMushafVariant,
+      hifzMushafPalette: hifzMushafPalette ?? this.hifzMushafPalette,
       hifzFontSize: hifzFontSize ?? this.hifzFontSize,
       hifzLineHeight: hifzLineHeight ?? this.hifzLineHeight,
       hifzAutoScrollEnabled:
