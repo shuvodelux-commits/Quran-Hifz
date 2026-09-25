@@ -1,6 +1,12 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { qfFetch, type Env } from "./quranFoundation";
+import {
+  TafsirUpstreamError,
+  fetchAyahTafsir,
+  fetchSurahTafsir,
+  fetchTafsirResources,
+} from "./quranFoundationTafsir";
 import { buildZakariaManifest, TafsirManifestConfigError } from "./tafsir";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -57,6 +63,74 @@ app.get("/api/quran/chapter-audio", async (c) => {
       "cache-control": "public, max-age=86400",
     },
   });
+});
+
+app.get("/api/tafsir/resources", async (c) => {
+  const language = c.req.query("language")?.trim() || "bn";
+  if (!/^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{2,8})*$/.test(language)) {
+    return c.json({ error: "Invalid language" }, 400);
+  }
+  try {
+    const tafsirs = await fetchTafsirResources(c.env, language, qfFetch);
+    return c.json({ tafsirs }, 200, {
+      "cache-control": "public, max-age=86400",
+    });
+  } catch (error) {
+    if (error instanceof TafsirUpstreamError) {
+      return c.json({ error: error.message }, 502);
+    }
+    throw error;
+  }
+});
+
+app.get("/api/tafsir/:resourceId/ayah/:surah/:ayah", async (c) => {
+  const resourceId = Number(c.req.param("resourceId"));
+  const surah = Number(c.req.param("surah"));
+  const ayah = Number(c.req.param("ayah"));
+  try {
+    const entry = await fetchAyahTafsir(
+      c.env,
+      resourceId,
+      surah,
+      ayah,
+      qfFetch,
+    );
+    return c.json({ entry }, 200, {
+      "cache-control": "public, max-age=86400",
+    });
+  } catch (error) {
+    if (error instanceof RangeError) {
+      return c.json({ error: "Invalid Tafsir coordinates" }, 400);
+    }
+    if (error instanceof TafsirUpstreamError) {
+      return c.json({ error: error.message }, 502);
+    }
+    throw error;
+  }
+});
+
+app.get("/api/tafsir/:resourceId/surah/:surah", async (c) => {
+  const resourceId = Number(c.req.param("resourceId"));
+  const surah = Number(c.req.param("surah"));
+  try {
+    const entries = await fetchSurahTafsir(
+      c.env,
+      resourceId,
+      surah,
+      qfFetch,
+    );
+    return c.json({ entries }, 200, {
+      "cache-control": "public, max-age=86400",
+    });
+  } catch (error) {
+    if (error instanceof RangeError) {
+      return c.json({ error: "Invalid Tafsir coordinates" }, 400);
+    }
+    if (error instanceof TafsirUpstreamError) {
+      return c.json({ error: error.message }, 502);
+    }
+    throw error;
+  }
 });
 
 app.get("/api/tafsir/bn-zakaria/manifest", (c) => {

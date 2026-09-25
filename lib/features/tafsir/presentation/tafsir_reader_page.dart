@@ -150,6 +150,16 @@ class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
                         selectedSource.name,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
+                      if (selectedSource.kind == TafsirSourceKind.remote)
+                        Text(
+                          'Online source · internet required',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
                       if (entries.isEmpty)
                         const Text('This source has no Tafsir for this Surah.'),
                       const SizedBox(height: 12),
@@ -205,6 +215,15 @@ class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
                 entry?.sourceName ?? selectedSource.name,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
+              if (selectedSource.kind == TafsirSourceKind.remote) ...[
+                const SizedBox(height: 2),
+                Text(
+                  'Online source · internet required',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               if (entry == null)
                 const Text(

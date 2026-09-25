@@ -3,7 +3,24 @@ import 'dart:io';
 
 import '../config/app_config.dart';
 
-class QuranBackendClient {
+abstract interface class QuranTafsirBackendClient {
+  Future<List<Map<String, dynamic>>> getTafsirResources({
+    String language = 'bn',
+  });
+
+  Future<Map<String, dynamic>?> getTafsirAyah({
+    required int resourceId,
+    required int surahNumber,
+    required int ayahNumber,
+  });
+
+  Future<List<Map<String, dynamic>>> getTafsirSurah({
+    required int resourceId,
+    required int surahNumber,
+  });
+}
+
+class QuranBackendClient implements QuranTafsirBackendClient {
   QuranBackendClient({HttpClient? httpClient})
     : _client = httpClient ?? HttpClient();
 
@@ -55,6 +72,64 @@ class QuranBackendClient {
       );
     }
 
+    return Map<String, dynamic>.from(jsonDecode(body) as Map);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getTafsirResources({
+    String language = 'bn',
+  }) async {
+    final normalized = language.trim();
+    if (normalized.isEmpty) {
+      throw ArgumentError.value(language, 'language', 'must not be empty');
+    }
+    final uri = Uri.parse(
+      '${AppConfig.backendBaseUrl}/api/tafsir/resources',
+    ).replace(queryParameters: {'language': normalized});
+    final json = await _getJsonObject(uri);
+    final raw = json['tafsirs'] as List<dynamic>? ?? const [];
+    return raw.map((row) => Map<String, dynamic>.from(row as Map)).toList();
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getTafsirAyah({
+    required int resourceId,
+    required int surahNumber,
+    required int ayahNumber,
+  }) async {
+    final uri = Uri.parse(
+      '${AppConfig.backendBaseUrl}/api/tafsir/$resourceId/ayah/'
+      '$surahNumber/$ayahNumber',
+    );
+    final json = await _getJsonObject(uri);
+    final entry = json['entry'];
+    return entry == null ? null : Map<String, dynamic>.from(entry as Map);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getTafsirSurah({
+    required int resourceId,
+    required int surahNumber,
+  }) async {
+    final uri = Uri.parse(
+      '${AppConfig.backendBaseUrl}/api/tafsir/$resourceId/surah/$surahNumber',
+    );
+    final json = await _getJsonObject(uri);
+    final raw = json['entries'] as List<dynamic>? ?? const [];
+    return raw.map((row) => Map<String, dynamic>.from(row as Map)).toList();
+  }
+
+  Future<Map<String, dynamic>> _getJsonObject(Uri uri) async {
+    final request = await _client.getUrl(uri);
+    request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+    final response = await request.close();
+    final body = await utf8.decoder.bind(response).join();
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw HttpException(
+        'Backend returned ${response.statusCode}: $body',
+        uri: uri,
+      );
+    }
     return Map<String, dynamic>.from(jsonDecode(body) as Map);
   }
 

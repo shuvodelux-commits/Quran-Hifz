@@ -32,6 +32,23 @@ void main() {
     ]);
   });
 
+  test('remote catalog failure does not remove bundled Zakaria', () async {
+    final repository = CompositeTafsirRepository(
+      bundled: _FakeRepository(
+        sources: const [_bundledZakaria],
+        entries: {'$primaryBanglaTafsirSourceId:1:1': _bundledEntry},
+      ),
+      downloaded: _FakeRepository(),
+      remote: _FakeRepository(throwOnList: true),
+    );
+
+    final sources = await repository.listSources();
+
+    expect(sources.map((source) => source.sourceId), [
+      primaryBanglaTafsirSourceId,
+    ]);
+  });
+
   test('newer downloaded Zakaria wins without duplicate source', () async {
     final downloadedEntry = _entry(version: '1.2.0', text: 'downloaded');
     final repository = CompositeTafsirRepository(
@@ -170,14 +187,19 @@ class _FakeRepository implements TafsirRepository {
     this.sources = const [],
     this.entries = const {},
     this.throwOnRead = false,
+    this.throwOnList = false,
   });
 
   final List<TafsirSource> sources;
   final Map<String, TafsirEntry> entries;
   final bool throwOnRead;
+  final bool throwOnList;
 
   @override
-  Future<List<TafsirSource>> listInstalledSources() async => sources;
+  Future<List<TafsirSource>> listInstalledSources() async {
+    if (throwOnList) throw StateError('remote unavailable');
+    return sources;
+  }
 
   @override
   Future<TafsirEntry?> readAyah({

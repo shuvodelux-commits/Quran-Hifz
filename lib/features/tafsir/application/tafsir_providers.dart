@@ -9,21 +9,29 @@ import '../data/bundled_zakaria_tafsir_repository.dart';
 import '../data/composite_tafsir_repository.dart';
 import '../data/local_tafsir_repository.dart';
 import '../data/quran_backend_tafsir_catalog.dart';
+import '../data/remote_quran_foundation_tafsir_repository.dart';
 import '../data/tafsir_package_installer.dart';
 import '../data/tafsir_source_selection_store.dart';
 import '../domain/tafsir_catalog.dart';
 import '../domain/tafsir_repository.dart';
 
-final tafsirCatalogProvider = Provider<TafsirCatalog>((ref) {
+final quranBackendClientProvider = Provider<QuranBackendClient>((ref) {
   final client = QuranBackendClient();
   ref.onDispose(client.close);
-  return QuranBackendTafsirCatalog(client);
+  return client;
+});
+
+final tafsirCatalogProvider = Provider<TafsirCatalog>((ref) {
+  return QuranBackendTafsirCatalog(ref.watch(quranBackendClientProvider));
 });
 
 final tafsirRepositoryProvider = Provider<TafsirRepository>((ref) {
   return CompositeTafsirRepository(
     bundled: BundledZakariaTafsirRepository(rootBundle),
     downloaded: LocalTafsirRepository(ref.watch(userDatabaseProvider)),
+    remote: RemoteQuranFoundationTafsirRepository(
+      ref.watch(quranBackendClientProvider),
+    ),
   );
 });
 

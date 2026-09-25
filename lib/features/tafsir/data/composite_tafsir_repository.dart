@@ -23,7 +23,7 @@ class CompositeTafsirRepository implements TafsirRepository {
     final downloaded = await _safeSources(_downloaded);
     final remote = _remote == null
         ? const <TafsirSource>[]
-        : await _safeSources(_remote!);
+        : await _safeSources(_remote);
 
     final byId = <String, TafsirSource>{};
 
@@ -90,7 +90,7 @@ class CompositeTafsirRepository implements TafsirRepository {
 
     for (final repository in [
       _downloaded,
-      if (_remote != null) _remote!,
+      if (_remote != null) _remote,
       _bundled,
     ]) {
       final sources = await _safeSources(repository);
@@ -127,7 +127,7 @@ class CompositeTafsirRepository implements TafsirRepository {
 
     for (final repository in [
       _downloaded,
-      if (_remote != null) _remote!,
+      if (_remote != null) _remote,
       _bundled,
     ]) {
       final sources = await _safeSources(repository);

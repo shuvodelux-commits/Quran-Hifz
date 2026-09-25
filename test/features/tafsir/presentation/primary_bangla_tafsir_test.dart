@@ -77,6 +77,29 @@ void main() {
     expect(selection.value, primaryBanglaTafsirSourceId);
   });
 
+  testWidgets('selected Quran Foundation source is marked online only', (
+    tester,
+  ) async {
+    final selection = _MemorySelectionStore()..value = 'qf.169';
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tafsirRepositoryProvider.overrideWithValue(
+            _MultipleSourcesRepository(),
+          ),
+          tafsirSourceSelectionStoreProvider.overrideWithValue(selection),
+        ],
+        child: const MaterialApp(
+          home: TafsirReaderPage(surahNumber: 1, ayahNumber: 1),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Remote entry'), findsOneWidget);
+    expect(find.text('Online source · internet required'), findsOneWidget);
+  });
+
   testWidgets('changing Tafsir selector persists source id', (tester) async {
     final selection = _MemorySelectionStore();
     await tester.pumpWidget(
@@ -139,6 +162,14 @@ class _MultipleSourcesRepository implements TafsirRepository {
       version: '1.1.1',
       kind: TafsirSourceKind.bundled,
     ),
+    TafsirSource(
+      sourceId: 'qf.169',
+      name: 'Remote Tafsir',
+      language: 'en',
+      version: 'quran-foundation-v4',
+      kind: TafsirSourceKind.remote,
+      availableOffline: false,
+    ),
   ];
 
   @override
@@ -147,6 +178,17 @@ class _MultipleSourcesRepository implements TafsirRepository {
     required int surahNumber,
     required int ayahNumber,
   }) async {
+    if (sourceId == 'qf.169') {
+      return const TafsirEntry(
+        sourceId: 'qf.169',
+        sourceName: 'Remote Tafsir',
+        language: 'en',
+        version: 'quran-foundation-v4',
+        surahNumber: 1,
+        ayahNumber: 1,
+        text: 'Remote entry',
+      );
+    }
     if (sourceId != primaryBanglaTafsirSourceId) {
       return const TafsirEntry(
         sourceId: 'bn.other',
