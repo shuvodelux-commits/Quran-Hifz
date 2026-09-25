@@ -114,6 +114,17 @@ void main(List<String> args) {
         words.sourceName,
         words.sourceVersion,
       ),
+      if (words.banglaWordSourceName != null &&
+          words.banglaWordSourceVersion != null)
+        'bangla_words': {
+          ..._sourceDescriptor(
+            wordsFile,
+            words.banglaWordSourceName!,
+            words.banglaWordSourceVersion!,
+          ),
+          if (words.banglaWordLanguage != null)
+            'language': words.banglaWordLanguage!,
+        },
       'translation': _sourceDescriptor(
         translationFile,
         translation.sourceName,
@@ -296,6 +307,12 @@ void _insertMetadata(
     'quran_source_version': quran.sourceVersion,
     'word_source_name': words.sourceName,
     'word_source_version': words.sourceVersion,
+    if (words.banglaWordSourceName != null)
+      'bangla_word_source_name': words.banglaWordSourceName!,
+    if (words.banglaWordSourceVersion != null)
+      'bangla_word_source_version': words.banglaWordSourceVersion!,
+    if (words.banglaWordLanguage != null)
+      'bangla_word_language': words.banglaWordLanguage!,
     'translation_source_name': translation.sourceName,
     'translation_source_version': translation.sourceVersion,
     'translation_resource_id': '$_primaryTranslationResourceId',

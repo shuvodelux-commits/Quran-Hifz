@@ -1,3 +1,5 @@
+const int canonicalQuranWordCount = 77429;
+
 const Map<int, int> canonicalAyahCounts = {
   1: 7,
   2: 286,

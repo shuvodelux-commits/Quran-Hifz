@@ -5,6 +5,8 @@ import '../../lib/features/quran/domain/canonical_quran_counts.dart';
 enum QuranIntegrityCode {
   surahCount,
   ayahCount,
+  wordCount,
+  banglaWordMeaningCoverage,
   surahAyahCount,
   surahMetadataAyahCount,
   duplicateVerseKey,
@@ -90,6 +92,8 @@ class QuranIntegrityExpectations {
     this.maximumJuz = 30,
     this.primaryTranslationResourceId = 1,
     this.primaryTranslationLanguage = 'bn',
+    this.expectedWordCount,
+    this.requireBanglaWordMeanings = false,
     this.requireIndoPakText = false,
     this.requireIndoPakDiacritics = false,
     this.requireTajweedText = false,
@@ -101,6 +105,8 @@ class QuranIntegrityExpectations {
     expectedSurahCount: 114,
     expectedAyahCount: 6236,
     expectedAyahCountsBySurah: canonicalAyahCounts,
+    expectedWordCount: canonicalQuranWordCount,
+    requireBanglaWordMeanings: true,
     requireIndoPakText: true,
     requireIndoPakDiacritics: true,
     requireTajweedText: true,
@@ -116,6 +122,8 @@ class QuranIntegrityExpectations {
   final int maximumJuz;
   final int primaryTranslationResourceId;
   final String primaryTranslationLanguage;
+  final int? expectedWordCount;
+  final bool requireBanglaWordMeanings;
   final bool requireIndoPakText;
   final bool requireIndoPakDiacritics;
   final bool requireTajweedText;
@@ -152,6 +160,49 @@ QuranIntegrityReport validateQuranDatabase(
             'Expected ${expectations.expectedAyahCount} ayahs, found $ayahCount.',
       ),
     );
+  }
+
+  final expectedWordCount = expectations.expectedWordCount;
+  if (expectedWordCount != null && wordCount != expectedWordCount) {
+    errors.add(
+      QuranIntegrityIssue(
+        code: QuranIntegrityCode.wordCount,
+        message: 'Expected $expectedWordCount Quran words, found $wordCount.',
+        count: (wordCount - expectedWordCount).abs(),
+      ),
+    );
+  }
+
+  if (expectations.requireBanglaWordMeanings) {
+    final columns = _columnNames(database, 'quran_words');
+    if (!columns.contains('bangla_meaning')) {
+      errors.add(
+        const QuranIntegrityIssue(
+          code: QuranIntegrityCode.banglaWordMeaningCoverage,
+          message: 'Bangla word meaning column is missing.',
+        ),
+      );
+    } else {
+      final missingBangla =
+          database
+                  .select(
+                    "SELECT COUNT(*) AS c FROM quran_words "
+                    "WHERE TRIM(COALESCE(bangla_meaning, '')) = ''",
+                  )
+                  .single['c']
+              as int;
+      if (missingBangla > 0) {
+        errors.add(
+          QuranIntegrityIssue(
+            code: QuranIntegrityCode.banglaWordMeaningCoverage,
+            message:
+                'Bangla word meaning coverage is incomplete. '
+                'Empty rows: $missingBangla.',
+            count: missingBangla,
+          ),
+        );
+      }
+    }
   }
 
   final actualBySurah = <int, int>{};

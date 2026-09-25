@@ -57,6 +57,9 @@ before invoking this builder.
 {
   "source_name": "approved word source",
   "source_version": "version string",
+  "bangla_word_source_name": "Quran Foundation Content API Bangla word data",
+  "bangla_word_source_version": "source snapshot/version",
+  "bangla_word_language": "bn",
   "words": [
     {
       "surah_number": 1,
@@ -66,7 +69,7 @@ before invoking this builder.
       "arabic_indopak": "...",
       "arabic_tajweed": "<tajweed class=...>...</tajweed>",
       "transliteration": null,
-      "bangla_meaning": null,
+      "bangla_meaning": "নামে",
       "english_meaning": null,
       "root": null,
       "lemma": null,
@@ -146,7 +149,9 @@ Production validation requires:
 - non-empty Uthmani/Madani Arabic text
 - verified IndoPak text for every ayah/word in dual-script release builds
 - verified Uthmani Tajweed markup for every ayah/word in Tajweed-enabled release builds
+- exactly 77,429 canonical Quran word rows
 - unique word position within each ayah
+- one non-empty Bangla meaning for every canonical Quran word
 - no orphan word or translation rows
 - pages in 1..604
 - all 604 normalized QUL Mushaf pages with contiguous line numbers
@@ -198,8 +203,9 @@ dart run tool/quran_content/fetch_verified_sources.dart \
 ```
 
 The fetcher writes atomically only after it has verified 114 Surahs, 6,236
-ayahs, complete word coverage, and complete primary Bangla translation
-coverage. The SQLite build then rejects a production package unless verified
+ayahs, complete canonical word coverage, a non-empty Bangla meaning for every
+canonical word, and complete primary Bangla ayah-translation coverage. The
+SQLite build then rejects a production package unless verified
 IndoPak and Uthmani Tajweed fields are also complete:
 
 ```text
@@ -231,7 +237,7 @@ ls -lh assets/database/quran_content.sqlite \
 ### Source provenance
 
 - Arabic Quran, Uthmani/Madani text, IndoPak text, Uthmani Tajweed markup, Mushaf metadata, word order, English word glosses,
-  transliteration, and word-audio paths: Quran Foundation Content API v4.
+  transliteration, word-audio paths, and Bangla word meanings: Quran Foundation Content API v4.
 - Primary Bangla ayah translation: QuranEnc translation key
   `bengali_zakaria`, Dr. Abu Bakr Muhammad Zakaria.
 - The fetcher preserves the QuranEnc translation string as returned; it does

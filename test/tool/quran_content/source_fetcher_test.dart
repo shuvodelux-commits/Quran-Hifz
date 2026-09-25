@@ -114,6 +114,31 @@ void main() {
       expect(wordRows.first, containsPair('english_meaning', 'In (the) name'));
     });
 
+    test('chapter word fetch accepts Bangla language selection', () async {
+      Uri? requested;
+      final client = QuranFoundationClient(
+        transport: _FakeJsonTransport((uri) {
+          requested = uri;
+          return const JsonHttpResponse(
+            statusCode: 200,
+            body: {
+              'verses': [],
+              'pagination': {'current_page': 1, 'next_page': null},
+            },
+          );
+        }),
+        clientId: 'client',
+        accessToken: 'token',
+        apiBase: Uri.parse('https://qf.example'),
+        authBase: Uri.parse('https://auth.example'),
+      );
+
+      await client.fetchChapterVerses(1, language: 'bn');
+
+      expect(requested?.queryParameters['language'], 'bn');
+      expect(requested?.queryParameters['words'], 'true');
+    });
+
     test('accepts Quran Foundation verses when chapter_id is omitted', () {
       final result = normalizeQuranFoundationDocuments(
         chapters: [
@@ -302,6 +327,142 @@ void main() {
     });
   });
 
+  group('Bangla word meaning merge', () {
+    Map<String, dynamic> words(List<Map<String, dynamic>> rows) => {
+      'source_name': 'canonical words',
+      'source_version': 'v1',
+      'words': rows,
+    };
+
+    Map<String, dynamic> canonicalWord(int position) => {
+      'surah_number': 1,
+      'ayah_number': 1,
+      'position': position,
+      'arabic': 'word-$position',
+      'arabic_indopak': 'word-$position',
+      'bangla_meaning': null,
+    };
+
+    Map<String, dynamic> banglaWord(
+      int position,
+      String text, {
+      String type = 'word',
+    }) => {
+      'position': position,
+      'char_type_name': type,
+      'translation': {'text': text},
+    };
+
+    Map<String, dynamic> verse(List<Map<String, dynamic>> wordRows) => {
+      'chapter_id': 1,
+      'verse_number': 1,
+      'verse_key': '1:1',
+      'words': wordRows,
+    };
+
+    test(
+      'merges Bangla meanings by exact location and ignores end markers',
+      () {
+        final merged = mergeBanglaWordMeanings(
+          words: words([canonicalWord(1), canonicalWord(2)]),
+          banglaVersesByChapter: {
+            1: [
+              verse([
+                banglaWord(1, '<b>নামে</b>'),
+                banglaWord(2, 'আল্লাহর'),
+                banglaWord(3, '', type: 'end'),
+              ]),
+            ],
+          },
+        );
+
+        final rows = merged['words'] as List<dynamic>;
+        expect((rows[0] as Map)['bangla_meaning'], 'নামে');
+        expect((rows[1] as Map)['bangla_meaning'], 'আল্লাহর');
+      },
+    );
+
+    test('rejects a missing Bangla word meaning', () {
+      expect(
+        () => mergeBanglaWordMeanings(
+          words: words([canonicalWord(1), canonicalWord(2)]),
+          banglaVersesByChapter: {
+            1: [
+              verse([banglaWord(1, 'নামে')]),
+            ],
+          },
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            contains('Missing Bangla word meaning'),
+          ),
+        ),
+      );
+    });
+
+    test('rejects duplicate Bangla word locations', () {
+      expect(
+        () => mergeBanglaWordMeanings(
+          words: words([canonicalWord(1)]),
+          banglaVersesByChapter: {
+            1: [
+              verse([banglaWord(1, 'নামে'), banglaWord(1, 'দ্বিতীয়')]),
+            ],
+          },
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            contains('Duplicate Bangla word location'),
+          ),
+        ),
+      );
+    });
+
+    test('rejects extra Bangla word locations', () {
+      expect(
+        () => mergeBanglaWordMeanings(
+          words: words([canonicalWord(1)]),
+          banglaVersesByChapter: {
+            1: [
+              verse([banglaWord(1, 'নামে'), banglaWord(2, 'অতিরিক্ত')]),
+            ],
+          },
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            contains('Extra Bangla word meaning'),
+          ),
+        ),
+      );
+    });
+
+    test('rejects empty Bangla word meanings', () {
+      expect(
+        () => mergeBanglaWordMeanings(
+          words: words([canonicalWord(1)]),
+          banglaVersesByChapter: {
+            1: [
+              verse([banglaWord(1, '  <span></span>  ')]),
+            ],
+          },
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            contains('Empty Bangla word meaning'),
+          ),
+        ),
+      );
+    });
+  });
+
   group('canonical source validation', () {
     test('requires translation coverage for every fetched ayah', () {
       expect(
@@ -329,6 +490,76 @@ void main() {
           requireCanonicalQuran: false,
         ),
         throwsStateError,
+      );
+    });
+
+    test('requires exact word count and non-empty Bangla meanings', () {
+      final quran = {
+        'surahs': [
+          {'number': 1, 'ayah_count': 1},
+        ],
+        'ayahs': [
+          {'surah_number': 1, 'ayah_number': 1},
+        ],
+      };
+      final translation = {
+        'translations': [
+          {'surah_number': 1, 'ayah_number': 1},
+        ],
+      };
+
+      expect(
+        () => validateNormalizedSourceCoverage(
+          quran: quran,
+          words: {
+            'words': [
+              {
+                'surah_number': 1,
+                'ayah_number': 1,
+                'position': 1,
+                'bangla_meaning': 'অর্থ',
+              },
+            ],
+          },
+          translation: translation,
+          requireCanonicalQuran: false,
+          expectedWordCount: 2,
+          requireBanglaWordMeanings: true,
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            contains('Expected 2 canonical words'),
+          ),
+        ),
+      );
+
+      expect(
+        () => validateNormalizedSourceCoverage(
+          quran: quran,
+          words: {
+            'words': [
+              {
+                'surah_number': 1,
+                'ayah_number': 1,
+                'position': 1,
+                'bangla_meaning': ' ',
+              },
+            ],
+          },
+          translation: translation,
+          requireCanonicalQuran: false,
+          expectedWordCount: 1,
+          requireBanglaWordMeanings: true,
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            contains('Empty Bangla word meaning'),
+          ),
+        ),
       );
     });
 

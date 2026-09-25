@@ -71,7 +71,7 @@ Future<void> main(List<String> args) async {
         (documents.translation['translations'] as List<Object?>).length;
     stdout.writeln('Verified source download complete.');
     stdout.writeln('Ayahs: $ayahCount');
-    stdout.writeln('Words: $wordCount');
+    stdout.writeln('Words with bundled Bangla meanings: $wordCount');
     stdout.writeln('Zakaria Bangla translations: $translationCount');
     stdout.writeln('Output: ${outputDirectory.path}');
   } finally {

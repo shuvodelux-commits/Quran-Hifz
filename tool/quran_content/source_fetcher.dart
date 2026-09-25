@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import '../../lib/features/quran/domain/canonical_quran_counts.dart';
+
 const quranEncZakariaKey = 'bengali_zakaria';
 const quranEncZakariaCatalogVersion = '1.1.1';
 const quranEncZakariaCatalogLastUpdate = '2021-05-22';
@@ -172,6 +174,96 @@ NormalizedQuranDocuments normalizeQuranFoundationDocuments({
   );
 }
 
+Map<String, dynamic> mergeBanglaWordMeanings({
+  required Map<String, dynamic> words,
+  required Map<int, List<Map<String, dynamic>>> banglaVersesByChapter,
+  String? sourceName,
+  String? sourceVersion,
+}) {
+  final canonicalRows = _objectList(words, 'words');
+  final canonicalByLocation = <String, Map<String, dynamic>>{};
+  for (final raw in canonicalRows) {
+    final row = Map<String, dynamic>.from(raw);
+    final location =
+        '${_requiredInt(row, 'surah_number')}:'
+        '${_requiredInt(row, 'ayah_number')}:'
+        '${_requiredInt(row, 'position')}';
+    if (canonicalByLocation.putIfAbsent(location, () => row) != row) {
+      throw StateError('Duplicate canonical word location $location.');
+    }
+  }
+
+  final meanings = <String, String>{};
+  final chapterNumbers = banglaVersesByChapter.keys.toList()..sort();
+  for (final chapter in chapterNumbers) {
+    final verses = banglaVersesByChapter[chapter] ?? const [];
+    for (final verse in verses) {
+      final verseChapter = _optionalInt(verse, 'chapter_id') ?? chapter;
+      final ayah = _requiredInt(verse, 'verse_number');
+      final verseKey = _requiredString(verse, 'verse_key');
+      if (verseChapter != chapter || verseKey != '$chapter:$ayah') {
+        throw FormatException(
+          'Unexpected Bangla word verse $verseKey under Surah $chapter.',
+        );
+      }
+      for (final word in _objectList(verse, 'words')) {
+        if (_optionalString(word, 'char_type_name') != 'word') continue;
+        final position = _requiredInt(word, 'position');
+        final location = '$chapter:$ayah:$position';
+        if (meanings.containsKey(location)) {
+          throw StateError('Duplicate Bangla word location $location.');
+        }
+        final meaning = _displayWordMeaning(word['translation']);
+        if (meaning == null || meaning.isEmpty) {
+          throw StateError('Empty Bangla word meaning at $location.');
+        }
+        if (!canonicalByLocation.containsKey(location)) {
+          throw StateError('Extra Bangla word meaning at $location.');
+        }
+        meanings[location] = meaning;
+      }
+    }
+  }
+
+  final missing = canonicalByLocation.keys
+      .where((location) => !meanings.containsKey(location))
+      .toList(growable: false);
+  if (missing.isNotEmpty) {
+    throw StateError(
+      'Missing Bangla word meaning for ${missing.length} canonical words. '
+      'First missing: ${missing.first}.',
+    );
+  }
+
+  final mergedRows = <Map<String, dynamic>>[];
+  for (final raw in canonicalRows) {
+    final row = Map<String, dynamic>.from(raw);
+    final location =
+        '${_requiredInt(row, 'surah_number')}:'
+        '${_requiredInt(row, 'ayah_number')}:'
+        '${_requiredInt(row, 'position')}';
+    row['bangla_meaning'] = meanings[location];
+    mergedRows.add(row);
+  }
+
+  return {
+    ...words,
+    'bangla_word_source_name':
+        sourceName ?? 'Quran Foundation Content API word data',
+    'bangla_word_source_version':
+        sourceVersion ?? words['source_version'] ?? 'unknown',
+    'bangla_word_language': 'bn',
+    'words': mergedRows,
+  };
+}
+
+String? _displayWordMeaning(Object? translation) {
+  if (translation is! Map) return null;
+  final value = translation['text'];
+  if (value is! String) return null;
+  return value.replaceAll(RegExp(r'<[^>]*>'), '').trim();
+}
+
 Map<String, dynamic> normalizeQuranEncTranslationDocument({
   required String sourceVersion,
   required Map<int, List<Map<String, dynamic>>> chapterPayloads,
@@ -242,11 +334,38 @@ void validateNormalizedSourceCoverage({
   required Map<String, dynamic> words,
   required Map<String, dynamic> translation,
   bool requireCanonicalQuran = true,
+  int? expectedWordCount,
+  bool? requireBanglaWordMeanings,
 }) {
   final surahs = _objectList(quran, 'surahs');
   final ayahs = _objectList(quran, 'ayahs');
   final wordRows = _objectList(words, 'words');
   final translations = _objectList(translation, 'translations');
+  final requiredWordCount =
+      expectedWordCount ??
+      (requireCanonicalQuran ? canonicalQuranWordCount : null);
+  final requireBanglaMeanings =
+      requireBanglaWordMeanings ?? requireCanonicalQuran;
+
+  if (requiredWordCount != null && wordRows.length != requiredWordCount) {
+    throw StateError(
+      'Expected $requiredWordCount canonical words, found ${wordRows.length}.',
+    );
+  }
+
+  if (requireBanglaMeanings) {
+    for (final word in wordRows) {
+      final surah = _requiredInt(word, 'surah_number');
+      final ayah = _requiredInt(word, 'ayah_number');
+      final position = _requiredInt(word, 'position');
+      final meaning = word['bangla_meaning'];
+      if (meaning is! String || meaning.trim().isEmpty) {
+        throw StateError(
+          'Empty Bangla word meaning at $surah:$ayah:$position.',
+        );
+      }
+    }
+  }
 
   if (requireCanonicalQuran) {
     if (surahs.length != 114) {
@@ -468,14 +587,21 @@ class QuranFoundationClient {
     );
   }
 
-  Future<List<Map<String, dynamic>>> fetchChapterVerses(int chapter) async {
+  Future<List<Map<String, dynamic>>> fetchChapterVerses(
+    int chapter, {
+    String language = 'en',
+  }) async {
+    final normalizedLanguage = language.trim();
+    if (normalizedLanguage.isEmpty) {
+      throw ArgumentError.value(language, 'language', 'must not be empty');
+    }
     final verses = <Map<String, dynamic>>[];
     var page = 1;
     while (true) {
       final payload = await _authenticatedGet(
         '/content/api/v4/verses/by_chapter/$chapter',
         queryParameters: {
-          'language': 'en',
+          'language': normalizedLanguage,
           'words': 'true',
           'fields':
               'text_qpc_hafs,text_uthmani,text_indopak,text_uthmani_tajweed',
@@ -735,6 +861,23 @@ class VerifiedSourceFetcher {
       sourceVersion: quranFoundationSourceVersion,
     );
 
+    final banglaVersesByChapter = <int, List<Map<String, dynamic>>>{};
+    for (final chapter in chapterNumbers) {
+      stdout.writeln(
+        'Fetching Quran Foundation Bangla word meanings Surah $chapter/114...',
+      );
+      banglaVersesByChapter[chapter] = await quranFoundation.fetchChapterVerses(
+        chapter,
+        language: 'bn',
+      );
+    }
+    final wordsWithBangla = mergeBanglaWordMeanings(
+      words: normalizedQuran.words,
+      banglaVersesByChapter: banglaVersesByChapter,
+      sourceName: 'Quran Foundation Content API Bangla word data',
+      sourceVersion: quranFoundationSourceVersion,
+    );
+
     final zakariaVersion = await quranEnc.fetchZakariaSourceVersion();
     final translationPayloads = <int, List<Map<String, dynamic>>>{};
     for (final chapter in chapterNumbers) {
@@ -748,13 +891,13 @@ class VerifiedSourceFetcher {
 
     validateNormalizedSourceCoverage(
       quran: normalizedQuran.quran,
-      words: normalizedQuran.words,
+      words: wordsWithBangla,
       translation: translation,
     );
 
     return VerifiedSourceDocuments(
       quran: normalizedQuran.quran,
-      words: normalizedQuran.words,
+      words: wordsWithBangla,
       translation: translation,
     );
   }

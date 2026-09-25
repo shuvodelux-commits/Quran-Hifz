@@ -133,6 +133,72 @@ void main() {
       expect(report.hasCode(QuranIntegrityCode.emptyArabicText), isTrue);
     });
 
+    test('rejects a canonical word-count mismatch when required', () {
+      final db = sqlite3.openInMemory();
+      addTearDown(db.close);
+      _createLooseSchema(db);
+      _insertSurah(db, 1, ayahCount: 1);
+      _insertAyah(db, 1, 1, '1:1', 'أ', page: 1, juz: 1);
+      _insertWord(db, 1, 1, 1, 'أ');
+      _insertTranslation(db, 1, 1, 1, 'bn', 'অনুবাদ');
+
+      final report = validateQuranDatabase(
+        db,
+        expectations: const QuranIntegrityExpectations(
+          expectedSurahCount: 1,
+          expectedAyahCount: 1,
+          expectedAyahCountsBySurah: {1: 1},
+          expectedWordCount: 2,
+        ),
+      );
+
+      expect(report.hasCode(QuranIntegrityCode.wordCount), isTrue);
+    });
+
+    test('rejects empty Bangla word meanings when required', () {
+      final db = sqlite3.openInMemory();
+      addTearDown(db.close);
+      _createLooseSchema(db);
+      _insertSurah(db, 1, ayahCount: 1);
+      _insertAyah(db, 1, 1, '1:1', 'أ', page: 1, juz: 1);
+      _insertWord(db, 1, 1, 1, 'أ');
+      _insertTranslation(db, 1, 1, 1, 'bn', 'অনুবাদ');
+
+      final missing = validateQuranDatabase(
+        db,
+        expectations: const QuranIntegrityExpectations(
+          expectedSurahCount: 1,
+          expectedAyahCount: 1,
+          expectedAyahCountsBySurah: {1: 1},
+          expectedWordCount: 1,
+          requireBanglaWordMeanings: true,
+        ),
+      );
+      expect(
+        missing.hasCode(QuranIntegrityCode.banglaWordMeaningCoverage),
+        isTrue,
+      );
+
+      db.execute(
+        "UPDATE quran_words SET bangla_meaning = 'বাংলা অর্থ' "
+        "WHERE surah_number = 1 AND ayah_number = 1 AND position = 1",
+      );
+      final complete = validateQuranDatabase(
+        db,
+        expectations: const QuranIntegrityExpectations(
+          expectedSurahCount: 1,
+          expectedAyahCount: 1,
+          expectedAyahCountsBySurah: {1: 1},
+          expectedWordCount: 1,
+          requireBanglaWordMeanings: true,
+        ),
+      );
+      expect(
+        complete.hasCode(QuranIntegrityCode.banglaWordMeaningCoverage),
+        isFalse,
+      );
+    });
+
     test('rejects duplicate word positions inside an ayah', () {
       final db = sqlite3.openInMemory();
       addTearDown(db.close);

@@ -28,6 +28,30 @@ void main() {
       expect(word.arabicTajweed, contains('ham_wasl'));
     });
 
+    test('keeps Bangla word source provenance on the word bundle', () {
+      final bundle = WordSourceBundle.fromJson({
+        'source_name': 'Canonical word source',
+        'source_version': 'v1',
+        'bangla_word_source_name': 'Bangla word source',
+        'bangla_word_source_version': 'bn-v2',
+        'bangla_word_language': 'bn',
+        'words': [
+          {
+            'surah_number': 1,
+            'ayah_number': 1,
+            'position': 1,
+            'arabic': 'بِسْمِ',
+            'arabic_indopak': 'بِسْمِ',
+            'bangla_meaning': 'নামে',
+          },
+        ],
+      });
+
+      expect(bundle.banglaWordSourceName, 'Bangla word source');
+      expect(bundle.banglaWordSourceVersion, 'bn-v2');
+      expect(bundle.banglaWordLanguage, 'bn');
+    });
+
     test('rejects fractional values for required integer fields', () {
       expect(
         () => SurahSourceRecord.fromJson({

@@ -114,12 +114,21 @@ class WordSourceBundle {
     required this.sourceName,
     required this.sourceVersion,
     required this.words,
+    this.banglaWordSourceName,
+    this.banglaWordSourceVersion,
+    this.banglaWordLanguage,
   });
 
   factory WordSourceBundle.fromJson(Map<String, dynamic> json) {
     return WordSourceBundle(
       sourceName: _requiredString(json, 'source_name'),
       sourceVersion: _requiredString(json, 'source_version'),
+      banglaWordSourceName: _optionalString(json, 'bangla_word_source_name'),
+      banglaWordSourceVersion: _optionalString(
+        json,
+        'bangla_word_source_version',
+      ),
+      banglaWordLanguage: _optionalString(json, 'bangla_word_language'),
       words: _objectList(
         json,
         'words',
@@ -129,6 +138,9 @@ class WordSourceBundle {
 
   final String sourceName;
   final String sourceVersion;
+  final String? banglaWordSourceName;
+  final String? banglaWordSourceVersion;
+  final String? banglaWordLanguage;
   final List<WordSourceRecord> words;
 }
 
