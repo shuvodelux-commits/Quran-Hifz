@@ -39,29 +39,63 @@ The reader must never:
 
 ## Rendering strategy
 
-### Adaptive Quran font and script selection
+### Shared Quran Foundation font catalog
 
-Adaptive Hifz reading supports two Quran Arabic script/font choices:
+Quran mode and Hifz mode expose the same supported Quran Arabic font catalog.
 
-1. **Uthmani / Madani** — default. Uses verified Quran Foundation `text_qpc_hafs` with the QPC Hafs / Uthmanic Hafs-compatible font family.
-2. **IndoPak** — optional Hifz choice. Uses verified Quran Foundation `text_indopak` with the app's IndoPak Nastaleeq family.
+The catalog contains only Quran-text fonts intentionally retained from Quran Foundation-supported rendering paths:
 
-The font selector changes both the Quran text field and its matching font. It must never render `text_qpc_hafs` with an IndoPak face or `text_indopak` with an Uthmani face.
+1. **QPC Hafs / Uthmani** — scalable Unicode. Uses verified `text_qpc_hafs`.
+2. **IndoPak Nastaleeq** — scalable Unicode. Uses verified `text_indopak`.
+3. **QCF V2 Madani** — page-specific glyph font for strict/pixel-faithful Madani rendering.
+4. **QCF V4 Tajweed** — page-specific Tajweed glyph font for strict Tajweed Mushaf rendering.
 
-Both are scalable Unicode paths rather than page-specific QCF glyph fonts.
+QPC Hafs / Uthmani is the default for the new adaptive Hifz reader.
 
-Reason:
+The selector must always pair the correct Quran text representation with the selected font. It must never render Uthmani source text through an IndoPak face or IndoPak source text through an Uthmani face.
 
-- Unicode text can scale continuously.
-- It can wrap naturally on narrow screens.
-- It does not require switching among 604 page-specific font files.
-- It preserves Quran Foundation's verified script-specific Quran text.
-- It supports users who memorize from either Madani/Uthmani or IndoPak typography.
-- It is better suited to accessibility and Hifz users who prefer larger text.
+QPC Hafs and IndoPak are adaptive/free-flow capable. They can enlarge and wrap naturally.
 
-Uthmani / Madani remains the Hifz default. The user's Hifz script/font choice is persisted independently of the normal Quran reader preference.
+QCF V2 and QCF V4 Tajweed are page-specific rendering choices. They remain visible in the shared catalog, but selecting them uses the compatible strict Mushaf/page renderer rather than pretending they are free-flow Unicode fonts.
 
-QCF/QPC page-glyph rendering may remain available as a separate strict Mushaf mode in the future, but it is not the primary renderer for this adaptive Hifz screen.
+### Independent Quran and Hifz preferences
+
+The shared catalog does **not** mean shared settings.
+
+Quran mode persists its own:
+
+- selected Quran font;
+- Quran font size;
+- Quran line spacing / typography style;
+- Quran reading layout style;
+- Tajweed-related rendering preference where applicable.
+
+Hifz mode persists its own:
+
+- selected Hifz Quran font;
+- Hifz Quran font size;
+- Hifz line spacing / typography style;
+- Hifz reading layout style;
+- Hifz-specific adaptive/strict rendering choice implied by the selected font.
+
+Changing a Quran-mode font or size must not change Hifz. Changing a Hifz font or size must not change the normal Quran reader.
+
+### Remove legacy/unused Quran font choices
+
+The user-facing Quran font selectors should no longer expose legacy or duplicate font choices that are outside the final Quran Foundation-backed catalog.
+
+Remove or hide obsolete user-selectable entries such as:
+
+- PDMS Saleem;
+- Al Qalam Quran Majeed;
+- Muhammadi Quran;
+- Noto Naskh Arabic as a user-selectable Quran face;
+- old DigitalKhatt user-facing entries;
+- any duplicate/fallback-only font option not part of the final four-font catalog.
+
+A technical fallback font may remain internally only if required for platform safety, but it must not appear as a Quran-font choice.
+
+SurahNameV4 and the dedicated Bismillah glyph/font are presentation assets, not Quran body-font choices, so they remain outside this catalog.
 
 ### Quran text flow
 
@@ -85,13 +119,15 @@ Initial target ranges:
 - comfortable-large: approximately 34–36 logical px;
 - large: approximately 38–40 logical px.
 
-These are design targets, not hard-coded guarantees. Actual rendered size must be tuned independently for the selected Quran font and real Android text scaling.
+These are Hifz-mode design targets, not shared Quran-reader defaults. Quran mode keeps its own independent size scale and layout styling.
 
-Uthmani and IndoPak must share the same user-facing size control, but the renderer may apply small script-specific metric compensation so the two choices have comparable perceived size. Switching scripts must not make the Quran suddenly appear dramatically smaller or larger.
+For adaptive fonts, the renderer may apply small script-specific metric compensation so QPC Hafs and IndoPak have comparable perceived size at the same Hifz size setting. Switching between them must not make the Quran suddenly appear dramatically smaller or larger.
 
-Line height should be font-relative and generous enough that stacked Quran diacritics never collide. Initial target is approximately 1.8–2.0 times font size, adjusted independently after real-device measurement for Uthmani and IndoPak.
+Line height should be font-relative and generous enough that stacked Quran diacritics never collide. Initial Hifz target is approximately 1.8–2.0 times font size, adjusted independently after real-device measurement for QPC Hafs and IndoPak.
 
-The final implementation must use rendered measurements rather than assuming that one numeric size behaves identically across fonts and Android text-scale settings.
+Page-specific QCF V2/QCF V4 rendering follows its own page-renderer sizing rules rather than reusing the free-flow line-height formula.
+
+The final implementation must use rendered measurements rather than assuming that one numeric size behaves identically across fonts, renderers, Android text-scale settings, or Quran/Hifz modes.
 
 ## Page structure
 
@@ -209,48 +245,67 @@ The hidden state must retain enough stable markers that the learner does not los
 
 ## Hifz repetition model
 
-The compact selector labels are:
+The approved Hifz pattern has **three independent repetition settings**:
+
+1. **New ayah repeat** — how many times each newly introduced ayah plays alone.
+2. **Accumulated revision** — after a new ayah is introduced, how many times the range from the selection start through that ayah plays together.
+3. **Final full range** — how many times the complete selected range plays after all progressive steps finish.
+
+Each selector offers:
 
 - `1×`
 - `2×`
 - `3×`
+- `4×`
 - `5×`
 
 These values mean **repetition count**, not audio playback speed.
 
 Hifz audio playback itself remains at normal 1.0× speed in this flow.
 
+The existing progressive defaults are retained:
+
+- new ayah repeat: **5×**;
+- accumulated revision: **3×**;
+- final full range: **3×**.
+
 ### Progressive build sequence
 
 For a selected range, the memorization sequence grows cumulatively.
 
-Example for ayahs 1–3 with repetition count `3×`:
+Example for ayahs 1–3 with the default 5× / 3× / 3× pattern:
 
-1. Ayah 1 × 3
-2. Ayah 2 × 3
+1. Ayah 1 × 5
+2. Ayah 2 × 5
 3. Ayahs 1–2 together × 3
-4. Ayah 3 × 3
+4. Ayah 3 × 5
 5. Ayahs 1–3 together × 3
-6. final full selected range 1–3 × 1
+6. final full selected range 1–3 × 3
 
-The final full-range pass is always once unless a future explicitly configured preset says otherwise.
+Accumulated revision begins only after at least two ayahs are present. There is no redundant `1–1` accumulated-range phase after the first ayah.
+
+The final full-range phase is intentionally a distinct Hifz review phase, even when its range matches the last accumulated range. Its repeat count is independently configurable.
 
 For a longer selected range, the same pattern continues:
 
-- new ayah repeated individually;
-- accumulated range from selection start through that ayah repeated;
+- play each new ayah alone using the new-ayah repeat count;
+- once at least two ayahs are present, play the accumulated range from selection start through the newest ayah using the accumulated-review count;
 - continue until selection end;
-- one final full-range pass.
+- play the complete selected range using the final-full-range count.
 
-For a one-ayah selection, avoid redundant duplicate phases: repeat the single ayah according to the selected count, then end cleanly rather than replaying an identical “full range” unless the current preset model explicitly requires that behavior.
+For a one-ayah selection, play the single ayah using the new-ayah repeat count, then apply the final-full-range phase only if the existing session/preset contract explicitly includes it for that selection. The implementation must follow one deterministic rule covered by tests and must not accidentally insert an accumulated `1–1` phase.
 
 ### Existing sequence compatibility
 
-The project already contains a Hifz sequence builder, repeat counters, and session progression.
+The project already contains the exact three-field model required by this design:
 
-Implementation should adapt that existing domain logic rather than create a second independent audio-loop engine.
+- `ayahRepeatCount`;
+- `combinedRepeatCount`;
+- `finalRangeRepeatCount`.
 
-The new repeat selector should map cleanly to the existing preset/session model.
+It also already contains the progressive sequence builder, repeat counters, and session progression.
+
+Implementation must preserve and refine that existing domain logic rather than create a second independent audio-loop engine.
 
 ## Compact Hifz player
 
@@ -261,12 +316,12 @@ Collapsed state should show:
 - play/pause;
 - current ayah or current cumulative range;
 - repeat progress such as `Repeat 2/3`;
-- repetition selector `1× 2× 3× 5×`;
+- a compact Hifz-pattern summary such as `New 5× · Build 3× · Final 3×`;
 - small progress indicator for the current Hifz sequence.
 
-The selector must clearly communicate repetition, for example through contextual labeling or tooltip/accessibility text such as “Repeat count: 3”.
+The full three-stage repeat controls belong in the expandable Hifz pattern sheet rather than permanently consuming Quran reading space.
 
-It must never be labeled or announced as playback speed.
+Every repeat control must clearly communicate repetition through Bangla/English labeling and accessibility text. It must never be labeled or announced as playback speed.
 
 ### Expanded controls
 
@@ -276,7 +331,9 @@ A compact expandable sheet may expose:
 - reciter;
 - pause-between-repeats;
 - hide/reveal mode;
-- repeat count;
+- new-ayah repeat count (1×–5×);
+- accumulated-review repeat count (1×–5×);
+- final-full-range repeat count (1×–5×);
 - restart current Hifz sequence;
 - stop Hifz session.
 
@@ -289,14 +346,14 @@ Audio continues to use the existing Quran audio/Hifz session engine.
 Requirements:
 
 - normal 1.0× playback speed;
-- repeat counts 1/2/3/5;
+- independent new/build/final repeat counts, each selectable from 1× through 5×;
 - current repeat index visible;
-- current sequence step visible;
+- current sequence phase/step visible;
 - pause/resume preserves the current repeat and step;
 - stopping clears the active Hifz playback state cleanly;
-- changing repeat count applies predictably to the active/new sequence, with behavior covered by tests.
+- changing the Hifz pattern applies predictably to the active/new sequence, with behavior covered by tests.
 
-If the current engine cannot safely mutate repeat count mid-step, the UI should apply the new count beginning with the next sequence start rather than corrupt current progression.
+If the current engine cannot safely mutate pattern counts mid-step, the UI should apply the new pattern beginning with the next sequence start rather than corrupt current progression.
 
 ## Offline behavior
 
@@ -311,7 +368,7 @@ Audio availability continues to follow the project's existing recitation/audio c
 - Quran text respects the app's Hifz font-size setting.
 - App chrome should not scale so aggressively that it crowds out Quran text.
 - All player controls need semantic labels.
-- Repeat buttons must announce “repeat one/two/three/five times,” not ambiguous `1×` alone.
+- Repeat buttons must announce their stage plus count, for example “new ayah, repeat five times” or “final full range, repeat three times,” not ambiguous `3×` alone.
 - Current ayah highlighting cannot be the only indication of playback state.
 - Contrast must remain sufficient in light/sepia/dark themes if those themes are retained.
 
@@ -334,8 +391,7 @@ The screen should feel closer to a premium physical Mushaf than a dashboard.
 
 The Hifz screen uses separate font families by content type:
 
-- Quran Arabic, Uthmani/Madani: QPC Hafs / Uthmanic Hafs-compatible font with verified `text_qpc_hafs`.
-- Quran Arabic, IndoPak: IndoPak Nastaleeq-compatible font with verified `text_indopak`.
+- Quran Arabic: the same shared Quran Foundation-backed catalog exposed in Quran mode, with Hifz keeping its own independent selection and sizing.
 - Bangla UI: **SolaimanLipi**.
 - English UI: Inter.
 - Surah calligraphy: existing SurahNameV4 asset.
@@ -397,20 +453,29 @@ This separation prevents typography/layout changes from affecting Hifz sequence 
 
 ### Sequence tests
 
-For each repeat option `1×`, `2×`, `3×`, `5×`:
+For each stage, verify all repeat choices `1×`, `2×`, `3×`, `4×`, and `5×`.
 
-- verify individual-ayah repeat counts;
-- verify cumulative range repeat counts;
-- verify final full-range pass occurs once;
-- verify one-ayah selection does not create accidental duplicate phases;
-- verify pause/resume preserves repeat position;
-- verify stop resets active Hifz playback cleanly.
+Cover:
 
-### Layout tests
+- new-ayah repeat count independently controls each single-ayah step;
+- accumulated-review count independently controls cumulative range steps;
+- accumulated revision starts only after the second ayah;
+- final-full-range count independently controls the final review phase;
+- the default 5× / 3× / 3× pattern produces the approved progressive sequence;
+- one-ayah selection never creates an accidental accumulated `1–1` phase;
+- pause/resume preserves repeat position;
+- stop resets active Hifz playback cleanly.
+
+### Font/settings and layout tests
 
 Verify:
 
-- canonical page identity remains stable at multiple font sizes;
+- Quran mode and Hifz mode expose the same final four-font Quran catalog;
+- changing Quran-mode font/size/style does not mutate Hifz preferences;
+- changing Hifz font/size/style does not mutate Quran-reader preferences;
+- legacy/unused Quran font choices are absent from both user-facing selectors;
+- page-specific QCF choices route to compatible strict rendering while QPC Hafs/IndoPak remain adaptive/free-flow capable;
+- canonical page identity remains stable at multiple Hifz font sizes;
 - switching Uthmani/Madani ↔ IndoPak preserves the same logical ayah/page anchor;
 - each script uses its matching verified Quran text field and font family;
 - Surah transition stays between the correct Quran words/ayahs;
@@ -429,7 +494,9 @@ On the connected Android device verify at minimum:
 - Surah transition page such as page 440;
 - long ayahs;
 - page-to-page scrolling;
-- repeat counts 1/2/3/5;
+- same four-font catalog visible in Quran and Hifz settings;
+- Quran and Hifz font-size changes remain independent;
+- all three repeat-stage selectors across 1×–5×;
 - active audio highlighting;
 - hide/reveal;
 - orientation/font-scale behavior if supported.
@@ -441,14 +508,16 @@ The redesign is complete when:
 1. The Hifz reader visually feels like a coherent Mushaf rather than a list of ayah cards.
 2. Default Quran text is comfortably readable on a phone.
 3. Increasing text size never forces ugly compression or horizontal scrolling.
-4. Uthmani/Madani and IndoPak both render from their verified matching Quran text fields and preserve reading position when switched.
-5. Logical 604-page anchors remain visible and correct.
-6. Surah and Bismillah transitions remain canonical.
-7. The compact Hifz player exposes repeat counts `1× 2× 3× 5×`.
-8. Those values control repetition count, not playback speed.
-9. Progressive cumulative repetition follows the approved sequence model.
-10. Existing Hifz word/ayah/audio/session functionality is preserved.
-11. Core reading and repetition behavior work offline except where audio itself requires uncached remote media.
+4. Quran mode and Hifz mode expose the same final Quran Foundation-backed font catalog while preserving independent font/size/style settings.
+5. Legacy and unused Quran font choices are removed from user-facing selectors.
+6. Uthmani/Madani and IndoPak render from their verified matching Quran text fields and preserve reading position when switched.
+7. Logical 604-page anchors remain visible and correct.
+8. Surah and Bismillah transitions remain canonical.
+9. Hifz exposes three independent repeat stages, each selectable from `1×` through `5×`.
+10. Those values control repetition count, not playback speed.
+11. Progressive cumulative repetition follows the approved three-stage sequence model.
+12. Existing Hifz word/ayah/audio/session functionality is preserved.
+13. Core reading and repetition behavior work offline except where audio itself requires uncached remote media.
 
 ## Visual prototype reference
 
