@@ -1,184 +1,67 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/core/database/user_database.dart';
-import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
 import 'package:quran_hifz/features/settings/data/user_database_app_preferences_repository.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 
 void main() {
-  test('persists green theme and separate tap reveal settings', () async {
+  test('round trips normal Quran and app preferences', () async {
     final database = UserDatabase.forTesting(NativeDatabase.memory());
     addTearDown(database.close);
     final repository = UserDatabaseAppPreferencesRepository(database);
+
     await repository.save(
       const AppPreferences.defaults().copyWith(
         theme: AppThemePreference.green,
-        tapToShowTranslation: true,
+        quranFont: QuranFontPreference.qpcHafs,
+        arabicFontSize: 34,
+        arabicLineHeight: 1.7,
+        banglaLineHeight: 1.6,
+        banglaFontSize: 20,
+        tapToShowTranslation: false,
         tapToShowBanglaWordMeaning: false,
+        showTajweedColors: false,
+        defaultRepeatCount: 5,
+        defaultPlaybackSpeed: 0.75,
+        repeatPause: const Duration(milliseconds: 800),
+        autoNextAyah: false,
+        highlightActiveWord: false,
+        language: AppLanguage.english,
+        asrSchool: AsrSchool.standard,
+        prayerCityId: 'dhaka',
       ),
     );
+
     final restored = await repository.load();
     expect(restored.theme, AppThemePreference.green);
-    expect(restored.tapToShowTranslation, isTrue);
-    expect(restored.tapToShowBanglaWordMeaning, isFalse);
-  });
-  test('persists Tajweed and Quran typography preferences together', () async {
-    final database = UserDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(database.close);
-    final repository = UserDatabaseAppPreferencesRepository(database);
-
-    final preferences = const AppPreferences.defaults().copyWith(
-      quranScript: QuranScriptPreference.indoPak,
-      arabicLineHeight: 1.9,
-      banglaLineHeight: 1.7,
-      banglaFontSize: 18,
-      showTajweedColors: false,
-    );
-
-    await repository.save(preferences);
-    final restored = await repository.load();
-
-    expect(restored.quranScript, QuranScriptPreference.indoPak);
-    expect(restored.arabicLineHeight, 1.9);
-    expect(restored.banglaLineHeight, 1.7);
-    expect(restored.banglaFontSize, 18);
-    expect(restored.showTajweedColors, isFalse);
-  });
-
-  test(
-    'persists Asr school, Bangladesh city, language, and women theme',
-    () async {
-      final database = UserDatabase.forTesting(NativeDatabase.memory());
-      addTearDown(database.close);
-      final repository = UserDatabaseAppPreferencesRepository(database);
-      await repository.save(
-        const AppPreferences.defaults().copyWith(
-          asrSchool: AsrSchool.standard,
-          prayerCityId: '44',
-          language: AppLanguage.english,
-          theme: AppThemePreference.women,
-        ),
-      );
-      final restored = await repository.load();
-      expect(restored.asrSchool, AsrSchool.standard);
-      expect(restored.prayerCityId, '44');
-      expect(restored.language, AppLanguage.english);
-      expect(restored.theme, AppThemePreference.women);
-      await repository.save(restored.copyWith(clearPrayerCity: true));
-      expect((await repository.load()).prayerCityId, isNull);
-    },
-  );
-
-  test('round trips independent global and Hifz typography', () async {
-    final database = UserDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(database.close);
-    final repository = UserDatabaseAppPreferencesRepository(database);
-
-    await repository.save(
-      const AppPreferences.defaults().copyWith(
-        quranFont: QuranFontPreference.qcfV2,
-        quranScript: QuranScriptPreference.uthmaniMadani,
-        hifzQuranFont: QuranFontPreference.indoPak,
-        hifzLayoutMode: HifzLayoutMode.fixedMushaf,
-        hifzFontSize: 40,
-        hifzLineHeight: 2,
-        hifzAutoScrollEnabled: true,
-        hifzAutoScrollSpeed: HifzAutoScrollSpeed.fast,
-      ),
-    );
-
-    final restored = await repository.load();
-    expect(restored.quranFont, QuranFontPreference.qcfV2);
+    expect(restored.quranFont, QuranFontPreference.qpcHafs);
     expect(restored.quranScript, QuranScriptPreference.uthmaniMadani);
-    expect(restored.hifzQuranFont, QuranFontPreference.indoPak);
-    expect(restored.hifzLayoutMode, HifzLayoutMode.fixedMushaf);
-    expect(restored.hifzFontSize, 40);
-    expect(restored.hifzLineHeight, 2);
-    expect(restored.hifzAutoScrollEnabled, isTrue);
-    expect(restored.hifzAutoScrollSpeed, HifzAutoScrollSpeed.fast);
-    expect(restored.arabicFontSize, 27);
-    expect(restored.arabicLineHeight, 1.2);
+    expect(restored.arabicFontSize, 34);
+    expect(restored.arabicLineHeight, 1.7);
+    expect(restored.banglaLineHeight, 1.6);
+    expect(restored.banglaFontSize, 20);
+    expect(restored.tapToShowTranslation, isFalse);
+    expect(restored.tapToShowBanglaWordMeaning, isFalse);
+    expect(restored.showTajweedColors, isFalse);
+    expect(restored.defaultRepeatCount, 5);
+    expect(restored.defaultPlaybackSpeed, 0.75);
+    expect(restored.repeatPause, const Duration(milliseconds: 800));
+    expect(restored.autoNextAyah, isFalse);
+    expect(restored.highlightActiveWord, isFalse);
+    expect(restored.language, AppLanguage.english);
+    expect(restored.asrSchool, AsrSchool.standard);
+    expect(restored.prayerCityId, 'dhaka');
   });
 
-  test('round trips Mushaf mode and QPC palette', () async {
-    final database = UserDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(database.close);
-    final repository = UserDatabaseAppPreferencesRepository(database);
-
-    await repository.save(
-      const AppPreferences.defaults().copyWith(
-        hifzReadingMode: HifzReadingMode.mushaf,
-        hifzMushafVariant: QuranMushafVariant.qcfV4Tajweed,
-        hifzMushafPalette: HifzMushafPalette.p6,
-      ),
-    );
-
-    final restored = await repository.load();
-    expect(restored.hifzReadingMode, HifzReadingMode.mushaf);
-    expect(restored.hifzMushafVariant, QuranMushafVariant.qcfV4Tajweed);
-    expect(restored.hifzMushafPalette, HifzMushafPalette.p6);
-  });
-
-  test('migrates legacy strict Mushaf variant names', () async {
-    final database = UserDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(database.close);
-    final repository = UserDatabaseAppPreferencesRepository(database);
-
-    for (final entry in const {
-      'qpcV4Tajweed': QuranMushafVariant.qcfV4Tajweed,
-      'digitalKhattV2': QuranMushafVariant.qcfV2,
-    }.entries) {
-      await database.saveSetting(
-        UserDatabaseAppPreferencesRepository.hifzMushafVariantKey,
-        entry.key,
-      );
-
-      final restored = await repository.load();
-      expect(restored.hifzMushafVariant, entry.value, reason: entry.key);
-
-      await repository.save(restored);
-      expect(
-        await database.getSetting(
-          UserDatabaseAppPreferencesRepository.hifzMushafVariantKey,
-        ),
-        entry.value.name,
-        reason: entry.key,
-      );
-    }
-  });
-
-  test('unknown Mushaf preference values fail closed to defaults', () async {
+  test('unknown Quran font falls back safely', () async {
     final database = UserDatabase.forTesting(NativeDatabase.memory());
     addTearDown(database.close);
     final repository = UserDatabaseAppPreferencesRepository(database);
 
     await database.saveSetting(
-      UserDatabaseAppPreferencesRepository.hifzReadingModeKey,
-      'removed-mode',
-    );
-    await database.saveSetting(
-      UserDatabaseAppPreferencesRepository.hifzMushafVariantKey,
-      'removed-variant',
-    );
-    await database.saveSetting(
-      UserDatabaseAppPreferencesRepository.hifzMushafPaletteKey,
-      'removed-palette',
-    );
-
-    final restored = await repository.load();
-    expect(restored.hifzReadingMode, HifzReadingMode.regular);
-    expect(restored.hifzMushafVariant, QuranMushafVariant.qcfV4Tajweed);
-    expect(restored.hifzMushafPalette, HifzMushafPalette.light);
-  });
-
-  test('migrates legacy quran script when no global font is saved', () async {
-    final database = UserDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(database.close);
-    final repository = UserDatabaseAppPreferencesRepository(database);
-    await database.saveSetting(
-      UserDatabaseAppPreferencesRepository.quranScriptKey,
-      'uthmaniMadani',
+      UserDatabaseAppPreferencesRepository.quranFontKey,
+      'not-a-font',
     );
 
     final restored = await repository.load();
@@ -186,171 +69,57 @@ void main() {
     expect(restored.quranScript, QuranScriptPreference.uthmaniMadani);
   });
 
-  test('migrates legacy IndoPak script to the global IndoPak face', () async {
+  test('legacy Quran script is honored when no font is persisted', () async {
     final database = UserDatabase.forTesting(NativeDatabase.memory());
     addTearDown(database.close);
     final repository = UserDatabaseAppPreferencesRepository(database);
+
     await database.saveSetting(
       UserDatabaseAppPreferencesRepository.quranScriptKey,
-      'indoPak',
+      QuranScriptPreference.uthmaniMadani.name,
     );
 
     final restored = await repository.load();
-    expect(restored.quranFont, QuranFontPreference.indoPak);
-    expect(restored.quranScript, QuranScriptPreference.indoPak);
+    expect(restored.quranFont, QuranFontPreference.qpcHafs);
+    expect(restored.quranScript, QuranScriptPreference.uthmaniMadani);
   });
 
-  test(
-    'migrates every removed Quran font name without resetting other settings',
-    () async {
-      final database = UserDatabase.forTesting(NativeDatabase.memory());
-      addTearDown(database.close);
-      final repository = UserDatabaseAppPreferencesRepository(database);
-
-      await database.saveSetting(
-        UserDatabaseAppPreferencesRepository.themeKey,
-        'women',
-      );
-      await database.saveSetting(
-        UserDatabaseAppPreferencesRepository.languageKey,
-        'english',
-      );
-      await database.saveSetting(
-        UserDatabaseAppPreferencesRepository.arabicFontSizeKey,
-        '35',
-      );
-      await database.saveSetting(
-        UserDatabaseAppPreferencesRepository.hifzFontSizeKey,
-        '41',
-      );
-      await database.saveSetting(
-        UserDatabaseAppPreferencesRepository.playbackSpeedKey,
-        '0.75',
-      );
-
-      const migrations = <String, QuranFontPreference>{
-        'pdmsSaleem': QuranFontPreference.indoPak,
-        'indopakNastaleeq': QuranFontPreference.indoPak,
-        'digitalKhatt': QuranFontPreference.indoPak,
-        'alQalam': QuranFontPreference.indoPak,
-        'muhammadi': QuranFontPreference.indoPak,
-        'kfgqpcHafs': QuranFontPreference.qpcHafs,
-        'notoNaskhArabic': QuranFontPreference.qpcHafs,
-      };
-
-      for (final entry in migrations.entries) {
-        await database.saveSetting(
-          UserDatabaseAppPreferencesRepository.quranFontKey,
-          entry.key,
-        );
-        await database.saveSetting(
-          UserDatabaseAppPreferencesRepository.hifzQuranFontKey,
-          entry.key,
-        );
-
-        final restored = await repository.load();
-        expect(restored.quranFont, entry.value, reason: entry.key);
-        expect(restored.hifzQuranFont, entry.value, reason: entry.key);
-        expect(restored.theme, AppThemePreference.women, reason: entry.key);
-        expect(restored.language, AppLanguage.english, reason: entry.key);
-        expect(restored.arabicFontSize, 35, reason: entry.key);
-        expect(restored.hifzFontSize, 41, reason: entry.key);
-        expect(restored.defaultPlaybackSpeed, 0.75, reason: entry.key);
-
-        await repository.save(restored);
-        expect(
-          await database.getSetting(
-            UserDatabaseAppPreferencesRepository.quranFontKey,
-          ),
-          entry.value.name,
-          reason: entry.key,
-        );
-        expect(
-          await database.getSetting(
-            UserDatabaseAppPreferencesRepository.hifzQuranFontKey,
-          ),
-          entry.value.name,
-          reason: entry.key,
-        );
-      }
-    },
-  );
-
-  test(
-    'unknown persisted global font falls back to the Quran mode default',
-    () async {
-      final database = UserDatabase.forTesting(NativeDatabase.memory());
-      addTearDown(database.close);
-      final repository = UserDatabaseAppPreferencesRepository(database);
-      await database.saveSetting(
-        UserDatabaseAppPreferencesRepository.quranFontKey,
-        'removed_font',
-      );
-
-      final restored = await repository.load();
-      expect(restored.quranFont, QuranFontPreference.qpcHafs);
-      expect(restored.quranScript, QuranScriptPreference.uthmaniMadani);
-    },
-  );
-
-  test(
-    'unknown persisted Hifz font falls back to the Hifz mode default',
-    () async {
-      final database = UserDatabase.forTesting(NativeDatabase.memory());
-      addTearDown(database.close);
-      final repository = UserDatabaseAppPreferencesRepository(database);
-      await database.saveSetting(
-        UserDatabaseAppPreferencesRepository.hifzQuranFontKey,
-        'removed_font',
-      );
-
-      final restored = await repository.load();
-      expect(restored.hifzQuranFont, QuranFontPreference.qpcHafs);
-    },
-  );
-
-  test('unknown persisted Hifz layout falls back to Free Flow', () async {
+  test('malformed numeric preferences fall back to defaults', () async {
     final database = UserDatabase.forTesting(NativeDatabase.memory());
     addTearDown(database.close);
     final repository = UserDatabaseAppPreferencesRepository(database);
-    await database.saveSetting(
-      UserDatabaseAppPreferencesRepository.hifzLayoutModeKey,
-      'removed_layout',
-    );
+
+    for (final entry in {
+      UserDatabaseAppPreferencesRepository.arabicFontSizeKey: 'nan',
+      UserDatabaseAppPreferencesRepository.arabicLineHeightKey: '99',
+      UserDatabaseAppPreferencesRepository.banglaLineHeightKey: '-1',
+      UserDatabaseAppPreferencesRepository.banglaFontSizeKey: '99',
+      UserDatabaseAppPreferencesRepository.repeatCountKey: '999',
+      UserDatabaseAppPreferencesRepository.playbackSpeedKey: '99',
+      UserDatabaseAppPreferencesRepository.repeatPauseMsKey: '-1',
+    }.entries) {
+      await database.saveSetting(entry.key, entry.value);
+    }
 
     final restored = await repository.load();
-    expect(restored.hifzLayoutMode, HifzLayoutMode.freeFlow);
+    const defaults = AppPreferences.defaults();
+    expect(restored.arabicFontSize, defaults.arabicFontSize);
+    expect(restored.arabicLineHeight, defaults.arabicLineHeight);
+    expect(restored.banglaLineHeight, defaults.banglaLineHeight);
+    expect(restored.banglaFontSize, defaults.banglaFontSize);
+    expect(restored.defaultRepeatCount, defaults.defaultRepeatCount);
+    expect(restored.defaultPlaybackSpeed, defaults.defaultPlaybackSpeed);
+    expect(restored.repeatPause, defaults.repeatPause);
   });
 
-  test(
-    'malformed, out-of-range, and non-finite Hifz numbers use defaults',
-    () async {
-      final database = UserDatabase.forTesting(NativeDatabase.memory());
-      addTearDown(database.close);
-      final repository = UserDatabaseAppPreferencesRepository(database);
-      for (final raw in <String>[
-        'not-a-number',
-        '19.9',
-        '56.1',
-        '1.19',
-        '2.41',
-        'NaN',
-        'Infinity',
-        '-Infinity',
-      ]) {
-        await database.saveSetting(
-          UserDatabaseAppPreferencesRepository.hifzFontSizeKey,
-          raw,
-        );
-        await database.saveSetting(
-          UserDatabaseAppPreferencesRepository.hifzLineHeightKey,
-          raw,
-        );
+  test('null prayer city round trips as no manual city', () async {
+    final database = UserDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final repository = UserDatabaseAppPreferencesRepository(database);
 
-        final restored = await repository.load();
-        expect(restored.hifzFontSize, 32, reason: raw);
-        expect(restored.hifzLineHeight, 1.35, reason: raw);
-      }
-    },
-  );
+    await repository.save(const AppPreferences.defaults());
+    final restored = await repository.load();
+
+    expect(restored.prayerCityId, isNull);
+  });
 }

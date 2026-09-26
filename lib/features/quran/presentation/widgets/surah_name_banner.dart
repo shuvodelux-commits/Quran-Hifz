@@ -6,7 +6,7 @@ import 'surah_name_v4_text.dart';
 /// bar with a light corner flourish, holding the Surah's Arabic name.
 ///
 /// This is presentation-only chrome (no audio or tap targets), reused by
-/// both the Hifz canvas and, potentially, the regular reader.
+/// regular Quran reading surfaces.
 class SurahNameBanner extends StatelessWidget {
   const SurahNameBanner({
     super.key,

@@ -3,13 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../hifz/application/hifz_mushaf_providers.dart';
-import '../../../hifz/domain/hifz_mushaf_page.dart';
-import '../../../hifz/domain/hifz_reading_mode.dart';
+import '../../application/quran_mushaf_providers.dart';
+import '../../domain/quran_mushaf_page.dart';
+import '../../domain/quran_mushaf_palette.dart';
 import '../../application/reader_state.dart';
 import '../../domain/quran_font_preference.dart';
 import '../../domain/quran_page_window.dart';
 import 'quran_strict_mushaf_surface.dart';
+import '../../domain/quran_mushaf_variant.dart';
 
 class QuranStrictReaderBody extends ConsumerStatefulWidget {
   const QuranStrictReaderBody({
@@ -110,7 +111,7 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
         if (data != null) {
           return QuranStrictMushafSurface(
             page: data.page,
-            palette: HifzMushafPalette.light,
+            palette: QuranMushafPalette.light,
             generation: Object.hash(widget.font, page) & 0x7fffffff,
             pageFontUri: data.fontUri,
             fallbackWindow: fallbackWindow,
@@ -129,8 +130,8 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
         if (snapshot.hasError) {
           final variant = widget.font.mushafVariant!;
           return QuranStrictMushafSurface(
-            page: HifzMushafPage(page: page, variant: variant, lines: const []),
-            palette: HifzMushafPalette.light,
+            page: QcfMushafPage(page: page, variant: variant, lines: const []),
+            palette: QuranMushafPalette.light,
             generation: Object.hash(widget.font, page) & 0x7fffffff,
             pageFontUri: Uri.parse('unavailable://qcf-page/$page'),
             fallbackWindow: fallbackWindow,
@@ -153,7 +154,7 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
       throw StateError('Strict Quran reader requires a QCF font.');
     }
 
-    final pageRepository = ref.read(hifzMushafPageRepositoryProvider);
+    final pageRepository = ref.read(quranMushafPageRepositoryProvider);
     if (variant == QuranMushafVariant.qcfV2 &&
         !await pageRepository.isVariantAvailable(variant)) {
       throw StateError('QCF V2 Quran page data is not installed.');
@@ -197,7 +198,7 @@ class _StrictPageLoad {
     required this.fontError,
   });
 
-  final HifzMushafPage page;
+  final QcfMushafPage page;
   final Uri fontUri;
   final Object? fontError;
 }

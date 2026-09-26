@@ -1,8 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
-import '../time/calendar_day.dart';
-
 part 'user_database.g.dart';
 
 @DataClassName('AudioFileRecord')
@@ -78,80 +76,6 @@ class DownloadJobs extends Table {
   Set<Column<Object>> get primaryKey => {audioKey};
 }
 
-@TableIndex(
-  name: 'hifz_progress_due_idx',
-  columns: {#profileKey, #nextReviewAt},
-)
-@DataClassName('HifzProgressRow')
-class HifzProgressEntries extends Table {
-  TextColumn get profileKey => text()();
-  IntColumn get surahNumber => integer()();
-  IntColumn get ayahNumber => integer()();
-  TextColumn get status => text()();
-  IntColumn get strengthScore => integer().withDefault(const Constant(0))();
-  IntColumn get reviewCount => integer().withDefault(const Constant(0))();
-  IntColumn get mistakeCount => integer().withDefault(const Constant(0))();
-  IntColumn get revisionIntervalIndex =>
-      integer().withDefault(const Constant(-1))();
-  DateTimeColumn get startedAt => dateTime().nullable()();
-  DateTimeColumn get memorizedAt => dateTime().nullable()();
-  DateTimeColumn get lastReviewedAt => dateTime().nullable()();
-  DateTimeColumn get nextReviewAt => dateTime().nullable()();
-
-  @override
-  Set<Column<Object>> get primaryKey => {profileKey, surahNumber, ayahNumber};
-}
-
-@TableIndex(name: 'hifz_review_date_idx', columns: {#profileKey, #reviewedAt})
-@DataClassName('HifzReviewHistoryRow')
-class HifzReviewHistoryRows extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get profileKey => text()();
-  IntColumn get surahNumber => integer()();
-  IntColumn get ayahNumber => integer()();
-  DateTimeColumn get reviewedAt => dateTime()();
-  TextColumn get result => text()();
-  TextColumn get previousStatus => text()();
-  TextColumn get newStatus => text()();
-  IntColumn get previousIntervalIndex => integer()();
-  IntColumn get newIntervalIndex => integer()();
-  IntColumn get previousStrengthScore => integer()();
-  IntColumn get newStrengthScore => integer()();
-  DateTimeColumn get nextReviewAt => dateTime()();
-}
-
-@DataClassName('HifzSessionCheckpointRow')
-class HifzSessionCheckpoints extends Table {
-  TextColumn get profileKey => text()();
-  IntColumn get startSurah => integer()();
-  IntColumn get startAyah => integer()();
-  IntColumn get endSurah => integer()();
-  IntColumn get endAyah => integer()();
-  TextColumn get presetId => text()();
-  IntColumn get nextStepIndex => integer().withDefault(const Constant(0))();
-  TextColumn get status => text()();
-  DateTimeColumn get updatedAt => dateTime()();
-
-  @override
-  Set<Column<Object>> get primaryKey => {profileKey};
-}
-
-@TableIndex(name: 'hifz_plans_profile_idx', columns: {#profileKey, #updatedAt})
-@DataClassName('HifzPlanRow')
-class HifzPlans extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get profileKey => text()();
-  TextColumn get title => text()();
-  IntColumn get startSurah => integer()();
-  IntColumn get startAyah => integer()();
-  IntColumn get endSurah => integer()();
-  IntColumn get endAyah => integer()();
-  IntColumn get startPage => integer()();
-  TextColumn get presetId => text()();
-  DateTimeColumn get createdAt => dateTime()();
-  DateTimeColumn get updatedAt => dateTime()();
-}
-
 @DataClassName('SyncStateRecord')
 class SyncStates extends Table {
   TextColumn get syncKey => text()();
@@ -160,37 +84,6 @@ class SyncStates extends Table {
 
   @override
   Set<Column<Object>> get primaryKey => {syncKey};
-}
-
-@TableIndex(
-  name: 'reading_page_visit_date_idx',
-  columns: {#profileKey, #readAt},
-)
-@DataClassName('ReadingPageVisitRow')
-class ReadingPageVisits extends Table {
-  TextColumn get profileKey => text()();
-  TextColumn get dayKey => text()();
-  IntColumn get pageNumber => integer()();
-  DateTimeColumn get readAt => dateTime()();
-
-  @override
-  Set<Column<Object>> get primaryKey => {profileKey, dayKey, pageNumber};
-}
-
-@TableIndex(name: 'daily_goal_effective_idx', columns: {#profileKey, #dayKey})
-@DataClassName('DailyGoalRow')
-class DailyGoals extends Table {
-  TextColumn get profileKey => text()();
-  TextColumn get dayKey => text()();
-  IntColumn get newHifzAyahsTarget =>
-      integer().withDefault(const Constant(0))();
-  IntColumn get revisionAyahsTarget =>
-      integer().withDefault(const Constant(0))();
-  IntColumn get readingPagesTarget =>
-      integer().withDefault(const Constant(0))();
-
-  @override
-  Set<Column<Object>> get primaryKey => {profileKey, dayKey};
 }
 
 @DataClassName('StudyBookmarkRow')
@@ -239,6 +132,22 @@ class InstalledTafsirPackages extends Table {
   Set<Column<Object>> get primaryKey => {sourceId};
 }
 
+@DataClassName('InstalledTranslationPackageRecord')
+class InstalledTranslationPackages extends Table {
+  TextColumn get sourceId => text()();
+  IntColumn get resourceId => integer()();
+  TextColumn get name => text()();
+  TextColumn get language => text()();
+  TextColumn get version => text()();
+  TextColumn get localPath => text()();
+  TextColumn get author => text().nullable()();
+  IntColumn get recordCount => integer()();
+  DateTimeColumn get installedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {sourceId};
+}
+
 @DataClassName('ReadingProgressRecord')
 class ReadingProgress extends Table {
   TextColumn get profileKey => text()();
@@ -281,16 +190,11 @@ class CustomDuas extends Table {
     AyahTimings,
     WordTimings,
     DownloadJobs,
-    HifzProgressEntries,
-    HifzReviewHistoryRows,
-    HifzSessionCheckpoints,
-    HifzPlans,
     SyncStates,
-    ReadingPageVisits,
-    DailyGoals,
     StudyBookmarks,
     StudyNotes,
     InstalledTafsirPackages,
+    InstalledTranslationPackages,
     ReadingProgress,
     AppSettings,
     CustomDuas,
@@ -310,7 +214,7 @@ class UserDatabase extends _$UserDatabase {
   UserDatabase.forTesting(QueryExecutor executor) : super(executor);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -324,39 +228,6 @@ class UserDatabase extends _$UserDatabase {
       if (from < 3) {
         await migrator.createTable(downloadJobs);
       }
-      if (from < 4) {
-        await migrator.createTable(hifzProgressEntries);
-        await migrator.createTable(hifzSessionCheckpoints);
-      }
-      if (from >= 4 && from < 5) {
-        await migrator.addColumn(
-          hifzProgressEntries,
-          hifzProgressEntries.revisionIntervalIndex,
-        );
-      }
-      if (from < 5) {
-        await migrator.createTable(hifzReviewHistoryRows);
-      }
-      if (from < 6) {
-        await migrator.createTable(readingPageVisits);
-        await migrator.createTable(dailyGoals);
-        await customStatement(
-          'CREATE INDEX IF NOT EXISTS hifz_progress_due_idx '
-          'ON hifz_progress_entries(profile_key, next_review_at)',
-        );
-        await customStatement(
-          'CREATE INDEX IF NOT EXISTS hifz_review_date_idx '
-          'ON hifz_review_history_rows(profile_key, reviewed_at)',
-        );
-        await customStatement(
-          'CREATE INDEX IF NOT EXISTS reading_page_visit_date_idx '
-          'ON reading_page_visits(profile_key, read_at)',
-        );
-        await customStatement(
-          'CREATE INDEX IF NOT EXISTS daily_goal_effective_idx '
-          'ON daily_goals(profile_key, day_key)',
-        );
-      }
       if (from < 7) {
         await migrator.createTable(studyBookmarks);
         await migrator.createTable(studyNotes);
@@ -364,11 +235,26 @@ class UserDatabase extends _$UserDatabase {
       if (from < 8) {
         await migrator.createTable(installedTafsirPackages);
       }
-      if (from < 9) {
-        await migrator.createTable(hifzPlans);
-      }
       if (from < 10) {
         await migrator.createTable(customDuas);
+      }
+      if (from < 11) {
+        for (final table in const [
+          'hifz_progress_entries',
+          'hifz_review_history_rows',
+          'hifz_session_checkpoints',
+          'hifz_plans',
+          'reading_page_visits',
+          'daily_goals',
+        ]) {
+          await customStatement('DROP TABLE IF EXISTS $table');
+        }
+        await customStatement(
+          "DELETE FROM app_settings WHERE setting_key LIKE 'hifz_%'",
+        );
+      }
+      if (from < 12) {
+        await migrator.createTable(installedTranslationPackages);
       }
     },
     beforeOpen: (_) async {
@@ -423,6 +309,53 @@ class UserDatabase extends _$UserDatabase {
     )..where((row) => row.sourceId.equals(sourceId))).go();
   }
 
+  Future<InstalledTranslationPackageRecord?> getInstalledTranslationPackage(
+    String sourceId,
+  ) {
+    return (select(
+      installedTranslationPackages,
+    )..where((row) => row.sourceId.equals(sourceId))).getSingleOrNull();
+  }
+
+  Future<List<InstalledTranslationPackageRecord>>
+  listInstalledTranslationPackages() {
+    return (select(
+      installedTranslationPackages,
+    )..orderBy([(row) => OrderingTerm.asc(row.name)])).get();
+  }
+
+  Future<void> upsertInstalledTranslationPackage({
+    required String sourceId,
+    required int resourceId,
+    required String name,
+    required String language,
+    required String version,
+    required String localPath,
+    required int recordCount,
+    String? author,
+    DateTime? installedAt,
+  }) async {
+    await into(installedTranslationPackages).insertOnConflictUpdate(
+      InstalledTranslationPackagesCompanion.insert(
+        sourceId: sourceId,
+        resourceId: resourceId,
+        name: name,
+        language: language,
+        version: version,
+        localPath: localPath,
+        author: Value(author),
+        recordCount: recordCount,
+        installedAt: installedAt ?? DateTime.now(),
+      ),
+    );
+  }
+
+  Future<void> deleteInstalledTranslationPackage(String sourceId) {
+    return (delete(
+      installedTranslationPackages,
+    )..where((row) => row.sourceId.equals(sourceId))).go();
+  }
+
   Future<ReadingProgressRecord?> getReadingProgress(String profileKey) {
     return (select(
       readingProgress,
@@ -436,60 +369,13 @@ class UserDatabase extends _$UserDatabase {
     required int lastPage,
     DateTime? readAt,
   }) async {
-    final timestamp = readAt ?? DateTime.now();
-    await transaction(() async {
-      await into(readingProgress).insertOnConflictUpdate(
-        ReadingProgressCompanion.insert(
-          profileKey: profileKey,
-          lastSurah: lastSurah,
-          lastAyah: lastAyah,
-          lastPage: lastPage,
-          lastReadAt: Value(timestamp),
-        ),
-      );
-      await recordReadingPageVisit(
+    await into(readingProgress).insertOnConflictUpdate(
+      ReadingProgressCompanion.insert(
         profileKey: profileKey,
-        pageNumber: lastPage,
-        readAt: timestamp,
-      );
-    });
-  }
-
-  Future<void> recordReadingPageVisit({
-    required String profileKey,
-    required int pageNumber,
-    required DateTime readAt,
-  }) async {
-    await into(readingPageVisits).insertOnConflictUpdate(
-      ReadingPageVisitsCompanion.insert(
-        profileKey: profileKey,
-        dayKey: calendarDayKey(readAt),
-        pageNumber: pageNumber,
-        readAt: readAt,
-      ),
-    );
-  }
-
-  Future<void> saveDailyGoal({
-    required String profileKey,
-    required DateTime day,
-    required int newHifzAyahsTarget,
-    required int revisionAyahsTarget,
-    required int readingPagesTarget,
-  }) async {
-    if (newHifzAyahsTarget < 0 ||
-        revisionAyahsTarget < 0 ||
-        readingPagesTarget < 0) {
-      throw ArgumentError('Daily Quran goals must not be negative.');
-    }
-
-    await into(dailyGoals).insertOnConflictUpdate(
-      DailyGoalsCompanion.insert(
-        profileKey: profileKey,
-        dayKey: calendarDayKey(day),
-        newHifzAyahsTarget: Value(newHifzAyahsTarget),
-        revisionAyahsTarget: Value(revisionAyahsTarget),
-        readingPagesTarget: Value(readingPagesTarget),
+        lastSurah: lastSurah,
+        lastAyah: lastAyah,
+        lastPage: lastPage,
+        lastReadAt: Value(readAt ?? DateTime.now()),
       ),
     );
   }

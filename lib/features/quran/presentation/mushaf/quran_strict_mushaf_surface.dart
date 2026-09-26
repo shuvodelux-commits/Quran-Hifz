@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../hifz/domain/hifz_mushaf_page.dart';
-import '../../../hifz/domain/hifz_reading_mode.dart';
+import '../../domain/quran_mushaf_page.dart';
+import '../../domain/quran_mushaf_palette.dart';
 import '../../domain/quran_mushaf_line.dart';
 import '../../domain/quran_page_window.dart';
 import '../widgets/bismillah_v4_glyph.dart';
@@ -62,8 +62,8 @@ class QuranStrictMushafSurface extends StatefulWidget {
     super.key,
   });
 
-  final HifzMushafPage page;
-  final HifzMushafPalette palette;
+  final QcfMushafPage page;
+  final QuranMushafPalette palette;
   final int generation;
   final Uri pageFontUri;
   final String? activeAyahKey;

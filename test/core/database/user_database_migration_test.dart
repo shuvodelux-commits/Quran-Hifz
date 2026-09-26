@@ -7,7 +7,7 @@ import 'package:quran_hifz/core/database/user_database.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 void main() {
-  test('v1 to current migration preserves reading progress', () async {
+  test('v1 to current migration preserves normal user data', () async {
     final temp = await Directory.systemTemp.createTemp('quran_hifz_migration_');
     final file = File('${temp.path}/user_data.sqlite');
 
@@ -32,33 +32,18 @@ void main() {
     final db = UserDatabase.forTesting(NativeDatabase(file));
     addTearDown(() async {
       await db.close();
-      if (await temp.exists()) {
-        await temp.delete(recursive: true);
-      }
+      if (await temp.exists()) await temp.delete(recursive: true);
     });
 
     final progress = await (db.select(
       db.readingProgress,
     )..where((row) => row.profileKey.equals('default'))).getSingle();
-
     expect(progress.lastSurah, 67);
     expect(progress.lastAyah, 5);
     expect(progress.lastPage, 562);
 
-    // Opening a v1 DB through the current migration path must create newer
-    // tables without deleting the sentinel progress row.
-    await db
-        .into(db.appSettings)
-        .insert(
-          AppSettingsCompanion.insert(
-            settingKey: 'theme',
-            settingValue: 'system',
-          ),
-        );
-    final setting = await (db.select(
-      db.appSettings,
-    )..where((row) => row.settingKey.equals('theme'))).getSingle();
-    expect(setting.settingValue, 'system');
+    await db.saveSetting('theme', 'green');
+    expect(await db.getSetting('theme'), 'green');
 
     await db.upsertDownloadJob(
       audioKey: 'chapter:7:1',
@@ -69,83 +54,6 @@ void main() {
       downloadedBytes: 0,
     );
     expect((await db.getDownloadJob('chapter:7:1'))?.status, 'queued');
-
-    await db
-        .into(db.hifzProgressEntries)
-        .insert(
-          HifzProgressEntriesCompanion.insert(
-            profileKey: 'default',
-            surahNumber: 67,
-            ayahNumber: 1,
-            status: 'learning',
-          ),
-        );
-    final hifz =
-        await (db.select(db.hifzProgressEntries)..where(
-              (row) =>
-                  row.profileKey.equals('default') &
-                  row.surahNumber.equals(67) &
-                  row.ayahNumber.equals(1),
-            ))
-            .getSingle();
-    expect(hifz.status, 'learning');
-    expect(hifz.revisionIntervalIndex, -1);
-
-    await db
-        .into(db.hifzSessionCheckpoints)
-        .insert(
-          HifzSessionCheckpointsCompanion.insert(
-            profileKey: 'default',
-            startSurah: 67,
-            startAyah: 1,
-            endSurah: 67,
-            endAyah: 3,
-            presetId: 'new_memorization',
-            status: 'stopped',
-            updatedAt: DateTime.utc(2026, 9, 4),
-          ),
-        );
-    final checkpoint = await (db.select(
-      db.hifzSessionCheckpoints,
-    )..where((row) => row.profileKey.equals('default'))).getSingle();
-    expect(checkpoint.nextStepIndex, 0);
-    expect(checkpoint.status, 'stopped');
-
-    await db
-        .into(db.hifzReviewHistoryRows)
-        .insert(
-          HifzReviewHistoryRowsCompanion.insert(
-            profileKey: 'default',
-            surahNumber: 67,
-            ayahNumber: 1,
-            reviewedAt: DateTime.utc(2026, 9, 4),
-            result: 'perfect',
-            previousStatus: 'learning',
-            newStatus: 'memorized',
-            previousIntervalIndex: 0,
-            newIntervalIndex: 1,
-            previousStrengthScore: 0,
-            newStrengthScore: 60,
-            nextReviewAt: DateTime.utc(2026, 9, 6),
-          ),
-        );
-    expect(await db.select(db.hifzReviewHistoryRows).get(), hasLength(1));
-
-    await db.recordReadingPageVisit(
-      profileKey: 'default',
-      pageNumber: 42,
-      readAt: DateTime.utc(2026, 9, 4),
-    );
-    expect(await db.select(db.readingPageVisits).get(), hasLength(1));
-
-    await db.saveDailyGoal(
-      profileKey: 'default',
-      day: DateTime.utc(2026, 9, 4),
-      newHifzAyahsTarget: 5,
-      revisionAyahsTarget: 20,
-      readingPagesTarget: 2,
-    );
-    expect(await db.select(db.dailyGoals).get(), hasLength(1));
 
     await db
         .into(db.studyBookmarks)
@@ -191,72 +99,59 @@ void main() {
         );
     expect(await db.select(db.installedTafsirPackages).get(), hasLength(1));
 
+    final customCreated = DateTime.utc(2026, 9, 24, 11);
     await db
-        .into(db.hifzPlans)
+        .into(db.customDuas)
         .insert(
-          HifzPlansCompanion.insert(
-            profileKey: 'default',
-            title: 'Al-Mulk 1–5',
-            startSurah: 67,
-            startAyah: 1,
-            endSurah: 67,
-            endAyah: 5,
-            startPage: 562,
-            presetId: 'new_memorization',
-            createdAt: DateTime.utc(2026, 9, 17),
-            updatedAt: DateTime.utc(2026, 9, 17),
+          CustomDuasCompanion.insert(
+            id: 'custom:v1-migration',
+            title: 'Migrated custom dua',
+            arabic: 'رَبِّ زِدْنِي عِلْمًا',
+            transliteration: 'Rabbi zidni ilma',
+            meaning: 'Increase me in knowledge',
+            reference: 'Migration test',
+            createdAt: customCreated,
+            updatedAt: customCreated,
           ),
         );
-    expect(await db.select(db.hifzPlans).get(), hasLength(1));
-
-    final customCreated = DateTime.utc(2026, 9, 24, 11);
-    await db.into(db.customDuas).insert(
-      CustomDuasCompanion.insert(
-        id: 'custom:v1-migration',
-        title: 'Migrated custom dua',
-        arabic: 'رَبِّ زِدْنِي عِلْمًا',
-        transliteration: 'Rabbi zidni ilma',
-        meaning: 'Increase me in knowledge',
-        reference: 'Migration test',
-        createdAt: customCreated,
-        updatedAt: customCreated,
-      ),
-    );
     expect(await db.select(db.customDuas).get(), hasLength(1));
-
-    for (final indexName in const [
-      'hifz_progress_due_idx',
-      'hifz_review_date_idx',
-      'reading_page_visit_date_idx',
-      'daily_goal_effective_idx',
-    ]) {
-      final index = await db
-          .customSelect(
-            "SELECT name FROM sqlite_master WHERE type = 'index' AND name = ?",
-            variables: [Variable.withString(indexName)],
-          )
-          .getSingleOrNull();
-      expect(index, isNotNull, reason: 'missing migration index $indexName');
-    }
   });
 
-
-  test('v9 to current migration adds custom duas without losing settings', () async {
-    final temp = await Directory.systemTemp.createTemp('quran_hifz_v9_');
+  test('v10 to v11 removes Hifz data without touching normal data', () async {
+    final temp = await Directory.systemTemp.createTemp('quran_hifz_v10_');
     final file = File('${temp.path}/user_data.sqlite');
 
-    final legacy = sqlite3.open(file.path);
-    legacy.execute('''
-      CREATE TABLE app_settings (
-        setting_key TEXT NOT NULL PRIMARY KEY,
-        setting_value TEXT NOT NULL
-      );
-    ''');
-    legacy.execute(
-      "INSERT INTO app_settings(setting_key, setting_value) "
-      "VALUES ('sentinel', 'keep-me');",
+    final seed = UserDatabase.forTesting(NativeDatabase(file));
+    await seed.saveSetting('sentinel', 'keep-me');
+    await seed.saveReadingProgress(
+      profileKey: 'default',
+      lastSurah: 2,
+      lastAyah: 255,
+      lastPage: 42,
+      readAt: DateTime.utc(2026, 9, 26),
     );
-    legacy.execute('PRAGMA user_version = 9;');
+    await seed.close();
+
+    final legacy = sqlite3.open(file.path);
+    for (final statement in const [
+      'CREATE TABLE hifz_progress_entries (id INTEGER)',
+      'CREATE TABLE hifz_review_history_rows (id INTEGER)',
+      'CREATE TABLE hifz_session_checkpoints (id INTEGER)',
+      'CREATE TABLE hifz_plans (id INTEGER)',
+      'CREATE TABLE reading_page_visits (id INTEGER)',
+      'CREATE TABLE daily_goals (id INTEGER)',
+    ]) {
+      legacy.execute(statement);
+    }
+    legacy.execute(
+      "INSERT OR REPLACE INTO app_settings(setting_key, setting_value) "
+      "VALUES ('hifz_layout_mode', 'fixedMushaf');",
+    );
+    legacy.execute(
+      "INSERT OR REPLACE INTO app_settings(setting_key, setting_value) "
+      "VALUES ('hifz_font_size', '40');",
+    );
+    legacy.execute('PRAGMA user_version = 10;');
     legacy.close();
 
     final db = UserDatabase.forTesting(NativeDatabase(file));
@@ -266,23 +161,80 @@ void main() {
     });
 
     expect(await db.getSetting('sentinel'), 'keep-me');
+    expect(await db.getSetting('hifz_layout_mode'), isNull);
+    expect(await db.getSetting('hifz_font_size'), isNull);
 
-    final created = DateTime.utc(2026, 9, 24, 12);
-    await db.into(db.customDuas).insert(
-      CustomDuasCompanion.insert(
-        id: 'custom:migration',
-        title: 'Morning',
-        arabic: 'رَبِّ زِدْنِي عِلْمًا',
-        transliteration: 'Rabbi zidni ilma',
-        meaning: 'Increase me in knowledge',
-        reference: 'User reference',
-        createdAt: created,
-        updatedAt: created,
-      ),
-    );
+    final progress = await db.getReadingProgress('default');
+    expect(progress, isNotNull);
+    expect(progress!.lastSurah, 2);
+    expect(progress.lastAyah, 255);
+    expect(progress.lastPage, 42);
 
-    final row = await db.select(db.customDuas).getSingle();
-    expect(row.id, 'custom:migration');
-    expect(row.title, 'Morning');
+    for (final table in const [
+      'hifz_progress_entries',
+      'hifz_review_history_rows',
+      'hifz_session_checkpoints',
+      'hifz_plans',
+      'reading_page_visits',
+      'daily_goals',
+    ]) {
+      final row = await db
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+            variables: [Variable.withString(table)],
+          )
+          .getSingleOrNull();
+      expect(row, isNull, reason: 'legacy table should be removed: $table');
+    }
   });
+
+  test(
+    'v9 to current migration adds custom duas without losing settings',
+    () async {
+      final temp = await Directory.systemTemp.createTemp('quran_hifz_v9_');
+      final file = File('${temp.path}/user_data.sqlite');
+
+      final legacy = sqlite3.open(file.path);
+      legacy.execute('''
+      CREATE TABLE app_settings (
+        setting_key TEXT NOT NULL PRIMARY KEY,
+        setting_value TEXT NOT NULL
+      );
+    ''');
+      legacy.execute(
+        "INSERT INTO app_settings(setting_key, setting_value) "
+        "VALUES ('sentinel', 'keep-me');",
+      );
+      legacy.execute('PRAGMA user_version = 9;');
+      legacy.close();
+
+      final db = UserDatabase.forTesting(NativeDatabase(file));
+      addTearDown(() async {
+        await db.close();
+        if (await temp.exists()) await temp.delete(recursive: true);
+      });
+
+      expect(await db.getSetting('sentinel'), 'keep-me');
+
+      final created = DateTime.utc(2026, 9, 24, 12);
+      await db
+          .into(db.customDuas)
+          .insert(
+            CustomDuasCompanion.insert(
+              id: 'custom:migration',
+              title: 'Morning',
+              arabic: 'رَبِّ زِدْنِي عِلْمًا',
+              transliteration: 'Rabbi zidni ilma',
+              meaning: 'Increase me in knowledge',
+              reference: 'User reference',
+              createdAt: created,
+              updatedAt: created,
+            ),
+          );
+
+      final row = await db.select(db.customDuas).getSingle();
+      expect(row.id, 'custom:migration');
+      expect(row.title, 'Morning');
+    },
+  );
 }

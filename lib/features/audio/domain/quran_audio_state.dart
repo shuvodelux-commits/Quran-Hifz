@@ -1,4 +1,4 @@
-enum QuranAudioMode { idle, word, ayah, surah, hifzRange, revision }
+enum QuranAudioMode { idle, word, ayah, surah }
 
 enum QuranAudioStatus { idle, loading, playing, paused, completed, error }
 

@@ -1,7 +1,7 @@
 # Quran content database builder
 
 This directory builds the immutable SQLite database bundled with the Quran
-Hifz app. Runtime code must not edit canonical Quran rows.
+Quran app. Runtime code must not edit canonical Quran rows.
 
 ## Source policy
 

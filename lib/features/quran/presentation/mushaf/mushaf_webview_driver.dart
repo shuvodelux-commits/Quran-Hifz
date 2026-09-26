@@ -1,8 +1,9 @@
 import 'dart:convert';
 
-import '../../../hifz/domain/hifz_mushaf_page.dart';
-import '../../../hifz/domain/hifz_reading_mode.dart';
+import '../../domain/quran_mushaf_page.dart';
+import '../../domain/quran_mushaf_palette.dart';
 import 'mushaf_renderer_message.dart';
+import '../../domain/quran_mushaf_variant.dart';
 
 abstract interface class MushafJavaScriptController {
   Future<void> loadFlutterAsset(String key);
@@ -15,7 +16,7 @@ abstract interface class MushafWebViewDriver {
 
   Future<void> renderPage(MushafRenderPayload payload);
 
-  Future<void> setPalette(HifzMushafPalette palette);
+  Future<void> setPalette(QuranMushafPalette palette);
 
   Future<void> setActiveWord(String ayahKey, int wordPosition);
 
@@ -37,8 +38,8 @@ class MushafRenderPayload {
     required this.endMarkerFontBytes,
   });
 
-  final HifzMushafPage page;
-  final HifzMushafPalette palette;
+  final QcfMushafPage page;
+  final QuranMushafPalette palette;
   final int generation;
   final List<int> pageFontBytes;
   final List<int> surahFontBytes;
@@ -88,10 +89,10 @@ class MushafRenderPayload {
     };
   }
 
-  static String _lineTypeName(HifzMushafLineType type) => switch (type) {
-    HifzMushafLineType.ayah => 'ayah',
-    HifzMushafLineType.basmallah => 'basmallah',
-    HifzMushafLineType.surahName => 'surah_name',
+  static String _lineTypeName(QcfMushafLineType type) => switch (type) {
+    QcfMushafLineType.ayah => 'ayah',
+    QcfMushafLineType.basmallah => 'basmallah',
+    QcfMushafLineType.surahName => 'surah_name',
   };
   static String _fontDataUrl(List<int> bytes, String subtype) {
     if (bytes.isEmpty) {
@@ -117,7 +118,7 @@ class ControllerMushafWebViewDriver implements MushafWebViewDriver {
   }
 
   @override
-  Future<void> setPalette(HifzMushafPalette palette) {
+  Future<void> setPalette(QuranMushafPalette palette) {
     return _runEncoded('setPalette', <Object?>[palette.name]);
   }
 

@@ -11,7 +11,6 @@ void main() {
       QuranFontPreference.qcfV4Tajweed,
     ]);
     expect(QuranFontPreference.defaultGlobal, QuranFontPreference.qpcHafs);
-    expect(QuranFontPreference.defaultHifz, QuranFontPreference.qpcHafs);
   });
 
   test('font choices map to the correct script renderer and Mushaf id', () {

@@ -1,12 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quran_hifz/features/hifz/domain/hifz_mushaf_page.dart';
-import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
+import 'package:quran_hifz/features/quran/domain/quran_mushaf_page.dart';
+import 'package:quran_hifz/features/quran/domain/quran_mushaf_palette.dart';
 import 'package:quran_hifz/features/quran/presentation/mushaf/quran_mushaf_webview.dart';
 import 'package:quran_hifz/features/quran/presentation/mushaf/mushaf_renderer_message.dart';
 import 'package:quran_hifz/features/quran/presentation/mushaf/mushaf_webview_driver.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:quran_hifz/features/quran/domain/quran_mushaf_variant.dart';
 
 void main() {
   late _FakeController controller;
@@ -74,18 +75,18 @@ void main() {
 
   test('ayah end carries Unicode Hafs fallback text', () {
     final payload = MushafRenderPayload(
-      page: HifzMushafPage(
+      page: QcfMushafPage(
         page: 2,
         variant: QuranMushafVariant.qcfV4Tajweed,
         lines: const [
-          HifzMushafLine(
+          QcfMushafLine(
             lineNumber: 3,
-            type: HifzMushafLineType.ayah,
+            type: QcfMushafLineType.ayah,
             isCentered: true,
             tokens: [
-              HifzMushafToken(
+              QcfMushafToken(
                 wordIndex: 38,
-                type: HifzMushafTokenType.end,
+                type: QcfMushafTokenType.end,
                 display: 'glyph-end',
                 unicodeFallback: '١',
                 ayahKey: '2:1',
@@ -94,7 +95,7 @@ void main() {
           ),
         ],
       ),
-      palette: HifzMushafPalette.light,
+      palette: QuranMushafPalette.light,
       generation: 1,
       pageFontBytes: const [1],
       surahFontBytes: const [2],
@@ -167,18 +168,18 @@ MushafRenderPayload _fixture({
   QuranMushafVariant variant = QuranMushafVariant.qcfV4Tajweed,
 }) {
   return MushafRenderPayload(
-    page: HifzMushafPage(
+    page: QcfMushafPage(
       page: 2,
       variant: variant,
       lines: [
-        HifzMushafLine(
+        QcfMushafLine(
           lineNumber: 3,
-          type: HifzMushafLineType.ayah,
+          type: QcfMushafLineType.ayah,
           isCentered: true,
           tokens: [
-            HifzMushafToken(
+            QcfMushafToken(
               wordIndex: 37,
-              type: HifzMushafTokenType.word,
+              type: QcfMushafTokenType.word,
               display: display,
               ayahKey: '2:1',
               wordPosition: 1,
@@ -187,7 +188,7 @@ MushafRenderPayload _fixture({
         ),
       ],
     ),
-    palette: HifzMushafPalette.sepia,
+    palette: QuranMushafPalette.sepia,
     generation: 7,
     pageFontBytes: const [0x77, 0x4f, 0x46, 0x32, 1, 2, 3],
     surahFontBytes: const [1, 2, 3],

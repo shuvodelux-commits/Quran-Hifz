@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quran_hifz/features/hifz/domain/hifz_mushaf_page.dart';
-import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
+import 'package:quran_hifz/features/quran/domain/quran_mushaf_page.dart';
+import 'package:quran_hifz/features/quran/domain/quran_mushaf_palette.dart';
 import 'package:quran_hifz/features/quran/domain/quran_ayah.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_line.dart';
 import 'package:quran_hifz/features/quran/domain/quran_page_window.dart';
 import 'package:quran_hifz/features/quran/domain/quran_word.dart';
 import 'package:quran_hifz/features/quran/presentation/mushaf/quran_strict_mushaf_surface.dart';
 import 'package:quran_hifz/features/quran/presentation/widgets/bismillah_v4_glyph.dart';
+import 'package:quran_hifz/features/quran/domain/quran_mushaf_variant.dart';
 
 void main() {
   testWidgets(
@@ -17,12 +18,12 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: QuranStrictMushafSurface(
-            page: const HifzMushafPage(
+            page: const QcfMushafPage(
               page: 440,
               variant: QuranMushafVariant.qcfV4Tajweed,
               lines: [],
             ),
-            palette: HifzMushafPalette.light,
+            palette: QuranMushafPalette.light,
             generation: 1,
             pageFontUri: Uri.parse('file:///missing.woff2'),
             fallbackWindow: _page440(),

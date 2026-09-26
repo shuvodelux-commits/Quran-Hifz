@@ -5,11 +5,9 @@ import 'package:quran_hifz/features/audio/application/audio_providers.dart';
 import 'package:quran_hifz/features/audio/application/quran_audio_controller.dart';
 import 'package:quran_hifz/features/audio/domain/playback_requests.dart';
 import 'package:quran_hifz/features/audio/domain/quran_audio_state.dart';
-import 'package:quran_hifz/features/hifz/application/hifz_mushaf_providers.dart';
-import 'package:quran_hifz/features/hifz/domain/hifz_mushaf_page.dart';
-import 'package:quran_hifz/features/hifz/domain/hifz_mushaf_page_repository.dart';
-import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
-import 'package:quran_hifz/features/hifz/domain/hifz_session.dart';
+import 'package:quran_hifz/features/quran/application/quran_mushaf_providers.dart';
+import 'package:quran_hifz/features/quran/domain/quran_mushaf_page.dart';
+import 'package:quran_hifz/features/quran/domain/quran_mushaf_page_repository.dart';
 import 'package:quran_hifz/features/quran/application/quran_providers.dart';
 import 'package:quran_hifz/features/quran/application/reader_audio_actions.dart';
 import 'package:quran_hifz/features/quran/application/reader_controller.dart';
@@ -35,6 +33,7 @@ import 'package:quran_hifz/features/study/domain/note.dart';
 import 'package:quran_hifz/features/study/domain/study_repository.dart';
 
 import '../../../fakes/fake_audio_player_adapter.dart';
+import 'package:quran_hifz/features/quran/domain/quran_mushaf_variant.dart';
 
 const _surah = QuranSurahSummary(
   number: 1,
@@ -484,7 +483,7 @@ void main() {
         ProviderScope(
           overrides: [
             ..._overrides(preferences: preferences),
-            hifzMushafPageRepositoryProvider.overrideWithValue(pageRepository),
+            quranMushafPageRepositoryProvider.overrideWithValue(pageRepository),
             quranPageFontRepositoryProvider.overrideWith(
               (ref, font) => fontRepository,
             ),
@@ -788,7 +787,7 @@ class _NoopLocationStore implements ReadingLocationStore {
   Future<void> save(ReadingLocation location) async {}
 }
 
-class _StrictPageRepository implements HifzMushafPageRepository {
+class _StrictPageRepository implements QuranMushafPageRepository {
   final loadedPages = <int>[];
   final loadedVariants = <QuranMushafVariant>[];
 
@@ -796,20 +795,14 @@ class _StrictPageRepository implements HifzMushafPageRepository {
   Future<bool> isVariantAvailable(QuranMushafVariant variant) async => true;
 
   @override
-  Future<HifzMushafPage> loadPage({
+  Future<QcfMushafPage> loadPage({
     required QuranMushafVariant variant,
     required int page,
   }) async {
     loadedPages.add(page);
     loadedVariants.add(variant);
-    return HifzMushafPage(page: page, variant: variant, lines: const []);
+    return QcfMushafPage(page: page, variant: variant, lines: const []);
   }
-
-  @override
-  Future<int?> pageForAyah({
-    required QuranMushafVariant variant,
-    required AyahRef ayah,
-  }) async => ayah.ayahNumber.clamp(1, 2);
 }
 
 class _UnavailablePageFontRepository implements QuranPageFontRepository {

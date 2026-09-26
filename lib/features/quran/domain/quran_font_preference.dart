@@ -2,7 +2,7 @@ import 'quran_script.dart';
 
 enum QuranFontRenderKind { adaptiveUnicode, strictQcfV2, strictQcfV4Tajweed }
 
-/// Quran body-font choices shared by Quran and Hifz readers.
+/// Quran body-font choices available to the Quran reader.
 ///
 /// Adaptive Unicode options own a static Flutter font family. Strict QCF
 /// options use page-specific Quran Foundation fonts and therefore do not.
@@ -45,7 +45,6 @@ enum QuranFontPreference {
   );
 
   static const defaultGlobal = QuranFontPreference.qpcHafs;
-  static const defaultHifz = QuranFontPreference.qpcHafs;
   final String label;
   final String? fontFamily;
   final QuranScriptPreference script;

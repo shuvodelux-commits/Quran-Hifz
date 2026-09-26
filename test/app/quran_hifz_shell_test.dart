@@ -97,43 +97,10 @@ void main() {
       expect(find.text('কুরআন'), findsWidgets, reason: '$theme Quran');
       await tester.tap(find.text('আরও').last);
       await tester.pumpAndSettle();
-      expect(find.text('হিফজ'), findsOneWidget, reason: '$theme more');
+      expect(find.text('হিফজ'), findsNothing, reason: '$theme more');
       expect(find.text('সেটিংস'), findsOneWidget, reason: '$theme more');
       expect(tester.takeException(), isNull, reason: '$theme raised an error');
     }
-  });
-
-  testWidgets('opening the Hifz planner removes the shell navigation bar', (
-    tester,
-  ) async {
-    final userDatabase = UserDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(userDatabase.close);
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          userDatabaseProvider.overrideWithValue(userDatabase),
-          prayerScheduleProvider.overrideWith(
-            (ref) async => throw StateError('Location unavailable in test'),
-          ),
-          quranRepositoryProvider.overrideWithValue(DemoQuranRepository()),
-          readingLocationStoreProvider.overrideWithValue(_NoopLocationStore()),
-        ],
-        child: const MaterialApp(home: QuranHifzShell()),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('আরও').last);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('হিফজ').last);
-    await tester.pumpAndSettle();
-
-    expect(find.text('হিফজ পরিকল্পনা'), findsOneWidget);
-    expect(find.byKey(const ValueKey('hifz-add-plan')), findsOneWidget);
-    expect(find.byType(NavigationBar), findsNothing);
-
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump(const Duration(milliseconds: 1));
   });
 
   testWidgets('system back confirms before closing the root app', (
