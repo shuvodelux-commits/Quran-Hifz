@@ -141,7 +141,7 @@ class _CustomDuaDetailPageState extends ConsumerState<CustomDuaDetailPage> {
                 textAlign: TextAlign.right,
                 style: TextStyle(
                   color: scheme.onSurface,
-                  fontFamily: 'Noto Naskh Arabic',
+                  fontFamily: 'QPC Hafs',
                   fontSize: 27,
                   height: 1.8,
                   fontWeight: FontWeight.w500,

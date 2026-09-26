@@ -38,6 +38,28 @@ void main() {
     );
   });
 
+  test('production validator needs only the surviving QCF V4 bundle', () async {
+    final result = await validateMushafAssets(
+      qcfV4LayoutPath: 'assets/mushaf/layouts/qpc-v4-tajweed-15-lines.sqlite',
+      qcfV4ScriptPath: 'assets/mushaf/scripts/qpc-v4-words.sqlite',
+    );
+
+    expect(result.qcfV4Layout.pageCount, 604);
+    expect(result.qcfV4Script.pageCount, 604);
+    expect(result.qcfV2, isNull);
+  });
+
+  test('production QCF V4 page 440 preserves Ya-Sin transition', () async {
+    final result = await validatePage440Transition(
+      layoutPath: 'assets/mushaf/layouts/qpc-v4-tajweed-15-lines.sqlite',
+    );
+
+    expect(result.surahNumber, 36);
+    expect(result.surahLine, 4);
+    expect(result.bismillahLine, 5);
+    expect(result.firstAyahLine, 6);
+  });
+
   test('rejects an incomplete QPC V4 script database', () async {
     final path = tempDir.uri.resolve('incomplete-script.sqlite').toFilePath();
     final db = sqlite3.open(path);

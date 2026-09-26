@@ -135,7 +135,7 @@ class _CustomDuaFormPageState extends ConsumerState<CustomDuaFormPage> {
                 maxLines: 6,
                 textDirection: TextDirection.rtl,
                 style: const TextStyle(
-                  fontFamily: 'Noto Naskh Arabic',
+                  fontFamily: 'QPC Hafs',
                   fontSize: 22,
                   height: 1.7,
                 ),

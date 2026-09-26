@@ -39,16 +39,42 @@ class QpcV4ScriptValidationResult {
   final int pageCount;
 }
 
-class MushafAssetValidationResult {
-  const MushafAssetValidationResult({
-    required this.qpcLayout,
-    required this.digitalKhattLayout,
-    required this.qpcScript,
+class QcfV2AssetValidationResult {
+  const QcfV2AssetValidationResult({
+    required this.pageCount,
+    required this.tokenCount,
   });
 
-  final MushafLayoutValidationResult qpcLayout;
-  final MushafLayoutValidationResult digitalKhattLayout;
-  final QpcV4ScriptValidationResult qpcScript;
+  final int pageCount;
+  final int tokenCount;
+}
+
+class Page440TransitionValidationResult {
+  const Page440TransitionValidationResult({
+    required this.surahNumber,
+    required this.surahLine,
+    required this.bismillahLine,
+    required this.firstAyahLine,
+  });
+
+  final int surahNumber;
+  final int surahLine;
+  final int bismillahLine;
+  final int firstAyahLine;
+}
+
+class MushafAssetValidationResult {
+  const MushafAssetValidationResult({
+    required this.qcfV4Layout,
+    required this.qcfV4Script,
+    required this.qcfV2,
+    required this.page440,
+  });
+
+  final MushafLayoutValidationResult qcfV4Layout;
+  final QpcV4ScriptValidationResult qcfV4Script;
+  final QcfV2AssetValidationResult? qcfV2;
+  final Page440TransitionValidationResult page440;
 }
 
 Future<MushafLayoutValidationResult> validateLayout(String path) async {
@@ -208,22 +234,187 @@ Future<QpcV4ScriptValidationResult> validateQpcV4Script(String path) async {
 }
 
 Future<MushafAssetValidationResult> validateMushafAssets({
-  required String qpcLayoutPath,
-  required String digitalKhattLayoutPath,
-  required String qpcScriptPath,
+  required String qcfV4LayoutPath,
+  required String qcfV4ScriptPath,
+  String? qcfV2LayoutPath,
+  String? qcfV2ScriptPath,
 }) async {
-  final qpcLayout = await validateLayout(qpcLayoutPath);
-  final digitalKhattLayout = await validateLayout(digitalKhattLayoutPath);
-  final qpcScript = await validateQpcV4Script(qpcScriptPath);
+  final qcfV4Layout = await validateLayout(qcfV4LayoutPath);
+  final qcfV4Script = await validateQpcV4Script(qcfV4ScriptPath);
   _validateQpcLayoutRanges(
-    layoutPath: qpcLayoutPath,
-    scriptPath: qpcScriptPath,
+    layoutPath: qcfV4LayoutPath,
+    scriptPath: qcfV4ScriptPath,
   );
+  final page440 = await validatePage440Transition(layoutPath: qcfV4LayoutPath);
+
+  QcfV2AssetValidationResult? qcfV2;
+  final hasQcfV2Layout =
+      qcfV2LayoutPath != null && File(qcfV2LayoutPath).existsSync();
+  final hasQcfV2Script =
+      qcfV2ScriptPath != null && File(qcfV2ScriptPath).existsSync();
+  if (hasQcfV2Layout != hasQcfV2Script) {
+    throw const FormatException(
+      'QCF V2 validation requires both layout and script assets.',
+    );
+  }
+  if (hasQcfV2Layout && hasQcfV2Script) {
+    qcfV2 = validateQcfV2Assets(
+      layoutPath: qcfV2LayoutPath,
+      scriptPath: qcfV2ScriptPath,
+    );
+  }
+
   return MushafAssetValidationResult(
-    qpcLayout: qpcLayout,
-    digitalKhattLayout: digitalKhattLayout,
-    qpcScript: qpcScript,
+    qcfV4Layout: qcfV4Layout,
+    qcfV4Script: qcfV4Script,
+    qcfV2: qcfV2,
+    page440: page440,
   );
+}
+
+Future<Page440TransitionValidationResult> validatePage440Transition({
+  required String layoutPath,
+}) async {
+  final db = sqlite3.open(layoutPath, mode: OpenMode.readOnly);
+  try {
+    final rows = db.select('''
+      SELECT line_number, line_type, surah_number
+      FROM pages
+      WHERE page_number = 440
+      ORDER BY line_number
+    ''');
+    if (rows.length != 15) {
+      throw const FormatException('QCF V4 page 440 must contain 15 lines.');
+    }
+
+    final surahRows = rows
+        .where((row) => row['line_type']?.toString() == 'surah_name')
+        .toList();
+    final bismillahRows = rows
+        .where((row) => row['line_type']?.toString() == 'basmallah')
+        .toList();
+    if (surahRows.length != 1 || bismillahRows.length != 1) {
+      throw const FormatException(
+        'QCF V4 page 440 must contain one Surah row and one Bismillah row.',
+      );
+    }
+
+    final surah = surahRows.single;
+    final bismillah = bismillahRows.single;
+    final surahLine = _asInt(surah['line_number'], 'surah_line');
+    final bismillahLine = _asInt(bismillah['line_number'], 'bismillah_line');
+    final surahNumber = _asInt(surah['surah_number'], 'surah_number');
+
+    final ayahRows = rows
+        .where(
+          (row) =>
+              row['line_type']?.toString() == 'ayah' &&
+              _asInt(row['line_number'], 'line_number') > bismillahLine,
+        )
+        .toList();
+    if (ayahRows.isEmpty) {
+      throw const FormatException(
+        'QCF V4 page 440 is missing the first Ya-Sin ayah line.',
+      );
+    }
+    final firstAyahLine = _asInt(
+      ayahRows.first['line_number'],
+      'first_ayah_line',
+    );
+
+    if (surahNumber != 36 ||
+        surahLine != 4 ||
+        bismillahLine != 5 ||
+        firstAyahLine != 6) {
+      throw const FormatException(
+        'QCF V4 page 440 Ya-Sin transition structure is invalid.',
+      );
+    }
+
+    return Page440TransitionValidationResult(
+      surahNumber: surahNumber,
+      surahLine: surahLine,
+      bismillahLine: bismillahLine,
+      firstAyahLine: firstAyahLine,
+    );
+  } finally {
+    db.close();
+  }
+}
+
+QcfV2AssetValidationResult validateQcfV2Assets({
+  required String layoutPath,
+  required String scriptPath,
+}) {
+  final layout = sqlite3.open(layoutPath, mode: OpenMode.readOnly);
+  final script = sqlite3.open(scriptPath, mode: OpenMode.readOnly);
+  try {
+    final metadata = <String, String>{
+      for (final row in script.select('SELECT key, value FROM metadata'))
+        row['key'].toString(): row['value'].toString(),
+    };
+    if (metadata['mushaf_id'] != '1' ||
+        metadata['script_kind'] != 'qcf_v2' ||
+        metadata['page_count'] != '604') {
+      throw const FormatException('QCF V2 metadata validation failed.');
+    }
+
+    final pageStats = layout.select('''
+      SELECT COUNT(DISTINCT page_number) AS page_count,
+             MIN(page_number) AS min_page,
+             MAX(page_number) AS max_page
+      FROM pages
+    ''').single;
+    final pageCount = _asInt(pageStats['page_count'], 'page_count');
+    if (pageCount != 604 ||
+        _asInt(pageStats['min_page'], 'min_page') != 1 ||
+        _asInt(pageStats['max_page'], 'max_page') != 604) {
+      throw const FormatException('QCF V2 layout must contain pages 1..604.');
+    }
+
+    final tokenCount = int.tryParse(metadata['token_count'] ?? '');
+    if (tokenCount == null || tokenCount <= 0) {
+      throw const FormatException('QCF V2 token_count metadata is invalid.');
+    }
+    final scriptStats = script.select('''
+      SELECT COUNT(*) AS count,
+             MIN(word_index) AS min_index,
+             MAX(word_index) AS max_index
+      FROM words
+    ''').single;
+    if (_asInt(scriptStats['count'], 'count') != tokenCount ||
+        _asInt(scriptStats['min_index'], 'min_index') != 1 ||
+        _asInt(scriptStats['max_index'], 'max_index') != tokenCount) {
+      throw const FormatException('QCF V2 script indexes are invalid.');
+    }
+
+    var expectedFirst = 1;
+    final ranges = layout.select('''
+      SELECT first_word_id, last_word_id
+      FROM pages
+      WHERE line_type = 'ayah'
+      ORDER BY first_word_id, last_word_id
+    ''');
+    for (final row in ranges) {
+      final first = _asInt(row['first_word_id'], 'first_word_id');
+      final last = _asInt(row['last_word_id'], 'last_word_id');
+      if (first != expectedFirst || last < first) {
+        throw const FormatException('QCF V2 layout word ranges are invalid.');
+      }
+      expectedFirst = last + 1;
+    }
+    if (expectedFirst - 1 != tokenCount) {
+      throw const FormatException('QCF V2 layout does not cover all tokens.');
+    }
+
+    return QcfV2AssetValidationResult(
+      pageCount: pageCount,
+      tokenCount: tokenCount,
+    );
+  } finally {
+    layout.close();
+    script.close();
+  }
 }
 
 void _validateQpcLayoutRanges({
@@ -271,45 +462,62 @@ void _validateQpcLayoutRanges({
 
 Future<void> main(List<String> args) async {
   final options = _parseArgs(args);
-  final qpcLayout =
-      options['qpc-layout'] ??
+  final qcfV4Layout =
+      options['qcf-v4-layout'] ??
       'assets/mushaf/layouts/qpc-v4-tajweed-15-lines.sqlite';
-  final digitalLayout =
-      options['digital-layout'] ??
-      'assets/mushaf/layouts/digital-khatt-15-lines.sqlite';
-  final qpcScript =
-      options['qpc-script'] ?? 'assets/mushaf/scripts/qpc-v4-words.sqlite';
+  final qcfV4Script =
+      options['qcf-v4-script'] ?? 'assets/mushaf/scripts/qpc-v4-words.sqlite';
+  final qcfV2Layout =
+      options['qcf-v2-layout'] ??
+      'assets/mushaf/layouts/qcf-v2-15-lines.sqlite';
+  final qcfV2Script =
+      options['qcf-v2-script'] ?? 'assets/mushaf/scripts/qcf-v2-words.sqlite';
 
   final result = await validateMushafAssets(
-    qpcLayoutPath: qpcLayout,
-    digitalKhattLayoutPath: digitalLayout,
-    qpcScriptPath: qpcScript,
+    qcfV4LayoutPath: qcfV4Layout,
+    qcfV4ScriptPath: qcfV4Script,
+    qcfV2LayoutPath: qcfV2Layout,
+    qcfV2ScriptPath: qcfV2Script,
   );
   stdout.writeln(
-    'QPC V4 layout: ' +
-        result.qpcLayout.pageCount.toString() +
+    'QCF V4 layout: ' +
+        result.qcfV4Layout.pageCount.toString() +
         ' pages / ' +
-        result.qpcLayout.linesPerPage.toString() +
+        result.qcfV4Layout.linesPerPage.toString() +
         ' lines',
   );
   stdout.writeln(
-    'Digital Khatt layout: ' +
-        result.digitalKhattLayout.pageCount.toString() +
-        ' pages / ' +
-        result.digitalKhattLayout.linesPerPage.toString() +
-        ' lines',
-  );
-  stdout.writeln(
-    'QPC V4 script: ' +
-        result.qpcScript.wordCount.toString() +
+    'QCF V4 script: ' +
+        result.qcfV4Script.wordCount.toString() +
         ' word + ' +
-        result.qpcScript.endCount.toString() +
+        result.qcfV4Script.endCount.toString() +
         ' end = ' +
-        result.qpcScript.totalCount.toString() +
+        result.qcfV4Script.totalCount.toString() +
         ' tokens / ' +
-        result.qpcScript.pageCount.toString() +
+        result.qcfV4Script.pageCount.toString() +
         ' pages',
   );
+  stdout.writeln(
+    'Page 440: Surah ' +
+        result.page440.surahNumber.toString() +
+        ', lines ' +
+        result.page440.surahLine.toString() +
+        '/' +
+        result.page440.bismillahLine.toString() +
+        '/' +
+        result.page440.firstAyahLine.toString(),
+  );
+  if (result.qcfV2 == null) {
+    stdout.writeln('QCF V2 assets: not generated locally; validation skipped.');
+  } else {
+    stdout.writeln(
+      'QCF V2: ' +
+          result.qcfV2!.pageCount.toString() +
+          ' pages / ' +
+          result.qcfV2!.tokenCount.toString() +
+          ' tokens',
+    );
+  }
 }
 
 Map<String, String> _parseArgs(List<String> args) {

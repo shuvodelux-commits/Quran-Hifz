@@ -39,4 +39,30 @@ void main() {
       expect(pubspec, isNot(contains(legacyAsset)), reason: legacyAsset);
     }
   });
+
+  test('product code does not reference deleted Quran font families', () {
+    final legacyFamilies = <String>[
+      'PDMS Saleem Quran',
+      'AlQalam',
+      'Muhammadi Quran',
+      'Noto Naskh Arabic',
+      'DigitalKhatt IndoPak',
+      'KFGQPC Hafs Uthmanic',
+    ];
+    final dartFiles = Directory('lib')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((file) => file.path.endsWith('.dart'));
+
+    for (final file in dartFiles) {
+      final source = file.readAsStringSync();
+      for (final family in legacyFamilies) {
+        expect(
+          source,
+          isNot(contains(family)),
+          reason: '${file.path} still references $family',
+        );
+      }
+    }
+  });
 }

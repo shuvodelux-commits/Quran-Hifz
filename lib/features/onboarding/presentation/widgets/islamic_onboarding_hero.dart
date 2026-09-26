@@ -79,7 +79,7 @@ class IslamicOnboardingHero extends StatelessWidget {
               textDirection: TextDirection.rtl,
               style: TextStyle(
                 color: colors.primary,
-                fontFamily: 'KFGQPC Hafs Uthmanic',
+                fontFamily: 'QPC Hafs',
                 fontSize: 19,
                 height: 1.4,
               ),

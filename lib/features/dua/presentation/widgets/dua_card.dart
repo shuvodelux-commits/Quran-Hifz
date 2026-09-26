@@ -122,7 +122,7 @@ class DuaCard extends StatelessWidget {
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     color: scheme.onSurface,
-                    fontFamily: 'Noto Naskh Arabic',
+                    fontFamily: 'QPC Hafs',
                     fontSize: 20,
                     height: 1.65,
                     fontWeight: FontWeight.w500,

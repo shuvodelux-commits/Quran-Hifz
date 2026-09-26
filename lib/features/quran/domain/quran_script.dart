@@ -16,7 +16,6 @@ extension QuranScriptPreferenceLabel on QuranScriptPreference {
     QuranScriptPreference.uthmaniMadani => const ['Noto Sans Arabic', 'serif'],
     QuranScriptPreference.indoPak => const [
       'Noto Nastaliq Urdu',
-      'Noto Naskh Arabic',
       'Noto Sans Arabic',
       'serif',
     ],
