@@ -320,6 +320,28 @@ Primary visual tone:
 
 The screen should feel closer to a premium physical Mushaf than a dashboard.
 
+### UI typography
+
+The Hifz screen uses separate font families by content type:
+
+- Quran Arabic: QPC Hafs / Uthmanic Hafs-compatible font with verified `text_qpc_hafs`.
+- Bangla UI: **SolaimanLipi**.
+- English UI: Inter.
+- Surah calligraphy: existing SurahNameV4 asset.
+- Bismillah: existing QPC V4 Bismillah glyph/font.
+
+SolaimanLipi applies to Bangla headings, labels, helper text, pattern descriptions, Hifz progress text, dialogs, sheets, and Bangla metadata. It must not be used for Quran Arabic.
+
+Initial Bangla UI sizing targets:
+
+- sheet/page heading: 22–24 logical px;
+- section heading: 17–18 logical px;
+- primary label/body: 15–16 logical px;
+- helper/secondary text: 13–14 logical px;
+- compact metadata: 11–12 logical px.
+
+These values are starting targets and must be checked on the real Android device because SolaimanLipi has different visual density and vertical metrics from Inter.
+
 ## Current architecture to preserve
 
 The current project already provides useful pieces that should be reused where possible:
