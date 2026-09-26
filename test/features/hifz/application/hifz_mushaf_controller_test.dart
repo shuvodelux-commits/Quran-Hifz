@@ -6,7 +6,7 @@ import 'package:quran_hifz/features/hifz/domain/hifz_mushaf_page.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_mushaf_page_repository.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_session.dart';
-import 'package:quran_hifz/features/hifz/domain/mushaf_page_font_repository.dart';
+import 'package:quran_hifz/features/quran/domain/quran_page_font_repository.dart';
 
 void main() {
   late _FakePageRepository pageRepo;
@@ -192,7 +192,7 @@ class _FakePageRepository implements HifzMushafPageRepository {
   }) async => pagesByAyah[ayah.verseKey];
 }
 
-class _FakeFontRepository implements MushafPageFontRepository {
+class _FakeFontRepository implements QuranPageFontRepository {
   final ensuredPages = <int>[];
   final prefetchedPages = <int>[];
   final callOrder = <String>[];

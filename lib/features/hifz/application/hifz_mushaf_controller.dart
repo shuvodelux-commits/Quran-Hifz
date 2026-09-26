@@ -4,7 +4,7 @@ import '../domain/hifz_mushaf_page.dart';
 import '../domain/hifz_mushaf_page_repository.dart';
 import '../domain/hifz_reading_mode.dart';
 import '../domain/hifz_session.dart';
-import '../domain/mushaf_page_font_repository.dart';
+import '../../quran/domain/quran_page_font_repository.dart';
 
 sealed class HifzMushafState {
   const HifzMushafState();
@@ -56,7 +56,7 @@ typedef HifzMushafPaletteChanged =
 class HifzMushafController {
   HifzMushafController({
     required HifzMushafPageRepository pageRepository,
-    required MushafPageFontRepository fontRepository,
+    required QuranPageFontRepository fontRepository,
     HifzMushafVariant initialVariant = HifzMushafVariant.qpcV4Tajweed,
     HifzMushafPalette initialPalette = HifzMushafPalette.light,
     HifzMushafVariantChanged? onVariantChanged,
@@ -74,7 +74,7 @@ class HifzMushafController {
   );
 
   final HifzMushafPageRepository _pageRepository;
-  final MushafPageFontRepository _fontRepository;
+  final QuranPageFontRepository _fontRepository;
   final HifzMushafVariantChanged? _onVariantChanged;
   final HifzMushafPaletteChanged? _onPaletteChanged;
   final StreamController<HifzMushafState> _stateChanges =

@@ -5,7 +5,7 @@ import 'package:quran_hifz/features/hifz/domain/hifz_mushaf_page.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_mushaf_page_repository.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_session.dart';
-import 'package:quran_hifz/features/hifz/domain/mushaf_page_font_repository.dart';
+import 'package:quran_hifz/features/quran/domain/quran_page_font_repository.dart';
 import 'package:quran_hifz/features/hifz/presentation/hifz_mushaf_page_view.dart';
 import 'package:quran_hifz/features/hifz/presentation/mushaf_renderer_message.dart';
 import 'package:quran_hifz/features/hifz/presentation/mushaf_webview_driver.dart';
@@ -203,7 +203,7 @@ class _PageRepository implements HifzMushafPageRepository {
   }) async => 2;
 }
 
-class _FontRepository implements MushafPageFontRepository {
+class _FontRepository implements QuranPageFontRepository {
   @override
   Future<Uri> ensurePageFont(int page) async =>
       Uri.file('/tmp/qpc-v4/p$page.woff2');

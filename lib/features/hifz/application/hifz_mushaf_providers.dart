@@ -10,12 +10,13 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../settings/application/app_preferences_controller.dart';
 import '../data/bundled_hifz_mushaf_page_repository.dart';
-import '../data/qpc_v4_page_font_repository.dart';
+import '../../quran/data/quran_foundation_page_font_repository.dart';
+import '../../quran/domain/quran_font_preference.dart';
+import '../../quran/domain/quran_page_font_repository.dart';
 import '../domain/hifz_mushaf_page.dart';
 import '../domain/hifz_mushaf_page_repository.dart';
 import '../domain/hifz_reading_mode.dart';
 import '../domain/hifz_session.dart';
-import '../domain/mushaf_page_font_repository.dart';
 import 'hifz_mushaf_controller.dart';
 
 final hifzMushafPageRepositoryProvider = Provider<HifzMushafPageRepository>((
@@ -24,11 +25,18 @@ final hifzMushafPageRepositoryProvider = Provider<HifzMushafPageRepository>((
   return _MaterializedMushafPageRepository();
 });
 
-final hifzMushafPageFontRepositoryProvider = Provider<MushafPageFontRepository>(
-  (ref) {
-    return QpcV4PageFontRepository();
-  },
-);
+final quranPageFontRepositoryProvider =
+    Provider.family<QuranPageFontRepository, QuranFontPreference>((ref, font) {
+      return QuranFoundationPageFontRepository(font: font);
+    });
+
+final hifzMushafPageFontRepositoryProvider = Provider<QuranPageFontRepository>((
+  ref,
+) {
+  return ref.watch(
+    quranPageFontRepositoryProvider(QuranFontPreference.qcfV4Tajweed),
+  );
+});
 
 final hifzMushafControllerProvider = Provider<HifzMushafController>((ref) {
   final preferences = ref.read(appPreferencesControllerProvider).value;

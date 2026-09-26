@@ -20,7 +20,7 @@ import 'package:quran_hifz/features/hifz/domain/hifz_audio_port.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_preset.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_session.dart';
-import 'package:quran_hifz/features/hifz/domain/mushaf_page_font_repository.dart';
+import 'package:quran_hifz/features/quran/domain/quran_page_font_repository.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_step.dart';
 import 'package:quran_hifz/features/quran/application/quran_providers.dart';
 import 'package:quran_hifz/features/quran/application/reader_audio_actions.dart';
@@ -700,7 +700,7 @@ Future<void> _pumpHifzPage(
   HifzSessionConfig? initialConfig,
   bool openSetupOnStart = false,
   AppPreferences? preferences,
-  MushafPageFontRepository? mushafFontRepository,
+  QuranPageFontRepository? mushafFontRepository,
 }) async {
   final database = UserDatabase.forTesting(NativeDatabase.memory());
   addTearDown(database.close);
@@ -1028,7 +1028,7 @@ class _MemoryAppPreferencesRepository implements AppPreferencesRepository {
   }
 }
 
-class _FailingMushafFontRepository implements MushafPageFontRepository {
+class _FailingMushafFontRepository implements QuranPageFontRepository {
   @override
   Future<Uri> ensurePageFont(int page) async {
     throw StateError('Mushaf font intentionally unavailable in widget test.');
