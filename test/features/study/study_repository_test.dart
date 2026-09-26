@@ -21,7 +21,7 @@ void main() {
     await first.saveBookmark(
       profileKey: 'default',
       target: target,
-      category: 'Hifz',
+      category: 'General',
     );
     await first.saveNote(
       profileKey: 'default',
@@ -43,7 +43,7 @@ void main() {
     );
     final note = await reopened.loadNote(profileKey: 'default', target: target);
 
-    expect(bookmark?.category, 'Hifz');
+    expect(bookmark?.category, 'General');
     expect(bookmark?.target, target);
     expect(note?.text, 'Review this word carefully.');
     expect(note?.target, target);

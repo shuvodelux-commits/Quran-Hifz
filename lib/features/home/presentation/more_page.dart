@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/localization/app_locale_text.dart';
-import '../../hifz/presentation/hifz_planner_page.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/presentation/settings_page.dart';
 import '../../study/presentation/bookmarks_page.dart';
@@ -22,16 +21,6 @@ class MorePage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _MoreTile(
-            icon: Icons.school_outlined,
-            title: appText(language, 'হিফজ', 'Hifz'),
-            subtitle: appText(
-              language,
-              'রেঞ্জ সংরক্ষণ করুন এবং সরাসরি অনুশীলন শুরু করুন',
-              'Save ranges and start memorizing instantly',
-            ),
-            onTap: () => _open(context, const HifzPlannerPage()),
-          ),
           _MoreTile(
             icon: Icons.bookmark_outline_rounded,
             title: appText(language, 'বুকমার্ক', 'Bookmarks'),

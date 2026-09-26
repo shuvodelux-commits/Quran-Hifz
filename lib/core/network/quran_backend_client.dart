@@ -3,6 +3,17 @@ import 'dart:io';
 
 import '../config/app_config.dart';
 
+abstract interface class QuranContentResourceBackendClient {
+  Future<List<Map<String, dynamic>>> getTranslationResources({
+    String language = 'en',
+  });
+
+  Future<Map<String, dynamic>> getContentSnapshot({
+    required String group,
+    required int resourceId,
+  });
+}
+
 abstract interface class QuranTafsirBackendClient {
   Future<List<Map<String, dynamic>>> getTafsirResources({
     String language = 'bn',
@@ -20,7 +31,8 @@ abstract interface class QuranTafsirBackendClient {
   });
 }
 
-class QuranBackendClient implements QuranTafsirBackendClient {
+class QuranBackendClient
+    implements QuranTafsirBackendClient, QuranContentResourceBackendClient {
   QuranBackendClient({HttpClient? httpClient})
     : _client = httpClient ?? HttpClient();
 
@@ -73,6 +85,39 @@ class QuranBackendClient implements QuranTafsirBackendClient {
     }
 
     return Map<String, dynamic>.from(jsonDecode(body) as Map);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getTranslationResources({
+    String language = 'en',
+  }) async {
+    final normalized = language.trim();
+    if (normalized.isEmpty) {
+      throw ArgumentError.value(language, 'language', 'must not be empty');
+    }
+    final uri = Uri.parse(
+      '${AppConfig.backendBaseUrl}/api/quran/translations/resources',
+    ).replace(queryParameters: {'language': normalized});
+    final json = await _getJsonObject(uri);
+    final raw = json['translations'] as List<dynamic>? ?? const [];
+    return raw.map((row) => Map<String, dynamic>.from(row as Map)).toList();
+  }
+
+  @override
+  Future<Map<String, dynamic>> getContentSnapshot({
+    required String group,
+    required int resourceId,
+  }) async {
+    if (group != 'translations' && group != 'tafsirs') {
+      throw ArgumentError.value(group, 'group', 'unsupported resource group');
+    }
+    if (resourceId <= 0) {
+      throw ArgumentError.value(resourceId, 'resourceId', 'must be positive');
+    }
+    final uri = Uri.parse(
+      '${AppConfig.backendBaseUrl}/api/quran/content/$group/$resourceId/snapshot',
+    );
+    return _getJsonObject(uri);
   }
 
   @override

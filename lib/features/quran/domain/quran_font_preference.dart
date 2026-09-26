@@ -1,6 +1,6 @@
 import 'quran_script.dart';
 
-/// Quran faces shared by the regular reader and the Hifz reader.
+/// Quran faces available to the regular Quran reader.
 enum QuranFontPreference {
   pdmsSaleem(
     'PDMS Saleem Quran',
@@ -41,7 +41,6 @@ enum QuranFontPreference {
   const QuranFontPreference(this.label, this.fontFamily, this.script);
 
   static const defaultGlobal = QuranFontPreference.indopakNastaleeq;
-  static const defaultHifz = QuranFontPreference.notoNaskhArabic;
 
   final String label;
   final String fontFamily;

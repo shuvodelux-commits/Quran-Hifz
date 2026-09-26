@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../domain/tajweed_segment.dart';
 import '../../../core/theme/app_palette.dart';
 
-/// Quran-reading colors kept in one place so Study and Hifz never drift.
+/// Quran-reading colors kept in one place for consistent Quran study UI.
 abstract final class QuranReadingColors {
   /// Sampled from the user's approved reading reference.
   ///

@@ -3,23 +3,18 @@ import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
 import 'package:quran_hifz/features/quran/domain/quran_script.dart';
 
 void main() {
-  test('QCF-compatible Uthmanic is the default Hifz renderer', () {
-    expect(
-      QuranFontPreference.defaultHifz,
-      QuranFontPreference.notoNaskhArabic,
-    );
+  test('IndoPak Nastaleeq is the default regular Quran font', () {
     expect(
       QuranFontPreference.defaultGlobal,
       QuranFontPreference.indopakNastaleeq,
     );
-    expect(QuranFontPreference.defaultHifz.fontFamily, 'Noto Naskh Arabic');
     expect(
-      QuranFontPreference.defaultHifz.script,
-      QuranScriptPreference.uthmaniMadani,
+      QuranFontPreference.defaultGlobal.script,
+      QuranScriptPreference.indoPak,
     );
   });
 
-  test('catalog has exactly the supplied Quran faces and mappings', () {
+  test('Quran font catalog keeps the supported mappings', () {
     final expected =
         <
           QuranFontPreference,
@@ -62,7 +57,6 @@ void main() {
           ),
         };
 
-    expect(QuranFontPreference.values, hasLength(7));
     expect(QuranFontPreference.values, orderedEquals(expected.keys));
     for (final font in QuranFontPreference.values) {
       final mapping = expected[font]!;

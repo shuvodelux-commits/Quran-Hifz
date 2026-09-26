@@ -1,7 +1,7 @@
 # Quran IndoPak font
 
 `DigitalKhattIndoPak.otf` is the DigitalKhatt IndoPak Unicode Quran font.
-It is used only for IndoPak Quran text, including the reader, Hifz Mushaf,
+It is used only for IndoPak Quran text in Quran reading surfaces,
 Bismillah, and the Quran font preview.
 
 - Font download: https://fonts.quran.ws/fonts/indopak/

@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_providers.dart';
-import '../../hifz/domain/hifz_reading_mode.dart';
 import '../../quran/domain/quran_font_preference.dart';
 import '../data/user_database_app_preferences_repository.dart';
 import '../domain/app_preferences.dart';
@@ -55,27 +54,6 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
     (current) => current.copyWith(quranFont: value, quranScript: value.script),
   );
 
-  Future<void> setHifzQuranFont(QuranFontPreference value) =>
-      _update((current) => current.copyWith(hifzQuranFont: value));
-
-  Future<void> setHifzLayoutMode(HifzLayoutMode value) =>
-      _update((current) => current.copyWith(hifzLayoutMode: value));
-
-  Future<void> setHifzReadingMode(HifzReadingMode value) =>
-      _update((current) => current.copyWith(hifzReadingMode: value));
-
-  Future<void> setHifzMushafVariant(HifzMushafVariant value) =>
-      _update((current) => current.copyWith(hifzMushafVariant: value));
-
-  Future<void> setHifzMushafPalette(HifzMushafPalette value) =>
-      _update((current) => current.copyWith(hifzMushafPalette: value));
-
-  Future<void> setHifzAutoScrollEnabled(bool value) =>
-      _update((current) => current.copyWith(hifzAutoScrollEnabled: value));
-
-  Future<void> setHifzAutoScrollSpeed(HifzAutoScrollSpeed value) =>
-      _update((current) => current.copyWith(hifzAutoScrollSpeed: value));
-
   Future<void> setArabicFontSize(double value) {
     if (value < 20 || value > 56) {
       throw ArgumentError.value(value, 'value');
@@ -89,24 +67,6 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
       throw ArgumentError.value(value, 'value');
     }
     return _update((current) => current.copyWith(arabicLineHeight: value));
-  }
-
-  Future<void> setHifzFontSize(double value) {
-    if (!value.isFinite ||
-        value < AppPreferences.minHifzFontSize ||
-        value > AppPreferences.maxHifzFontSize) {
-      throw ArgumentError.value(value, 'value');
-    }
-    return _update((current) => current.copyWith(hifzFontSize: value));
-  }
-
-  Future<void> setHifzLineHeight(double value) {
-    if (!value.isFinite ||
-        value < AppPreferences.minHifzLineHeight ||
-        value > AppPreferences.maxHifzLineHeight) {
-      throw ArgumentError.value(value, 'value');
-    }
-    return _update((current) => current.copyWith(hifzLineHeight: value));
   }
 
   Future<void> setBanglaLineHeight(double value) {
@@ -224,63 +184,6 @@ final quranScriptPreferenceProvider = Provider<QuranScriptPreference>((ref) {
 final quranFontProvider = Provider<QuranFontPreference>((ref) {
   return ref.watch(appPreferencesControllerProvider).value?.quranFont ??
       QuranFontPreference.defaultGlobal;
-});
-
-final hifzQuranFontProvider = Provider<QuranFontPreference>((ref) {
-  return ref.watch(appPreferencesControllerProvider).value?.hifzQuranFont ??
-      QuranFontPreference.defaultHifz;
-});
-
-final hifzLayoutModeProvider = Provider<HifzLayoutMode>((ref) {
-  return ref.watch(appPreferencesControllerProvider).value?.hifzLayoutMode ??
-      HifzLayoutMode.freeFlow;
-});
-
-final hifzReadingModeProvider = Provider<HifzReadingMode>((ref) {
-  return ref.watch(appPreferencesControllerProvider).value?.hifzReadingMode ??
-      HifzReadingMode.regular;
-});
-
-final hifzMushafVariantProvider = Provider<HifzMushafVariant>((ref) {
-  return ref.watch(appPreferencesControllerProvider).value?.hifzMushafVariant ??
-      HifzMushafVariant.qpcV4Tajweed;
-});
-
-final hifzMushafPaletteProvider = Provider<HifzMushafPalette>((ref) {
-  return ref.watch(appPreferencesControllerProvider).value?.hifzMushafPalette ??
-      HifzMushafPalette.light;
-});
-
-final effectiveHifzMushafPaletteProvider = Provider<HifzMushafPalette>((ref) {
-  return effectivePalette(
-    ref.watch(hifzMushafVariantProvider),
-    ref.watch(hifzMushafPaletteProvider),
-  );
-});
-
-final hifzFontSizeProvider = Provider<double>((ref) {
-  return ref.watch(appPreferencesControllerProvider).value?.hifzFontSize ?? 32;
-});
-
-final hifzLineHeightProvider = Provider<double>((ref) {
-  return ref.watch(appPreferencesControllerProvider).value?.hifzLineHeight ??
-      const AppPreferences.defaults().hifzLineHeight;
-});
-
-final hifzAutoScrollEnabledProvider = Provider<bool>((ref) {
-  return ref
-          .watch(appPreferencesControllerProvider)
-          .value
-          ?.hifzAutoScrollEnabled ??
-      const AppPreferences.defaults().hifzAutoScrollEnabled;
-});
-
-final hifzAutoScrollSpeedProvider = Provider<HifzAutoScrollSpeed>((ref) {
-  return ref
-          .watch(appPreferencesControllerProvider)
-          .value
-          ?.hifzAutoScrollSpeed ??
-      const AppPreferences.defaults().hifzAutoScrollSpeed;
 });
 
 final arabicFontSizeProvider = Provider<double>((ref) {
