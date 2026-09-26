@@ -12,8 +12,10 @@ import '../../../study/presentation/word_details_sheet.dart';
 import '../../../settings/application/app_preferences_controller.dart';
 import '../../../settings/domain/app_preferences.dart';
 
+import '../../application/quran_providers.dart';
 import '../../domain/quran_ayah.dart';
 import '../../domain/quran_word.dart';
+import 'bismillah_v4_glyph.dart';
 import 'inline_tafsir_panel.dart';
 import 'quran_word_view.dart';
 import '../quran_reading_colors.dart';
@@ -58,6 +60,8 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     final theme = Theme.of(context);
     final banglaLineHeight = ref.watch(banglaLineHeightProvider);
     final banglaFontSize = ref.watch(banglaFontSizeProvider);
+    final arabicFontSize = ref.watch(arabicFontSizeProvider);
+    final showTajweedColors = ref.watch(effectiveQuranTajweedColorsProvider);
     final activeWordPosition = ref.watch(
       activeWordForAyahProvider(widget.ayah.key),
     );
@@ -73,6 +77,10 @@ class _AyahCardState extends ConsumerState<AyahCard> {
               .map((word) => word.banglaMeaning?.trim())
               .firstOrNull
         : null;
+    final isFatihahBismillah =
+        widget.ayah.surahNumber == 1 &&
+        widget.ayah.ayahNumber == 1 &&
+        widget.ayah.words.length == BismillahV4Glyph.wordGlyphs.length;
 
     return Card(
       key: ValueKey('ayah-${widget.ayah.key}'),
@@ -111,31 +119,50 @@ class _AyahCardState extends ConsumerState<AyahCard> {
               onCopy: _copyAyah,
             ),
             const SizedBox(height: 20),
-            Directionality(
-              textDirection: TextDirection.rtl,
-              child: Wrap(
-                alignment: WrapAlignment.center,
-                runAlignment: WrapAlignment.center,
-                spacing: 8,
-                runSpacing: 12,
-                children: [
-                  for (final word in widget.ayah.words)
-                    QuranWordView(
-                      key:
-                          widget.wordKeyFor?.call(word) ??
-                          ValueKey('word-${widget.ayah.key}:${word.position}'),
-                      word: word,
-                      playbackAyahKey: widget.ayah.key,
-                      onTap: widget.onWordTap == null
-                          ? null
-                          : () => widget.onWordTap!(word),
-                      onLongPress: widget.onWordLongPress == null
-                          ? () => _showWordDetails(word)
-                          : () => widget.onWordLongPress!(word),
-                    ),
-                ],
+            if (isFatihahBismillah)
+              SizedBox(
+                key: const ValueKey('fatihah-bismillah-v4'),
+                width: double.infinity,
+                child: BismillahV4WordRow(
+                  words: widget.ayah.words,
+                  fontSize: (arabicFontSize * 1.55)
+                      .clamp(48.0, 78.0)
+                      .toDouble(),
+                  activeWordPosition: activeWordPosition,
+                  wordKeyFor: widget.wordKeyFor,
+                  onTap: widget.onWordTap,
+                  onLongPress: widget.onWordLongPress ?? _showWordDetails,
+                  useTajweedColors: showTajweedColors,
+                ),
+              )
+            else
+              Directionality(
+                textDirection: TextDirection.rtl,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  runAlignment: WrapAlignment.center,
+                  spacing: 8,
+                  runSpacing: 12,
+                  children: [
+                    for (final word in widget.ayah.words)
+                      QuranWordView(
+                        key:
+                            widget.wordKeyFor?.call(word) ??
+                            ValueKey(
+                              'word-${widget.ayah.key}:${word.position}',
+                            ),
+                        word: word,
+                        playbackAyahKey: widget.ayah.key,
+                        onTap: widget.onWordTap == null
+                            ? null
+                            : () => widget.onWordTap!(word),
+                        onLongPress: widget.onWordLongPress == null
+                            ? () => _showWordDetails(word)
+                            : () => widget.onWordLongPress!(word),
+                      ),
+                  ],
+                ),
               ),
-            ),
             if (translationVisible && widget.ayah.translation != null) ...[
               const SizedBox(height: 16),
               if (activeMeaning != null && activeMeaning.isNotEmpty) ...[

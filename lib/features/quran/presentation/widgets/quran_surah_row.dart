@@ -109,7 +109,7 @@ class QuranSurahRow extends StatelessWidget {
                       child: SurahNameV4Text(
                         surahNumber: surah.number,
                         arabicName: surah.nameArabic,
-                        style: TextStyle(color: colors.onSurface, fontSize: 28),
+                        style: TextStyle(color: colors.onSurface, fontSize: 31),
                       ),
                     ),
                   ),

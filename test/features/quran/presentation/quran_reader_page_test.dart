@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quran_hifz/app/app_theme.dart';
-import 'package:quran_hifz/core/theme/app_palette.dart';
 import 'package:quran_hifz/features/audio/application/audio_providers.dart';
 import 'package:quran_hifz/features/audio/application/quran_audio_controller.dart';
 import 'package:quran_hifz/features/audio/domain/playback_requests.dart';
@@ -43,51 +41,43 @@ const _surah = QuranSurahSummary(
 );
 
 void main() {
-  testWidgets('reader shows a localized Surah information header', (
+  testWidgets('reader shows the previous Surah information header', (
     tester,
   ) async {
     await tester.pumpWidget(_readerApp());
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('reader-surah-header')), findsOneWidget);
-    expect(find.textContaining('আল-ফাতিহা'), findsWidgets);
-    expect(find.textContaining('আয়াত'), findsOneWidget);
-    expect(find.textContaining('Makkah'), findsOneWidget);
-    expect(find.textContaining('English'), findsOneWidget);
+    expect(find.text('১. সূরা আল-ফাতিহা'), findsOneWidget);
+    expect(find.text('২ আয়াত'), findsOneWidget);
+    expect(
+      find.text(
+        'অনুবাদ, তাফসির, তিলাওয়াত, শব্দে-শব্দে অর্থ ও উচ্চারণসহ সূরা আল-ফাতিহা পড়ুন ও শুনুন।',
+      ),
+      findsOneWidget,
+    );
     expect(find.byTooltip('Play Surah'), findsOneWidget);
     expect(find.byTooltip('Open Tafsir'), findsOneWidget);
     expect(find.byTooltip('Downloads'), findsOneWidget);
   });
 
-  testWidgets('Surah information card uses Quran blue and calligraphic name', (
+  testWidgets('Surah header keeps Bangla left and calligraphic Arabic right', (
     tester,
   ) async {
-    final theme = appTheme(
-      AppThemePreference.light,
-      language: AppLanguage.bangla,
-    );
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: _overrides(),
-        child: MaterialApp(
-          theme: theme,
-          home: const QuranReaderPage(surah: _surah),
-        ),
-      ),
-    );
+    await tester.pumpWidget(_readerApp());
     await tester.pumpAndSettle();
 
-    final card = tester.widget<Container>(
-      find.byKey(const ValueKey('reader-surah-info-card')),
+    final bangla = find.text('১. সূরা আল-ফাতিহা');
+    final arabic = find.descendant(
+      of: find.byKey(const ValueKey('reader-surah-header')),
+      matching: find.text('surah001'),
     );
-    final decoration = card.decoration! as BoxDecoration;
-    expect(decoration.color, theme.extension<AppPalette>()!.quranHeader);
+    expect(bangla, findsOneWidget);
+    expect(arabic, findsOneWidget);
+    expect(tester.getCenter(bangla).dx, lessThan(tester.getCenter(arabic).dx));
 
-    final arabic = tester.widget<Text>(find.text('surah001'));
-    expect(arabic.style?.fontFamily, 'SurahNameV4');
-    expect(find.byTooltip('Play Surah'), findsOneWidget);
-    expect(find.byTooltip('Open Tafsir'), findsOneWidget);
-    expect(find.byTooltip('Downloads'), findsOneWidget);
+    final arabicText = tester.widget<Text>(arabic);
+    expect(arabicText.style?.fontFamily, 'SurahNameV4');
   });
 
   testWidgets('QUL reader ligature keeps the Arabic Surah name in semantics', (
@@ -97,12 +87,12 @@ void main() {
     await tester.pumpWidget(_readerApp());
     await tester.pumpAndSettle();
 
-    expect(find.bySemanticsLabel(RegExp('سورة الفاتحة')), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('سورة الفاتحة')), findsNWidgets(2));
     expect(find.bySemanticsLabel(RegExp('surah001')), findsNothing);
     semantics.dispose();
   });
 
-  testWidgets('compact reader top bar stays fixed while verses scroll', (
+  testWidgets('previous reader top bar and horizontal Surah strip stay fixed', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(320, 500);
@@ -113,18 +103,32 @@ void main() {
     await tester.pumpAndSettle();
 
     final topBar = find.byKey(const ValueKey('reader-top-bar'));
+    final navigation = find.byKey(const ValueKey('reader-surah-strip'));
     expect(topBar, findsOneWidget);
-    expect(find.byKey(const ValueKey('reader-surah-navigation')), findsNothing);
-    expect(find.text('১. আল-ফাতিহা'), findsOneWidget);
+    expect(navigation, findsOneWidget);
+    final topSurahName = find.byKey(const ValueKey('reader-top-surah-name'));
+    expect(topSurahName, findsOneWidget);
+    expect(find.text('আল-ফাতিহা'), findsWidgets);
+    expect(
+      tester.getCenter(topSurahName).dx,
+      closeTo(tester.view.physicalSize.width / 2, 0.5),
+    );
+    final topSurahGlyph = tester.widget<Text>(
+      find.descendant(of: topSurahName, matching: find.byType(Text)).first,
+    );
+    expect(topSurahGlyph.style?.fontFamily, 'SurahNameV4');
+    expect(topSurahGlyph.style?.fontSize, greaterThanOrEqualTo(33));
+    expect(find.byTooltip('Hide translation'), findsOneWidget);
     expect(find.byTooltip('Bookmarks'), findsOneWidget);
     expect(find.byTooltip('Reader settings'), findsOneWidget);
-    final before = tester.getTopLeft(topBar);
+    final topBefore = tester.getTopLeft(topBar);
+    final navBefore = tester.getTopLeft(navigation);
 
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -350));
     await tester.pumpAndSettle();
 
-    expect(tester.getTopLeft(topBar), before);
-    expect(tester.getSize(topBar).height, lessThanOrEqualTo(58));
+    expect(tester.getTopLeft(topBar), topBefore);
+    expect(tester.getTopLeft(navigation), navBefore);
     expect(find.byKey(const ValueKey('reader-surah-header')), findsNothing);
   });
 
@@ -315,6 +319,24 @@ void main() {
     expect(first.dx, greaterThan(second.dx));
   });
 
+  testWidgets('Fatihah ayah 1 uses QPC V4 Bismillah glyph words', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: _overrides(repository: _FatihahBismillahRepository()),
+        child: const MaterialApp(home: QuranReaderPage(surah: _surah)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('fatihah-bismillah-v4')), findsOneWidget);
+    for (final glyph in const ['ﱁ', 'ﱂ', 'ﱃ', 'ﱄ']) {
+      final text = tester.widget<Text>(find.text(glyph));
+      expect(text.style?.fontFamily, 'QPC V4 Tajweed P1');
+    }
+  });
+
   testWidgets(
     'reader never renders an adjacent Surah from a mixed boundary page',
     (tester) async {
@@ -328,19 +350,18 @@ void main() {
     },
   );
 
-  testWidgets('reader settings keeps translation controls reachable', (
-    tester,
-  ) async {
+  testWidgets('top bar toggles translation visibility', (tester) async {
     await tester.pumpWidget(_readerApp());
     await tester.pumpAndSettle();
 
     expect(find.text('Fixture Bangla translation 1'), findsOneWidget);
-    expect(find.byTooltip('Hide translation'), findsNothing);
-    await tester.tap(find.byTooltip('Reader settings'));
+    expect(find.byTooltip('Hide translation'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Hide translation'));
     await tester.pumpAndSettle();
 
-    expect(find.text('সেটিংস'), findsOneWidget);
-    expect(find.text('অনুবাদ দেখান'), findsOneWidget);
+    expect(find.text('Fixture Bangla translation 1'), findsNothing);
+    expect(find.byTooltip('Show translation'), findsOneWidget);
   });
 
   testWidgets(
@@ -506,8 +527,14 @@ Widget _readerApp() => ProviderScope(
   child: const MaterialApp(home: QuranReaderPage(surah: _surah)),
 );
 
-_overrides({bool study = false, _MemoryPreferencesRepository? preferences}) => [
-  quranRepositoryProvider.overrideWithValue(_ReaderFixtureRepository()),
+_overrides({
+  bool study = false,
+  _MemoryPreferencesRepository? preferences,
+  QuranRepository? repository,
+}) => [
+  quranRepositoryProvider.overrideWithValue(
+    repository ?? _ReaderFixtureRepository(),
+  ),
   readingLocationStoreProvider.overrideWithValue(_NoopLocationStore()),
   appPreferencesRepositoryProvider.overrideWithValue(
     preferences ?? _MemoryPreferencesRepository(),
@@ -527,6 +554,43 @@ class _MemoryPreferencesRepository implements AppPreferencesRepository {
   @override
   Future<void> save(AppPreferences preferences) async {
     value = preferences;
+  }
+}
+
+class _FatihahBismillahRepository extends _ReaderFixtureRepository {
+  @override
+  Future<QuranPageWindow> loadPageWindow({
+    required int page,
+    required int translationResourceId,
+  }) async {
+    if (page != 1) {
+      return super.loadPageWindow(
+        page: page,
+        translationResourceId: translationResourceId,
+      );
+    }
+
+    return QuranPageWindow(
+      page: 1,
+      previousPage: null,
+      nextPage: 2,
+      ayahs: [
+        QuranAyah(
+          surahNumber: 1,
+          ayahNumber: 1,
+          arabicText: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+          pageNumber: 1,
+          juzNumber: 1,
+          translation: 'পরম করুণাময় অতি দয়ালু আল্লাহর নামে।',
+          words: const [
+            QuranWord(position: 1, arabic: 'بِسْمِ'),
+            QuranWord(position: 2, arabic: 'اللَّهِ'),
+            QuranWord(position: 3, arabic: 'الرَّحْمَٰنِ'),
+            QuranWord(position: 4, arabic: 'الرَّحِيمِ'),
+          ],
+        ),
+      ],
+    );
   }
 }
 

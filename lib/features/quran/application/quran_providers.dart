@@ -2,10 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_providers.dart';
 import '../../../core/database/quran_content_database.dart';
+import '../../settings/application/app_preferences_controller.dart';
 import '../data/drift_quran_repository.dart';
 import '../data/drift_word_audio_catalog.dart';
 import '../data/user_database_reading_location_store.dart';
 import '../domain/quran_repository.dart';
+import '../domain/quran_script.dart';
 import '../domain/word_audio_source.dart';
 import 'reader_controller.dart';
 
@@ -74,6 +76,14 @@ final tajweedQuranTextAvailableProvider = FutureProvider<bool>((ref) async {
       )
       .getSingle();
   return ayahCount.read<int>('c') > 0 && wordCount.read<int>('c') > 0;
+});
+
+final effectiveQuranTajweedColorsProvider = Provider<bool>((ref) {
+  final available = ref.watch(tajweedQuranTextAvailableProvider).value ?? false;
+  final font = ref.watch(quranFontProvider);
+  return ref.watch(showTajweedColorsProvider) &&
+      available &&
+      font.script == QuranScriptPreference.uthmaniMadani;
 });
 
 final surahWordAudioCatalogProvider = Provider<SurahWordAudioCatalog>((ref) {

@@ -33,7 +33,8 @@ class _QuranSurahListPageState extends ConsumerState<QuranSurahListPage> {
   var _tab = QuranLibraryTab.surah;
   var _query = '';
   var _searchOpen = false;
-  final _scroll = ScrollController();
+  final _surahScroll = ScrollController();
+  final _juzScroll = ScrollController();
   final _searchFocus = FocusNode();
   late Future<ReadingLocation?> _lastRead;
 
@@ -45,7 +46,8 @@ class _QuranSurahListPageState extends ConsumerState<QuranSurahListPage> {
 
   @override
   void dispose() {
-    _scroll.dispose();
+    _surahScroll.dispose();
+    _juzScroll.dispose();
     _searchFocus.dispose();
     super.dispose();
   }
@@ -124,7 +126,7 @@ class _QuranSurahListPageState extends ConsumerState<QuranSurahListPage> {
               child: switch (_tab) {
                 QuranLibraryTab.surah => _buildSurahList(items, language),
                 QuranLibraryTab.juz => _JuzList(
-                  controller: _scroll,
+                  controller: _juzScroll,
                   surahs: items,
                   language: language,
                   onOpen: _openJuz,
@@ -145,7 +147,7 @@ class _QuranSurahListPageState extends ConsumerState<QuranSurahListPage> {
     return Stack(
       children: [
         CustomScrollView(
-          controller: _scroll,
+          controller: _surahScroll,
           slivers: [
             SliverToBoxAdapter(child: _lastReadCard(items, language)),
             if (visible.isEmpty)
@@ -183,6 +185,7 @@ class _QuranSurahListPageState extends ConsumerState<QuranSurahListPage> {
           child: NumberQuickScrollRail(
             count: items.length,
             semanticLabel: 'Surah',
+            scrollController: _surahScroll,
             onPreview: (number) => _preview(number, items.length),
             onSelected: (number) => _preview(number, items.length),
           ),
@@ -248,12 +251,12 @@ class _QuranSurahListPageState extends ConsumerState<QuranSurahListPage> {
   }
 
   void _preview(int number, int count) {
-    if (!_scroll.hasClients || count <= 1) return;
+    if (!_surahScroll.hasClients || count <= 1) return;
     final fraction = (number - 1) / (count - 1);
-    _scroll.jumpTo(
-      (_scroll.position.maxScrollExtent * fraction).clamp(
+    _surahScroll.jumpTo(
+      (_surahScroll.position.maxScrollExtent * fraction).clamp(
         0.0,
-        _scroll.position.maxScrollExtent,
+        _surahScroll.position.maxScrollExtent,
       ),
     );
   }
@@ -354,6 +357,7 @@ class _JuzList extends ConsumerWidget {
             child: NumberQuickScrollRail(
               count: 30,
               semanticLabel: 'Juz',
+              scrollController: controller,
               onPreview: (number) => _jump(controller, number, 30),
               onSelected: (number) => _jump(controller, number, 30),
             ),

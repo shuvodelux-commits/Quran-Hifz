@@ -21,11 +21,13 @@ import '../domain/quran_page_window.dart';
 import '../domain/quran_ayah.dart';
 import '../domain/reader_scope.dart';
 import '../domain/quran_surah.dart';
+import 'surah_localized_text.dart';
 import 'widgets/reader_window.dart';
 import 'widgets/reader_offline_audio_prompt.dart';
 import 'widgets/reader_playback_panel.dart';
 import 'widgets/reader_surah_header.dart';
 import 'widgets/reader_surah_navigation.dart';
+import 'widgets/reader_surah_strip.dart';
 import 'widgets/reader_top_bar.dart';
 import 'widgets/number_quick_scroll_rail.dart';
 
@@ -285,6 +287,12 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
             (surah) => surah.number == activeSurahNumber,
           );
           final activeSurah = _surahs[activeIndex];
+          final previousSurah = activeIndex > 0
+              ? _surahs[activeIndex - 1]
+              : null;
+          final nextSurah = activeIndex < _surahs.length - 1
+              ? _surahs[activeIndex + 1]
+              : null;
 
           return SafeArea(
             child: Column(
@@ -292,7 +300,13 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
                 ReaderTopBar(
                   current: activeSurah,
                   language: language,
+                  showTranslation: showTranslation,
                   onBack: () => Navigator.of(context).maybePop(),
+                  onToggleTranslation: () => unawaited(
+                    ref
+                        .read(appPreferencesControllerProvider.notifier)
+                        .setShowTranslation(!showTranslation),
+                  ),
                   onBookmarks: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const BookmarksPage(),
@@ -305,14 +319,18 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
                     ),
                   ),
                   onChooseSurah: () => _showSurahChooser(activeSurah, language),
-                  contextLabel: _scope is JuzReaderScope
-                      ? appText(language, 'পারা', 'Juz') +
-                            ' ' +
-                            localDigits(
-                              (_scope as JuzReaderScope).juz.number.toString(),
-                              language,
-                            )
+                ),
+                ReaderSurahStrip(
+                  previous: previousSurah,
+                  current: activeSurah,
+                  next: nextSurah,
+                  language: language,
+                  centerLabel: _scope is JuzReaderScope
+                      ? '${appText(language, 'পারা', 'Juz')} '
+                            '${localDigits((_scope as JuzReaderScope).juz.number.toString(), language)} · '
+                            '${localizedSurahName(activeSurah, language)}'
                       : null,
+                  onSelected: _openSurahScope,
                 ),
                 Expanded(
                   child: Stack(
@@ -378,6 +396,7 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
                             count: _primarySurah.ayahCount,
                             semanticLabel: 'Ayah',
                             current: _jumpTargetAyah,
+                            scrollController: _scrollController,
                             onPreview: (_) {},
                             onSelected: (number) =>
                                 unawaited(_chooseAyah(number)),

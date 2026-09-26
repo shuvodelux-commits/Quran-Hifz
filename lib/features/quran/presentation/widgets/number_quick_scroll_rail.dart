@@ -9,6 +9,7 @@ class NumberQuickScrollRail extends StatefulWidget {
     required this.onPreview,
     required this.onSelected,
     this.current,
+    this.scrollController,
   }) : assert(count > 0);
 
   final int count;
@@ -16,6 +17,7 @@ class NumberQuickScrollRail extends StatefulWidget {
   final ValueChanged<int> onPreview;
   final ValueChanged<int> onSelected;
   final int? current;
+  final ScrollController? scrollController;
 
   @override
   State<NumberQuickScrollRail> createState() => _NumberQuickScrollRailState();
@@ -27,11 +29,43 @@ class _NumberQuickScrollRailState extends State<NumberQuickScrollRail> {
   double _previewY = 0;
 
   @override
+  void initState() {
+    super.initState();
+    widget.scrollController?.addListener(_handleScroll);
+  }
+
+  @override
   void didUpdateWidget(covariant NumberQuickScrollRail oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.scrollController != widget.scrollController) {
+      oldWidget.scrollController?.removeListener(_handleScroll);
+      widget.scrollController?.addListener(_handleScroll);
+    }
     if (widget.current != oldWidget.current) {
       _committed = widget.current;
     }
+  }
+
+  @override
+  void dispose() {
+    widget.scrollController?.removeListener(_handleScroll);
+    super.dispose();
+  }
+
+  void _handleScroll() {
+    if (mounted && _preview == null) setState(() {});
+  }
+
+  double? _controllerFraction() {
+    final controller = widget.scrollController;
+    if (controller == null || !controller.hasClients) return null;
+    final position = controller.position;
+    final extent = position.maxScrollExtent - position.minScrollExtent;
+    if (extent <= 0) return 0;
+    return ((position.pixels - position.minScrollExtent) / extent).clamp(
+      0.0,
+      1.0,
+    );
   }
 
   int _valueAt(double y, double height) {
@@ -79,9 +113,12 @@ class _NumberQuickScrollRailState extends State<NumberQuickScrollRail> {
             final trackHeight = (height - 16).clamp(0.0, double.infinity);
             final current = (_preview ?? _committed ?? widget.current ?? 1)
                 .clamp(1, widget.count);
-            final fraction = widget.count == 1
+            final itemFraction = widget.count == 1
                 ? 0.0
                 : (current - 1) / (widget.count - 1);
+            final fraction = _preview == null
+                ? (_controllerFraction() ?? itemFraction)
+                : itemFraction;
             const thumbHeight = 48.0;
             final thumbTop =
                 8 +

@@ -58,6 +58,55 @@ void main() {
     );
   });
 
+  testWidgets('thumb follows the attached scroll controller', (tester) async {
+    final controller = ScrollController();
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Stack(
+            children: [
+              ListView.builder(
+                controller: controller,
+                itemExtent: 80,
+                itemCount: 30,
+                itemBuilder: (_, index) => Text('Item $index'),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: SizedBox(
+                  height: 400,
+                  child: NumberQuickScrollRail(
+                    count: 30,
+                    semanticLabel: 'Surah',
+                    scrollController: controller,
+                    onPreview: (_) {},
+                    onSelected: (_) {},
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final thumb = find.byKey(const ValueKey('number-quick-scroll-thumb'));
+    final rail = find.byKey(const ValueKey('number-quick-scroll-rail'));
+    final initialTop = tester.getTopLeft(thumb).dy;
+
+    controller.jumpTo(controller.position.maxScrollExtent);
+    await tester.pump();
+
+    expect(tester.getTopLeft(thumb).dy, greaterThan(initialTop));
+    expect(
+      tester.getBottomRight(thumb).dy,
+      closeTo(tester.getBottomRight(rail).dy - 8, 2),
+    );
+  });
+
   testWidgets('current value positions a thin teal thumb', (tester) async {
     await tester.pumpWidget(
       MaterialApp(

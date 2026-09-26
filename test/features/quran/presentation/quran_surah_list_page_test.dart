@@ -24,7 +24,9 @@ void main() {
     expect(find.text('কুরআন'), findsOneWidget);
     expect(find.text('আল-ফাতিহা'), findsOneWidget);
     expect(find.text('আল-বাকারা'), findsOneWidget);
-    expect(find.text('surah001'), findsOneWidget);
+    final surahGlyph = tester.widget<Text>(find.text('surah001'));
+    expect(surahGlyph.style?.fontFamily, 'SurahNameV4');
+    expect(surahGlyph.style?.fontSize, greaterThanOrEqualTo(31));
 
     expect(find.text('সব'), findsNothing);
     expect(find.text('মাক্কী'), findsNothing);
@@ -74,6 +76,23 @@ void main() {
     expect(find.byKey(const ValueKey('ayah-1:1')), findsOneWidget);
     expect(find.byKey(const ValueKey('ayah-2:1')), findsOneWidget);
   });
+
+  testWidgets(
+    'switching Surah and Juz keeps quick-scroll controllers isolated',
+    (tester) async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.byKey(const ValueKey('quran-tab-juz')));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.byKey(const ValueKey('quran-tab-surah')));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('Surah library exposes the subtle numbered quick-scroll rail', (
     tester,

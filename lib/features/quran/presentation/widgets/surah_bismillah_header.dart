@@ -4,10 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../settings/application/app_preferences_controller.dart';
 import '../../application/quran_providers.dart';
 import '../../domain/bismillah_policy.dart';
-import '../../domain/bismillah_text.dart';
-import '../../domain/quran_script.dart';
-import '../quran_text_style.dart';
-import 'quran_tajweed_text.dart';
+import 'bismillah_v4_glyph.dart';
 
 class SurahBismillahHeader extends ConsumerWidget {
   const SurahBismillahHeader({super.key, required this.surahNumber});
@@ -20,54 +17,35 @@ class SurahBismillahHeader extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final font = ref.watch(quranFontProvider);
-    final script = font.script;
-    final fontSize = ref.watch(arabicFontSizeProvider);
-    final lineHeight = ref.watch(arabicLineHeightProvider);
-    final tajweedEnabled = ref.watch(showTajweedColorsProvider);
-    final tajweedAvailable =
-        ref.watch(tajweedQuranTextAvailableProvider).value ?? false;
     final scheme = Theme.of(context).colorScheme;
-    final useTajweed =
-        tajweedEnabled &&
-        tajweedAvailable &&
-        script == QuranScriptPreference.uthmaniMadani;
+    final arabicFontSize = ref.watch(arabicFontSizeProvider);
+    final showTajweedColors = ref.watch(effectiveQuranTajweedColorsProvider);
+    final glyphSize = (arabicFontSize * 1.55).clamp(48.0, 78.0).toDouble();
 
-    return Semantics(
-      label: 'Bismillah',
-      child: Padding(
-        key: ValueKey('surah-bismillah-$surahNumber'),
-        padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-        child: Container(
-          key: ValueKey('surah-bismillah-card-$surahNumber'),
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(11),
-            boxShadow: [
-              BoxShadow(
-                color: scheme.shadow.withValues(alpha: 0.035),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: DefaultTextStyle(
-            style: QuranTextStyle.forScript(
-              script: script,
-              color: scheme.onSurface,
-              fontSize: (fontSize * 0.92).clamp(24.0, 48.0).toDouble(),
-              lineHeight: lineHeight,
-              font: font,
+    return Padding(
+      key: ValueKey('surah-bismillah-$surahNumber'),
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+      child: Container(
+        key: ValueKey('surah-bismillah-card-$surahNumber'),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(11),
+          boxShadow: [
+            BoxShadow(
+              color: scheme.shadow.withValues(alpha: 0.035),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
-            textAlign: TextAlign.center,
-            child: QuranTajweedText(
-              plainText: BismillahText.plainFor(script),
-              markup: BismillahText.uthmaniTajweedMarkup,
-              useTajweedColors: useTajweed,
-              textAlign: TextAlign.center,
-            ),
+          ],
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.center,
+          child: BismillahV4Glyph(
+            fontSize: glyphSize,
+            useTajweedColors: showTajweedColors,
           ),
         ),
       ),

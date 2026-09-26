@@ -86,3 +86,6 @@ flutter:
     - family: DigitalKhattV2
       fonts:
         - asset: assets/mushaf/fonts/DigitalKhattV2.otf
+    - family: QPC V4 Tajweed P1
+      fonts:
+        - asset: assets/fonts/qpc-v4-tajweed-p1.ttf
