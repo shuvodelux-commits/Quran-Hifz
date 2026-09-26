@@ -6,10 +6,10 @@ extension QuranScriptPreferenceLabel on QuranScriptPreference {
     QuranScriptPreference.indoPak => 'IndoPak',
   };
 
-  /// Quran text uses the registered IndoPak face, with system fallbacks.
+  /// Preferred bundled adaptive family for this script.
   String get preferredFontFamily => switch (this) {
-    QuranScriptPreference.uthmaniMadani => 'Noto Naskh Arabic',
-    QuranScriptPreference.indoPak => 'Indopak Nastaleeq',
+    QuranScriptPreference.uthmaniMadani => 'QPC Hafs',
+    QuranScriptPreference.indoPak => 'IndoPak Nastaleeq',
   };
 
   List<String> get fontFamilyFallback => switch (this) {

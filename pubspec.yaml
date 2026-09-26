@@ -52,6 +52,7 @@ flutter:
     - assets/mushaf/renderer/
     - assets/mushaf/scripts/
     - assets/mushaf/layouts/
+    - assets/mushaf/fonts/DigitalKhattV2.otf
   fonts:
     - family: Inter
       fonts:
@@ -59,33 +60,15 @@ flutter:
     - family: SolaimanLipi
       fonts:
         - asset: assets/fonts/SolaimanLipi.ttf
-    - family: PDMS Saleem Quran
+    - family: QPC Hafs
       fonts:
-        - asset: assets/fonts/PDMS-Saleem-QuranFont.ttf
-    - family: Indopak Nastaleeq
+        - asset: assets/fonts/UthmanicHafs1Ver18.ttf
+    - family: IndoPak Nastaleeq
       fonts:
-        - asset: assets/fonts/Indopak-Nastaleeq.ttf
-    - family: Quran DigitalKhatt IndoPak
-      fonts:
-        - asset: assets/fonts/DigitalKhattIndoPak.otf
-    - family: AlQalamQuranMajeed
-      fonts:
-        - asset: assets/fonts/Al-Qalam-Quran-Majeed.ttf
-    - family: Muhammadi Quranic
-      fonts:
-        - asset: assets/fonts/Muhammadi-Quran.ttf
-    - family: KFGQPC Hafs Uthmanic
-      fonts:
-        - asset: assets/fonts/KFGQPC-Uthmanic-Script-HAFS-Regular.otf
-    - family: Noto Naskh Arabic
-      fonts:
-        - asset: assets/fonts/NotoNaskhArabic.ttf
+        - asset: assets/fonts/indopak-nastaleeq-waqf-lazim-v4.2.1.ttf
     - family: SurahNameV4
       fonts:
         - asset: assets/fonts/surah-name-v4.ttf
-    - family: DigitalKhattV2
-      fonts:
-        - asset: assets/mushaf/fonts/DigitalKhattV2.otf
     - family: QPC V4 Tajweed P1
       fonts:
         - asset: assets/fonts/qpc-v4-tajweed-p1.ttf

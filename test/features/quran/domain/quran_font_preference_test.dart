@@ -3,72 +3,65 @@ import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
 import 'package:quran_hifz/features/quran/domain/quran_script.dart';
 
 void main() {
-  test('QCF-compatible Uthmanic is the default Hifz renderer', () {
-    expect(
-      QuranFontPreference.defaultHifz,
-      QuranFontPreference.notoNaskhArabic,
-    );
-    expect(
-      QuranFontPreference.defaultGlobal,
-      QuranFontPreference.indopakNastaleeq,
-    );
-    expect(QuranFontPreference.defaultHifz.fontFamily, 'Noto Naskh Arabic');
-    expect(
-      QuranFontPreference.defaultHifz.script,
-      QuranScriptPreference.uthmaniMadani,
-    );
+  test('catalog exposes exactly the four approved Quran font choices', () {
+    expect(QuranFontPreference.values, [
+      QuranFontPreference.qpcHafs,
+      QuranFontPreference.indoPak,
+      QuranFontPreference.qcfV2,
+      QuranFontPreference.qcfV4Tajweed,
+    ]);
+    expect(QuranFontPreference.defaultGlobal, QuranFontPreference.qpcHafs);
+    expect(QuranFontPreference.defaultHifz, QuranFontPreference.qpcHafs);
   });
 
-  test('catalog has exactly the supplied Quran faces and mappings', () {
-    final expected =
-        <
-          QuranFontPreference,
-          ({String label, String fontFamily, QuranScriptPreference script})
-        >{
-          QuranFontPreference.pdmsSaleem: (
-            label: 'PDMS Saleem Quran',
-            fontFamily: 'PDMS Saleem Quran',
-            script: QuranScriptPreference.indoPak,
-          ),
-          QuranFontPreference.indopakNastaleeq: (
-            label: 'Indopak Nastaleeq',
-            fontFamily: 'Indopak Nastaleeq',
-            script: QuranScriptPreference.indoPak,
-          ),
-          QuranFontPreference.digitalKhatt: (
-            label: 'DigitalKhatt IndoPak',
-            fontFamily: 'Quran DigitalKhatt IndoPak',
-            script: QuranScriptPreference.indoPak,
-          ),
-          QuranFontPreference.alQalam: (
-            label: 'Al Qalam Quran Majeed',
-            fontFamily: 'AlQalamQuranMajeed',
-            script: QuranScriptPreference.indoPak,
-          ),
-          QuranFontPreference.muhammadi: (
-            label: 'Muhammadi Quran',
-            fontFamily: 'Muhammadi Quranic',
-            script: QuranScriptPreference.indoPak,
-          ),
-          QuranFontPreference.kfgqpcHafs: (
-            label: 'KFGQPC Hafs',
-            fontFamily: 'KFGQPC Hafs Uthmanic',
-            script: QuranScriptPreference.uthmaniMadani,
-          ),
-          QuranFontPreference.notoNaskhArabic: (
-            label: 'Noto Naskh Arabic',
-            fontFamily: 'Noto Naskh Arabic',
-            script: QuranScriptPreference.uthmaniMadani,
-          ),
-        };
+  test('font choices map to the correct script renderer and Mushaf id', () {
+    final expected = <
+      QuranFontPreference,
+      ({
+        String label,
+        QuranScriptPreference script,
+        QuranFontRenderKind renderKind,
+        int mushafId,
+        String? fontFamily,
+      })
+    >{
+      QuranFontPreference.qpcHafs: (
+        label: 'QPC Hafs / Uthmani',
+        script: QuranScriptPreference.uthmaniMadani,
+        renderKind: QuranFontRenderKind.adaptiveUnicode,
+        mushafId: 5,
+        fontFamily: 'QPC Hafs',
+      ),
+      QuranFontPreference.indoPak: (
+        label: 'IndoPak Nastaleeq',
+        script: QuranScriptPreference.indoPak,
+        renderKind: QuranFontRenderKind.adaptiveUnicode,
+        mushafId: 3,
+        fontFamily: 'IndoPak Nastaleeq',
+      ),
+      QuranFontPreference.qcfV2: (
+        label: 'QCF V2 Madani',
+        script: QuranScriptPreference.uthmaniMadani,
+        renderKind: QuranFontRenderKind.strictQcfV2,
+        mushafId: 1,
+        fontFamily: null,
+      ),
+      QuranFontPreference.qcfV4Tajweed: (
+        label: 'QCF V4 Tajweed',
+        script: QuranScriptPreference.uthmaniMadani,
+        renderKind: QuranFontRenderKind.strictQcfV4Tajweed,
+        mushafId: 19,
+        fontFamily: null,
+      ),
+    };
 
-    expect(QuranFontPreference.values, hasLength(7));
-    expect(QuranFontPreference.values, orderedEquals(expected.keys));
     for (final font in QuranFontPreference.values) {
       final mapping = expected[font]!;
       expect(font.label, mapping.label);
-      expect(font.fontFamily, mapping.fontFamily);
       expect(font.script, mapping.script);
+      expect(font.renderKind, mapping.renderKind);
+      expect(font.mushafId, mapping.mushafId);
+      expect(font.fontFamily, mapping.fontFamily);
     }
   });
 }

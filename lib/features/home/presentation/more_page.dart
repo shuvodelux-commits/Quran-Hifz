@@ -52,6 +52,13 @@ class MorePage extends ConsumerWidget {
             ),
             onTap: () => _open(context, const SettingsPage()),
           ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(8, 10, 8, 4),
+            child: Text(
+              'Quran fonts provided by Quran Foundation',
+              textAlign: TextAlign.center,
+            ),
+          ),
         ],
       ),
     );

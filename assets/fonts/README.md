@@ -1,25 +1,31 @@
-# Quran IndoPak font
+# Quran font assets
 
-`DigitalKhattIndoPak.otf` is the DigitalKhatt IndoPak Unicode Quran font.
-It is used only for IndoPak Quran text, including the reader, Hifz Mushaf,
-Bismillah, and the Quran font preview.
+## Quran Foundation body fonts
 
-- Font download: https://fonts.quran.ws/fonts/indopak/
-- Font file: https://fonts.quran.ws/assets/fonts/digital-khatt-indopak.otf
-- Original font project and license: https://github.com/DigitalKhatt/indopakfont
-- License: SIL Open Font License 1.1; copyright © 2024–2025 Amine Anane
-  and © 2024–2025 Tarteel Inc. The required notice and terms are in `OFL.txt`.
-- SHA-256 of the bundled, unmodified OTF:
-  `59a5e78c530de236a365354d558b37706f37d782f7ee95c3c9b7fe9e0fad042a`
+`UthmanicHafs1Ver18.ttf` is the adaptive QPC Hafs / Uthmani Quran body font.
+It is bundled from Quran Foundation and registered as `QPC Hafs`.
 
-The font site labels this face “DigitalKhatt IndoPak,” matching the embedded
-family name reported by `fc-scan`. It is distinct from Quran Foundation's
-QuranWBW IndoPak font. Bundling this OFL face avoids redistributing the
-QuranWBW font without a separate grant.
+- Source: https://verses.quran.foundation/fonts/quran/hafs/uthmanic_hafs/UthmanicHafs1Ver18.ttf
+- Retrieved: 2026-09-26
+- SHA-256:
+  `a0636e68e375af9552470d67773936f54d536e6586ce2608311b2fe7f9cbec3a`
 
-`NotoNaskhArabic.ttf` is the Noto Naskh Arabic variable font used for the
-Uthmani Quran style. It is distributed under the Apache License 2.0; the
-license text is in `LICENSE-NotoNaskhArabic.txt`.
+`indopak-nastaleeq-waqf-lazim-v4.2.1.ttf` is the adaptive IndoPak Quran
+body font. It is bundled from Quran Foundation and registered as
+`IndoPak Nastaleeq`.
+
+- Source: https://verses.quran.foundation/fonts/quran/hafs/nastaleeq/indopak/indopak-nastaleeq-waqf-lazim-v4.2.1.ttf
+- Retrieved: 2026-09-26
+- SHA-256:
+  `4c8f002e7538ef6351ac676eb0f2c1708ecd17f6f8a5fc4a19dbc8eaf4dddff5`
+
+## Dedicated Bismillah font
+
+`qpc-v4-tajweed-p1.ttf` is retained for the approved standalone Bismillah
+glyph presentation. It is not exposed as a selectable Quran body font.
+
+- SHA-256:
+  `c698d2ba6b326a0d4a6b00c40581149127cd357092f2cd34f2d216fb8123462a`
 
 ## QUL Surah name font v4
 
@@ -30,9 +36,14 @@ name instead of exposing the ligature key.
 
 - Resource page: https://qul.tarteel.ai/resources/font/457
 - Font file: https://static-cdn.tarteel.ai/qul/fonts/surah-names/v4/surah-name-v4.ttf
-- SHA-256 of the bundled TTF:
+- SHA-256:
   `026cfe8ac461531a7b1c8e4edd05ce3343f09e9c73447ff14c6bc93f3193d661`
-- QUL documents using this font in applications, including platform-specific
-  integration for Android/iOS. The resource page does not currently publish a
-  separate redistribution license text; confirm redistribution terms before a
-  public store release.
+
+QUL documents using the Surah-name font in applications, including
+platform-specific Android/iOS integration. Its resource page does not
+currently publish a separate redistribution license text; confirm
+redistribution terms before a public store release.
+
+The strict QCF V2 and QCF V4 Tajweed choices use page-specific fonts at
+runtime and are therefore not registered here as static Flutter font
+families.
