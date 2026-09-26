@@ -2,7 +2,8 @@ import '../domain/tafsir_catalog.dart';
 import '../domain/tafsir_entry.dart';
 import '../domain/tafsir_repository.dart';
 
-class CompositeTafsirRepository implements TafsirRepository {
+class CompositeTafsirRepository
+    implements TafsirRepository, TafsirAvailableSources {
   CompositeTafsirRepository({
     required TafsirRepository bundled,
     required TafsirRepository downloaded,
@@ -16,12 +17,19 @@ class CompositeTafsirRepository implements TafsirRepository {
   final TafsirRepository? _remote;
 
   @override
-  Future<List<TafsirSource>> listInstalledSources() => listSources();
+  Future<List<TafsirSource>> listInstalledSources() =>
+      _listSources(includeRemote: false);
 
-  Future<List<TafsirSource>> listSources() async {
+  @override
+  Future<List<TafsirSource>> listAvailableSources() =>
+      _listSources(includeRemote: true);
+
+  Future<List<TafsirSource>> listSources() => listAvailableSources();
+
+  Future<List<TafsirSource>> _listSources({required bool includeRemote}) async {
     final bundled = await _safeSources(_bundled);
     final downloaded = await _safeSources(_downloaded);
-    final remote = _remote == null
+    final remote = !includeRemote || _remote == null
         ? const <TafsirSource>[]
         : await _safeSources(_remote);
 

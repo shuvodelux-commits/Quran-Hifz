@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../application/tafsir_providers.dart';
 import '../domain/tafsir_catalog.dart';
 import '../domain/tafsir_entry.dart';
+import '../domain/tafsir_repository.dart';
 
 class TafsirReaderPage extends ConsumerStatefulWidget {
   const TafsirReaderPage({
@@ -27,6 +28,7 @@ class TafsirReaderPage extends ConsumerStatefulWidget {
 
 class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
   String? _selectedSourceId;
+  bool _includeRemoteSources = false;
   late Future<_TafsirViewState> _future;
 
   @override
@@ -38,10 +40,18 @@ class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
   Future<_TafsirViewState> _load() async {
     final repository = ref.read(tafsirRepositoryProvider);
     final selectionStore = ref.read(tafsirSourceSelectionStoreProvider);
-    final sources = await repository.listInstalledSources();
+    final saved = _selectedSourceId ?? await selectionStore.read();
+    final savedRemote = saved?.startsWith('qf.') ?? false;
+    final includeRemote = _includeRemoteSources || savedRemote;
+    final TafsirAvailableSources? availableRepository =
+        repository is TafsirAvailableSources
+        ? repository as TafsirAvailableSources
+        : null;
+    final sources = includeRemote && availableRepository != null
+        ? await availableRepository.listAvailableSources()
+        : await repository.listInstalledSources();
     if (sources.isEmpty) return const _TafsirViewState(sources: []);
 
-    final saved = _selectedSourceId ?? await selectionStore.read();
     final selected =
         saved != null && sources.any((source) => source.sourceId == saved)
         ? saved
@@ -51,7 +61,7 @@ class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
         ? primaryBanglaTafsirSourceId
         : sources.first.sourceId;
     _selectedSourceId = selected;
-    if (saved != selected) {
+    if (saved != selected && !savedRemote) {
       await selectionStore.write(selected);
     }
 
@@ -75,8 +85,59 @@ class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
     if (!mounted) return;
     setState(() {
       _selectedSourceId = sourceId;
+      _includeRemoteSources =
+          _includeRemoteSources || sourceId.startsWith('qf.');
       _future = _load();
     });
+  }
+
+  void _loadMoreTafsirs() {
+    setState(() {
+      _includeRemoteSources = true;
+      _future = _load();
+    });
+  }
+
+  Widget _sourceControls(_TafsirViewState state) {
+    final showSelector = state.sources.length > 1;
+    final showMore =
+        !_includeRemoteSources &&
+        !(_selectedSourceId?.startsWith('qf.') ?? false);
+    if (!showSelector && !showMore) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (showSelector)
+          DropdownButtonFormField<String>(
+            initialValue: _selectedSourceId,
+            decoration: const InputDecoration(labelText: 'Tafsir source'),
+            items: [
+              for (final source in state.sources)
+                DropdownMenuItem(
+                  value: source.sourceId,
+                  child: Text(source.name),
+                ),
+            ],
+            onChanged: (value) {
+              if (value != null) {
+                unawaited(_selectSource(value));
+              }
+            },
+          ),
+        if (showMore)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const ValueKey('load-more-tafsirs'),
+              onPressed: _loadMoreTafsirs,
+              icon: const Icon(Icons.public_rounded, size: 18),
+              label: const Text('More Tafsirs'),
+            ),
+          ),
+        const SizedBox(height: 16),
+      ],
+    );
   }
 
   @override
@@ -127,25 +188,7 @@ class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      if (state.sources.length > 1)
-                        DropdownButtonFormField<String>(
-                          initialValue: _selectedSourceId,
-                          decoration: const InputDecoration(
-                            labelText: 'Tafsir source',
-                          ),
-                          items: [
-                            for (final source in state.sources)
-                              DropdownMenuItem(
-                                value: source.sourceId,
-                                child: Text(source.name),
-                              ),
-                          ],
-                          onChanged: (value) {
-                            if (value != null) {
-                              unawaited(_selectSource(value));
-                            }
-                          },
-                        ),
+                      _sourceControls(state),
                       Text(
                         selectedSource.name,
                         style: Theme.of(context).textTheme.titleLarge,
@@ -193,24 +236,7 @@ class _TafsirReaderPageState extends ConsumerState<TafsirReaderPage> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              if (state.sources.length > 1)
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedSourceId,
-                  decoration: const InputDecoration(labelText: 'Tafsir source'),
-                  items: [
-                    for (final source in state.sources)
-                      DropdownMenuItem(
-                        value: source.sourceId,
-                        child: Text(source.name),
-                      ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      unawaited(_selectSource(value));
-                    }
-                  },
-                ),
-              if (state.sources.length > 1) const SizedBox(height: 16),
+              _sourceControls(state),
               Text(
                 entry?.sourceName ?? selectedSource.name,
                 style: Theme.of(context).textTheme.titleLarge,

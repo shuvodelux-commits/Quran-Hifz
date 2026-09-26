@@ -26,6 +26,16 @@ abstract class TafsirRepository {
   }
 }
 
+abstract interface class TafsirAvailableSources {
+  Future<List<TafsirSource>> listAvailableSources();
+}
+
 extension TafsirRepositorySources on TafsirRepository {
-  Future<List<TafsirSource>> listSources() => listInstalledSources();
+  Future<List<TafsirSource>> listSources() {
+    final repository = this;
+    if (repository is TafsirAvailableSources) {
+      return (repository as TafsirAvailableSources).listAvailableSources();
+    }
+    return listInstalledSources();
+  }
 }

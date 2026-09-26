@@ -32,6 +32,36 @@ void main() {
     ]);
   });
 
+  test('installed source listing never touches the remote catalog', () async {
+    final remote = _FakeRepository(
+      sources: const [
+        TafsirSource(
+          sourceId: 'qf.169',
+          name: 'Remote',
+          language: 'bn',
+          version: 'quran-foundation-v4',
+          kind: TafsirSourceKind.remote,
+          availableOffline: false,
+        ),
+      ],
+    );
+    final repository = CompositeTafsirRepository(
+      bundled: _FakeRepository(
+        sources: const [_bundledZakaria],
+        entries: {'$primaryBanglaTafsirSourceId:1:1': _bundledEntry},
+      ),
+      downloaded: _FakeRepository(),
+      remote: remote,
+    );
+
+    final sources = await repository.listInstalledSources();
+
+    expect(sources.map((source) => source.sourceId), [
+      primaryBanglaTafsirSourceId,
+    ]);
+    expect(remote.listCalls, 0);
+  });
+
   test('remote catalog failure does not remove bundled Zakaria', () async {
     final repository = CompositeTafsirRepository(
       bundled: _FakeRepository(
@@ -194,9 +224,11 @@ class _FakeRepository implements TafsirRepository {
   final Map<String, TafsirEntry> entries;
   final bool throwOnRead;
   final bool throwOnList;
+  int listCalls = 0;
 
   @override
   Future<List<TafsirSource>> listInstalledSources() async {
+    listCalls++;
     if (throwOnList) throw StateError('remote unavailable');
     return sources;
   }

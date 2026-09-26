@@ -13,12 +13,11 @@ void main() {
     tester,
   ) async {
     final selection = _MemorySelectionStore();
+    final repository = _MultipleSourcesRepository();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          tafsirRepositoryProvider.overrideWithValue(
-            _MultipleSourcesRepository(),
-          ),
+          tafsirRepositoryProvider.overrideWithValue(repository),
           tafsirSourceSelectionStoreProvider.overrideWithValue(selection),
         ],
         child: const MaterialApp(
@@ -30,7 +29,40 @@ void main() {
 
     expect(find.text('Zakaria tafsir entry'), findsOneWidget);
     expect(find.text('Download tafsir'), findsNothing);
+    expect(find.text('More Tafsirs'), findsOneWidget);
+    expect(repository.availableListCalls, 0);
     expect(selection.value, primaryBanglaTafsirSourceId);
+  });
+
+  testWidgets('More Tafsirs explicitly loads remote Quran Foundation sources', (
+    tester,
+  ) async {
+    final repository = _MultipleSourcesRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tafsirRepositoryProvider.overrideWithValue(repository),
+          tafsirSourceSelectionStoreProvider.overrideWithValue(
+            _MemorySelectionStore(),
+          ),
+        ],
+        child: const MaterialApp(
+          home: TafsirReaderPage(surahNumber: 1, ayahNumber: 1),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(repository.availableListCalls, 0);
+    expect(find.text('Remote Tafsir'), findsNothing);
+
+    await tester.tap(find.text('More Tafsirs'));
+    await tester.pumpAndSettle();
+
+    expect(repository.availableListCalls, 1);
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+    expect(find.text('Remote Tafsir'), findsOneWidget);
   });
 
   testWidgets('saved available source is restored', (tester) async {
@@ -139,15 +171,11 @@ class _MemorySelectionStore implements TafsirSourceSelectionStore {
   }
 }
 
-class _MultipleSourcesRepository implements TafsirRepository {
-  @override
-  Future<List<TafsirEntry>> readSurah({
-    required String sourceId,
-    required int surahNumber,
-  }) async => [];
+class _MultipleSourcesRepository
+    implements TafsirRepository, TafsirAvailableSources {
+  int availableListCalls = 0;
 
-  @override
-  Future<List<TafsirSource>> listInstalledSources() async => const [
+  static const _localSources = [
     TafsirSource(
       sourceId: 'bn.other',
       name: 'Other Tafsir',
@@ -162,15 +190,32 @@ class _MultipleSourcesRepository implements TafsirRepository {
       version: '1.1.1',
       kind: TafsirSourceKind.bundled,
     ),
-    TafsirSource(
-      sourceId: 'qf.169',
-      name: 'Remote Tafsir',
-      language: 'en',
-      version: 'quran-foundation-v4',
-      kind: TafsirSourceKind.remote,
-      availableOffline: false,
-    ),
   ];
+
+  @override
+  Future<List<TafsirEntry>> readSurah({
+    required String sourceId,
+    required int surahNumber,
+  }) async => [];
+
+  @override
+  Future<List<TafsirSource>> listInstalledSources() async => _localSources;
+
+  @override
+  Future<List<TafsirSource>> listAvailableSources() async {
+    availableListCalls++;
+    return const [
+      ..._localSources,
+      TafsirSource(
+        sourceId: 'qf.169',
+        name: 'Remote Tafsir',
+        language: 'en',
+        version: 'quran-foundation-v4',
+        kind: TafsirSourceKind.remote,
+        availableOffline: false,
+      ),
+    ];
+  }
 
   @override
   Future<TafsirEntry?> readAyah({
