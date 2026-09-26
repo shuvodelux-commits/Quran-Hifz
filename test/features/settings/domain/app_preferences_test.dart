@@ -9,7 +9,7 @@ void main() {
 
     expect(preferences.theme, AppThemePreference.light);
     expect(preferences.arabicFontSize, 27);
-    expect(preferences.quranScript, QuranScriptPreference.indoPak);
+    expect(preferences.quranScript, QuranScriptPreference.uthmaniMadani);
     expect(preferences.arabicLineHeight, 1.2);
     expect(preferences.banglaLineHeight, 1.2);
     expect(preferences.banglaFontSize, 18);
@@ -75,8 +75,8 @@ void main() {
   test('Hifz appearance defaults are independent and readable', () {
     const value = AppPreferences.defaults();
 
-    expect(value.quranFont, QuranFontPreference.indopakNastaleeq);
-    expect(value.hifzQuranFont, QuranFontPreference.notoNaskhArabic);
+    expect(value.quranFont, QuranFontPreference.qpcHafs);
+    expect(value.hifzQuranFont, QuranFontPreference.qpcHafs);
     expect(value.hifzFontSize, 32);
     expect(value.hifzLineHeight, 1.35);
   });
@@ -84,14 +84,14 @@ void main() {
   test('copyWith keeps global and Hifz typography independent', () {
     const original = AppPreferences.defaults();
     final changed = original.copyWith(
-      quranFont: QuranFontPreference.notoNaskhArabic,
+      quranFont: QuranFontPreference.indoPak,
       hifzFontSize: 40,
       hifzLineHeight: 2,
     );
 
-    expect(changed.quranFont, QuranFontPreference.notoNaskhArabic);
-    expect(changed.quranScript, QuranScriptPreference.uthmaniMadani);
-    expect(changed.hifzQuranFont, QuranFontPreference.notoNaskhArabic);
+    expect(changed.quranFont, QuranFontPreference.indoPak);
+    expect(changed.quranScript, QuranScriptPreference.indoPak);
+    expect(changed.hifzQuranFont, QuranFontPreference.qpcHafs);
     expect(changed.hifzFontSize, 40);
     expect(changed.hifzLineHeight, 2);
     expect(changed.arabicFontSize, original.arabicFontSize);

@@ -77,9 +77,9 @@ void main() {
 
     await repository.save(
       const AppPreferences.defaults().copyWith(
-        quranFont: QuranFontPreference.notoNaskhArabic,
+        quranFont: QuranFontPreference.qcfV2,
         quranScript: QuranScriptPreference.uthmaniMadani,
-        hifzQuranFont: QuranFontPreference.alQalam,
+        hifzQuranFont: QuranFontPreference.indoPak,
         hifzLayoutMode: HifzLayoutMode.fixedMushaf,
         hifzFontSize: 40,
         hifzLineHeight: 2,
@@ -89,9 +89,9 @@ void main() {
     );
 
     final restored = await repository.load();
-    expect(restored.quranFont, QuranFontPreference.notoNaskhArabic);
+    expect(restored.quranFont, QuranFontPreference.qcfV2);
     expect(restored.quranScript, QuranScriptPreference.uthmaniMadani);
-    expect(restored.hifzQuranFont, QuranFontPreference.alQalam);
+    expect(restored.hifzQuranFont, QuranFontPreference.indoPak);
     expect(restored.hifzLayoutMode, HifzLayoutMode.fixedMushaf);
     expect(restored.hifzFontSize, 40);
     expect(restored.hifzLineHeight, 2);
@@ -154,7 +154,7 @@ void main() {
     );
 
     final restored = await repository.load();
-    expect(restored.quranFont, QuranFontPreference.notoNaskhArabic);
+    expect(restored.quranFont, QuranFontPreference.qpcHafs);
     expect(restored.quranScript, QuranScriptPreference.uthmaniMadani);
   });
 
@@ -168,12 +168,88 @@ void main() {
     );
 
     final restored = await repository.load();
-    expect(restored.quranFont, QuranFontPreference.indopakNastaleeq);
+    expect(restored.quranFont, QuranFontPreference.indoPak);
     expect(restored.quranScript, QuranScriptPreference.indoPak);
   });
 
   test(
-    'unknown persisted global font falls back to Indopak Nastaleeq',
+    'migrates every removed Quran font name without resetting other settings',
+    () async {
+      final database = UserDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(database.close);
+      final repository = UserDatabaseAppPreferencesRepository(database);
+
+      await database.saveSetting(
+        UserDatabaseAppPreferencesRepository.themeKey,
+        'women',
+      );
+      await database.saveSetting(
+        UserDatabaseAppPreferencesRepository.languageKey,
+        'english',
+      );
+      await database.saveSetting(
+        UserDatabaseAppPreferencesRepository.arabicFontSizeKey,
+        '35',
+      );
+      await database.saveSetting(
+        UserDatabaseAppPreferencesRepository.hifzFontSizeKey,
+        '41',
+      );
+      await database.saveSetting(
+        UserDatabaseAppPreferencesRepository.playbackSpeedKey,
+        '0.75',
+      );
+
+      const migrations = <String, QuranFontPreference>{
+        'pdmsSaleem': QuranFontPreference.indoPak,
+        'indopakNastaleeq': QuranFontPreference.indoPak,
+        'digitalKhatt': QuranFontPreference.indoPak,
+        'alQalam': QuranFontPreference.indoPak,
+        'muhammadi': QuranFontPreference.indoPak,
+        'kfgqpcHafs': QuranFontPreference.qpcHafs,
+        'notoNaskhArabic': QuranFontPreference.qpcHafs,
+      };
+
+      for (final entry in migrations.entries) {
+        await database.saveSetting(
+          UserDatabaseAppPreferencesRepository.quranFontKey,
+          entry.key,
+        );
+        await database.saveSetting(
+          UserDatabaseAppPreferencesRepository.hifzQuranFontKey,
+          entry.key,
+        );
+
+        final restored = await repository.load();
+        expect(restored.quranFont, entry.value, reason: entry.key);
+        expect(restored.hifzQuranFont, entry.value, reason: entry.key);
+        expect(restored.theme, AppThemePreference.women, reason: entry.key);
+        expect(restored.language, AppLanguage.english, reason: entry.key);
+        expect(restored.arabicFontSize, 35, reason: entry.key);
+        expect(restored.hifzFontSize, 41, reason: entry.key);
+        expect(restored.defaultPlaybackSpeed, 0.75, reason: entry.key);
+
+        await repository.save(restored);
+        expect(
+          await database.getSetting(
+            UserDatabaseAppPreferencesRepository.quranFontKey,
+          ),
+          entry.value.name,
+          reason: entry.key,
+        );
+        expect(
+          await database.getSetting(
+            UserDatabaseAppPreferencesRepository.hifzQuranFontKey,
+          ),
+          entry.value.name,
+          reason: entry.key,
+        );
+      }
+    },
+  );
+
+  test(
+    'unknown persisted global font falls back to the Quran mode default',
     () async {
       final database = UserDatabase.forTesting(NativeDatabase.memory());
       addTearDown(database.close);
@@ -184,23 +260,26 @@ void main() {
       );
 
       final restored = await repository.load();
-      expect(restored.quranFont, QuranFontPreference.indopakNastaleeq);
-      expect(restored.quranScript, QuranScriptPreference.indoPak);
+      expect(restored.quranFont, QuranFontPreference.qpcHafs);
+      expect(restored.quranScript, QuranScriptPreference.uthmaniMadani);
     },
   );
 
-  test('unknown persisted Hifz font falls back to PDMS', () async {
-    final database = UserDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(database.close);
-    final repository = UserDatabaseAppPreferencesRepository(database);
-    await database.saveSetting(
-      UserDatabaseAppPreferencesRepository.hifzQuranFontKey,
-      'removed_font',
-    );
+  test(
+    'unknown persisted Hifz font falls back to the Hifz mode default',
+    () async {
+      final database = UserDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(database.close);
+      final repository = UserDatabaseAppPreferencesRepository(database);
+      await database.saveSetting(
+        UserDatabaseAppPreferencesRepository.hifzQuranFontKey,
+        'removed_font',
+      );
 
-    final restored = await repository.load();
-    expect(restored.hifzQuranFont, QuranFontPreference.notoNaskhArabic);
-  });
+      final restored = await repository.load();
+      expect(restored.hifzQuranFont, QuranFontPreference.qpcHafs);
+    },
+  );
 
   test('unknown persisted Hifz layout falls back to Free Flow', () async {
     final database = UserDatabase.forTesting(NativeDatabase.memory());

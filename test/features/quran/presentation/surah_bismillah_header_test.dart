@@ -52,7 +52,7 @@ void main() {
     await tester.pumpWidget(
       _app(
         2,
-        quranFont: QuranFontPreference.pdmsSaleem,
+        quranFont: QuranFontPreference.indoPak,
         showTajweedColors: true,
         tajweedAvailable: true,
       ),
@@ -68,7 +68,7 @@ void main() {
     await tester.pumpWidget(
       _app(
         2,
-        quranFont: QuranFontPreference.kfgqpcHafs,
+        quranFont: QuranFontPreference.qpcHafs,
         showTajweedColors: true,
         tajweedAvailable: true,
       ),
@@ -124,7 +124,7 @@ Widget _app(
     appPreferencesRepositoryProvider.overrideWithValue(
       _MemoryPreferencesRepository()
         ..value = const AppPreferences.defaults().copyWith(
-          quranFont: quranFont ?? QuranFontPreference.notoNaskhArabic,
+          quranFont: quranFont ?? QuranFontPreference.qpcHafs,
           showTajweedColors:
               showTajweedColors ??
               const AppPreferences.defaults().showTajweedColors,

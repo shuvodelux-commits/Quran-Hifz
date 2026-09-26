@@ -53,7 +53,7 @@ void main() {
   testWidgets('shows only the approved Hifz font choices', (tester) async {
     final repository = _MemoryPreferencesRepository()
       ..value = const AppPreferences.defaults().copyWith(
-        hifzQuranFont: QuranFontPreference.notoNaskhArabic,
+        hifzQuranFont: QuranFontPreference.qpcHafs,
       );
     await tester.pumpWidget(
       ProviderScope(
@@ -73,9 +73,10 @@ void main() {
       find.byKey(const ValueKey('hifz-appearance-font-qpcHafs')),
     );
     await tester.pumpAndSettle();
-    expect(find.text('QCF V2 · Pixel-perfect Madani'), findsOneWidget);
-    expect(find.text('QPC Hafs · Uthmanic'), findsWidgets);
-    expect(find.text('Quran Foundation IndoPak'), findsOneWidget);
+    expect(find.text('QPC Hafs / Uthmani'), findsWidgets);
+    expect(find.text('IndoPak Nastaleeq'), findsOneWidget);
+    expect(find.text('QCF V2 Madani'), findsOneWidget);
+    expect(find.text('QCF V4 Tajweed'), findsOneWidget);
     expect(find.text('PDMS Saleem Quran'), findsNothing);
     expect(find.text('Muhammadi Quran'), findsNothing);
   });

@@ -61,14 +61,12 @@ class AppPreferences {
 
   const AppPreferences.defaults()
     : theme = AppThemePreference.light,
-      quranScript = QuranScriptPreference.indoPak,
+      quranScript = QuranScriptPreference.uthmaniMadani,
       quranFont = QuranFontPreference.defaultGlobal,
       arabicFontSize = 27,
       arabicLineHeight = 1.2,
-      // Hifz defaults to the QCF V2/Uthmanic rendering family. The Hifz UI
-      // exposes its own three-entry catalog and does not reuse the global
-      // Quran font list.
-      hifzQuranFont = QuranFontPreference.notoNaskhArabic,
+      // Quran and Hifz share the same catalog but persist independently.
+      hifzQuranFont = QuranFontPreference.defaultHifz,
       hifzLayoutMode = HifzLayoutMode.freeFlow,
       hifzReadingMode = HifzReadingMode.regular,
       hifzMushafVariant = HifzMushafVariant.qpcV4Tajweed,
@@ -157,8 +155,8 @@ class AppPreferences {
         (quranScript == null
             ? this.quranFont
             : quranScript == QuranScriptPreference.indoPak
-            ? QuranFontPreference.defaultGlobal
-            : QuranFontPreference.notoNaskhArabic);
+            ? QuranFontPreference.indoPak
+            : QuranFontPreference.qpcHafs);
     return AppPreferences(
       theme: theme ?? this.theme,
       quranScript: nextQuranFont.script,

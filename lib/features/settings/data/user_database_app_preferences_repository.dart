@@ -90,13 +90,13 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       values[18],
       fallback: values[18] == null
           ? (legacyQuranScript == QuranScriptPreference.indoPak
-                ? QuranFontPreference.defaultGlobal
-                : QuranFontPreference.notoNaskhArabic)
+                ? QuranFontPreference.indoPak
+                : QuranFontPreference.qpcHafs)
           : QuranFontPreference.defaultGlobal,
     );
     final hifzQuranFont = _fontFromName(
       values[19],
-      fallback: QuranFontPreference.notoNaskhArabic,
+      fallback: QuranFontPreference.defaultHifz,
     );
     final fontSize = double.tryParse(values[2] ?? '');
     final arabicLineHeight = double.tryParse(values[3] ?? '');
@@ -346,6 +346,14 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
     for (final font in QuranFontPreference.values) {
       if (font.name == raw) return font;
     }
-    return fallback;
+    return switch (raw) {
+      'pdmsSaleem' ||
+      'indopakNastaleeq' ||
+      'digitalKhatt' ||
+      'alQalam' ||
+      'muhammadi' => QuranFontPreference.indoPak,
+      'kfgqpcHafs' || 'notoNaskhArabic' => QuranFontPreference.qpcHafs,
+      _ => fallback,
+    };
   }
 }

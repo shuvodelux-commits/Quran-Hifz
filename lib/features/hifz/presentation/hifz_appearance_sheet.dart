@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/domain/app_preferences.dart';
 import '../application/hifz_appearance_controller.dart';
-import '../domain/hifz_font_preference.dart';
+import '../../quran/domain/quran_font_preference.dart';
 
 /// Hifz-only typography controls and their live preview.
 class HifzAppearanceSheet extends ConsumerStatefulWidget {
@@ -18,7 +18,7 @@ class HifzAppearanceSheet extends ConsumerStatefulWidget {
 }
 
 class _HifzAppearanceSheetState extends ConsumerState<HifzAppearanceSheet> {
-  late HifzFontPreference _font;
+  late QuranFontPreference _font;
   late double _fontSize;
   late double _lineHeight;
   late bool _autoScrollEnabled;
@@ -28,7 +28,7 @@ class _HifzAppearanceSheetState extends ConsumerState<HifzAppearanceSheet> {
   @override
   void initState() {
     super.initState();
-    _font = HifzFontPreference.defaultHifz;
+    _font = QuranFontPreference.defaultHifz;
     _fontSize = 32;
     _lineHeight = const AppPreferences.defaults().hifzLineHeight;
     _autoScrollEnabled = const AppPreferences.defaults().hifzAutoScrollEnabled;
@@ -39,7 +39,7 @@ class _HifzAppearanceSheetState extends ConsumerState<HifzAppearanceSheet> {
   Widget build(BuildContext context) {
     final preferences = ref.watch(appPreferencesControllerProvider).value;
     if (preferences != null && !_initializedFromPreferences) {
-      _font = HifzFontPreference.fromRendererFont(preferences.hifzQuranFont);
+      _font = preferences.hifzQuranFont;
       _fontSize = preferences.hifzFontSize;
       _lineHeight = preferences.hifzLineHeight;
       _autoScrollEnabled = preferences.hifzAutoScrollEnabled;
@@ -78,7 +78,8 @@ class _HifzAppearanceSheetState extends ConsumerState<HifzAppearanceSheet> {
                   textAlign: TextAlign.center,
                   textDirection: TextDirection.rtl,
                   style: TextStyle(
-                    fontFamily: _font.rendererFont.fontFamily,
+                    fontFamily:
+                        _font.fontFamily ?? _font.script.preferredFontFamily,
                     fontSize: _fontSize,
                     height: _lineHeight,
                   ),
@@ -86,12 +87,12 @@ class _HifzAppearanceSheetState extends ConsumerState<HifzAppearanceSheet> {
               ),
             ),
             const SizedBox(height: 18),
-            DropdownButtonFormField<HifzFontPreference>(
+            DropdownButtonFormField<QuranFontPreference>(
               key: ValueKey('hifz-appearance-font-${_font.name}'),
               initialValue: _font,
               decoration: const InputDecoration(labelText: 'Quran font'),
               items: [
-                for (final option in HifzFontPreference.values)
+                for (final option in QuranFontPreference.values)
                   DropdownMenuItem(value: option, child: Text(option.label)),
               ],
               onChanged: (value) {
@@ -99,11 +100,11 @@ class _HifzAppearanceSheetState extends ConsumerState<HifzAppearanceSheet> {
                 setState(() => _font = value);
                 ref
                     .read(hifzAppearanceOverrideProvider.notifier)
-                    .setFont(value.rendererFont);
+                    .setFont(value);
                 unawaited(
                   ref
                       .read(appPreferencesControllerProvider.notifier)
-                      .setHifzQuranFont(value.rendererFont),
+                      .setHifzQuranFont(value),
                 );
               },
             ),
@@ -204,7 +205,7 @@ class _HifzAppearanceSheetState extends ConsumerState<HifzAppearanceSheet> {
 
   void _reset() {
     setState(() {
-      _font = HifzFontPreference.defaultHifz;
+      _font = QuranFontPreference.defaultHifz;
       _fontSize = 32;
       _lineHeight = const AppPreferences.defaults().hifzLineHeight;
       _autoScrollEnabled =
@@ -213,9 +214,7 @@ class _HifzAppearanceSheetState extends ConsumerState<HifzAppearanceSheet> {
     });
     final controller = ref.read(appPreferencesControllerProvider.notifier);
     ref.read(hifzAppearanceOverrideProvider.notifier).reset();
-    unawaited(
-      controller.setHifzQuranFont(HifzFontPreference.defaultHifz.rendererFont),
-    );
+    unawaited(controller.setHifzQuranFont(QuranFontPreference.defaultHifz));
     unawaited(controller.setHifzFontSize(32));
     unawaited(
       controller.setHifzLineHeight(

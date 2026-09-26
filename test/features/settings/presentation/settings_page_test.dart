@@ -108,13 +108,13 @@ void main() {
       final preview = find.text(BismillahText.indoPak);
       await tester.ensureVisible(preview);
       final previewStyle = DefaultTextStyle.of(tester.element(preview)).style;
-      expect(previewStyle.fontFamily, 'Indopak Nastaleeq');
+      expect(previewStyle.fontFamily, 'IndoPak Nastaleeq');
       expect(previewStyle.fontWeight, FontWeight.w400);
       expect(
         DefaultTextStyle.of(
           tester.element(find.text('সেটিংস')),
         ).style.fontFamily,
-        isNot('Indopak Nastaleeq'),
+        isNot('IndoPak Nastaleeq'),
       );
     },
   );
@@ -169,7 +169,7 @@ void main() {
     );
     await tester.tap(fontDropdown);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('KFGQPC Hafs').last);
+    await tester.tap(find.text('QPC Hafs / Uthmani').last);
     await tester.pumpAndSettle();
 
     final uthmaniPreview = find.text(BismillahText.uthmani);
@@ -182,12 +182,12 @@ void main() {
     );
     expect(
       DefaultTextStyle.of(tester.element(uthmaniPreview)).style.fontFamily,
-      'KFGQPC Hafs Uthmanic',
+      'QPC Hafs',
     );
 
     await tester.tap(fontDropdown);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('PDMS Saleem Quran').last);
+    await tester.tap(find.text('IndoPak Nastaleeq').last);
     await tester.pumpAndSettle();
 
     final indoPakPreview = find.text(BismillahText.indoPak);
@@ -200,7 +200,7 @@ void main() {
     );
     expect(
       DefaultTextStyle.of(tester.element(indoPakPreview)).style.fontFamily,
-      'PDMS Saleem Quran',
+      'IndoPak Nastaleeq',
     );
   });
 }

@@ -112,7 +112,7 @@ void main() {
 
     final state = container.read(appPreferencesControllerProvider).value!;
     expect(state.showTajweedColors, isFalse);
-    expect(state.quranScript, QuranScriptPreference.indoPak);
+    expect(state.quranScript, QuranScriptPreference.uthmaniMadani);
     expect(state.arabicLineHeight, 1.2);
   });
 
@@ -200,12 +200,12 @@ void main() {
     await container.read(appPreferencesControllerProvider.future);
     await container
         .read(appPreferencesControllerProvider.notifier)
-        .setQuranFont(QuranFontPreference.kfgqpcHafs);
+        .setQuranFont(QuranFontPreference.qcfV4Tajweed);
 
     final state = container.read(appPreferencesControllerProvider).value!;
-    expect(state.quranFont, QuranFontPreference.kfgqpcHafs);
+    expect(state.quranFont, QuranFontPreference.qcfV4Tajweed);
     expect(state.quranScript, QuranScriptPreference.uthmaniMadani);
-    expect(repository.value.quranFont, QuranFontPreference.kfgqpcHafs);
+    expect(repository.value.quranFont, QuranFontPreference.qcfV4Tajweed);
   });
 
   test('Hifz typography rejects values outside its supported ranges', () async {
@@ -265,21 +265,23 @@ void main() {
     final controller = container.read(
       appPreferencesControllerProvider.notifier,
     );
-    await controller.setQuranFont(QuranFontPreference.notoNaskhArabic);
+    await controller.setQuranFont(QuranFontPreference.indoPak);
+    await controller.setArabicFontSize(36);
+    await controller.setArabicLineHeight(1.8);
     final afterGlobal = container.read(appPreferencesControllerProvider).value!;
-    expect(afterGlobal.hifzQuranFont, QuranFontPreference.notoNaskhArabic);
+    expect(afterGlobal.hifzQuranFont, QuranFontPreference.qpcHafs);
     expect(afterGlobal.hifzFontSize, 32);
     expect(afterGlobal.hifzLineHeight, 1.35);
 
-    await controller.setHifzQuranFont(QuranFontPreference.alQalam);
+    await controller.setHifzQuranFont(QuranFontPreference.qcfV2);
     await controller.setHifzFontSize(40);
     await controller.setHifzLineHeight(2);
     final afterHifz = container.read(appPreferencesControllerProvider).value!;
-    expect(afterHifz.quranFont, QuranFontPreference.notoNaskhArabic);
-    expect(afterHifz.quranScript, QuranScriptPreference.uthmaniMadani);
-    expect(afterHifz.arabicFontSize, 27);
-    expect(afterHifz.arabicLineHeight, 1.2);
-    expect(afterHifz.hifzQuranFont, QuranFontPreference.alQalam);
+    expect(afterHifz.quranFont, QuranFontPreference.indoPak);
+    expect(afterHifz.quranScript, QuranScriptPreference.indoPak);
+    expect(afterHifz.arabicFontSize, 36);
+    expect(afterHifz.arabicLineHeight, 1.8);
+    expect(afterHifz.hifzQuranFont, QuranFontPreference.qcfV2);
     expect(afterHifz.hifzFontSize, 40);
     expect(afterHifz.hifzLineHeight, 2);
     expect(repository.value, same(afterHifz));
@@ -299,16 +301,24 @@ void main() {
       appPreferencesControllerProvider.notifier,
     );
     await Future.wait([
-      controller.setQuranFont(QuranFontPreference.notoNaskhArabic),
-      controller.setHifzQuranFont(QuranFontPreference.alQalam),
+      controller.setQuranFont(QuranFontPreference.indoPak),
+      controller.setArabicFontSize(34),
+      controller.setArabicLineHeight(1.7),
+      controller.setHifzQuranFont(QuranFontPreference.qcfV2),
+      controller.setHifzFontSize(42),
+      controller.setHifzLineHeight(1.9),
     ]);
 
     final state = container.read(appPreferencesControllerProvider).value!;
-    expect(state.quranFont, QuranFontPreference.notoNaskhArabic);
-    expect(state.quranScript, QuranScriptPreference.uthmaniMadani);
-    expect(state.hifzQuranFont, QuranFontPreference.alQalam);
-    expect(repository.value.quranFont, QuranFontPreference.notoNaskhArabic);
-    expect(repository.value.hifzQuranFont, QuranFontPreference.alQalam);
+    expect(state.quranFont, QuranFontPreference.indoPak);
+    expect(state.quranScript, QuranScriptPreference.indoPak);
+    expect(state.arabicFontSize, 34);
+    expect(state.arabicLineHeight, 1.7);
+    expect(state.hifzQuranFont, QuranFontPreference.qcfV2);
+    expect(state.hifzFontSize, 42);
+    expect(state.hifzLineHeight, 1.9);
+    expect(repository.value.quranFont, QuranFontPreference.indoPak);
+    expect(repository.value.hifzQuranFont, QuranFontPreference.qcfV2);
   });
 
   test('recovers queued updates after a save failure', () async {
@@ -325,15 +335,15 @@ void main() {
       appPreferencesControllerProvider.notifier,
     );
     await expectLater(
-      controller.setQuranFont(QuranFontPreference.notoNaskhArabic),
+      controller.setQuranFont(QuranFontPreference.indoPak),
       throwsStateError,
     );
-    await controller.setHifzQuranFont(QuranFontPreference.alQalam);
+    await controller.setHifzQuranFont(QuranFontPreference.qcfV2);
 
     final state = container.read(appPreferencesControllerProvider).value!;
-    expect(state.quranFont, QuranFontPreference.indopakNastaleeq);
-    expect(state.hifzQuranFont, QuranFontPreference.alQalam);
-    expect(repository.value.hifzQuranFont, QuranFontPreference.alQalam);
+    expect(state.quranFont, QuranFontPreference.qpcHafs);
+    expect(state.hifzQuranFont, QuranFontPreference.qcfV2);
+    expect(repository.value.hifzQuranFont, QuranFontPreference.qcfV2);
   });
 }
 

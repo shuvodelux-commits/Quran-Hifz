@@ -285,9 +285,9 @@ void main() {
       find.byKey(const ValueKey('hifz-appearance-font-qpcHafs')),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Quran Foundation IndoPak').last);
+    await tester.tap(find.text('IndoPak Nastaleeq').last);
     await tester.pumpAndSettle();
-    expect(_fontFamily(tester, word), 'Indopak Nastaleeq');
+    expect(_fontFamily(tester, word), 'IndoPak Nastaleeq');
 
     final slider = find.byKey(const ValueKey('hifz-appearance-size'));
     final gesture = await tester.startGesture(tester.getCenter(slider));
@@ -611,7 +611,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final word = find.byKey(const ValueKey('hifz-word-1:2:1'));
-      expect(_fontFamily(tester, word), 'Noto Naskh Arabic');
+      expect(_fontFamily(tester, word), 'QPC Hafs');
       expect(_fontSize(tester, word), 32);
       final container = ProviderScope.containerOf(tester.element(word));
       await container
@@ -625,7 +625,7 @@ void main() {
           .setDefaultPlaybackSpeed(1.25);
       await tester.pumpAndSettle();
 
-      expect(_fontFamily(tester, word), 'Noto Naskh Arabic');
+      expect(_fontFamily(tester, word), 'QPC Hafs');
       expect(_fontSize(tester, word), 32);
       expect(container.read(defaultPlaybackSpeedProvider), 1.25);
       expect(port.playCount, 1);

@@ -240,10 +240,10 @@ void main() {
     tester,
   ) async {
     final preferences = const AppPreferences.defaults().copyWith(
-      quranFont: QuranFontPreference.kfgqpcHafs,
+      quranFont: QuranFontPreference.qpcHafs,
       arabicFontSize: 20,
       arabicLineHeight: 1.2,
-      hifzQuranFont: QuranFontPreference.pdmsSaleem,
+      hifzQuranFont: QuranFontPreference.indoPak,
       hifzFontSize: 34,
       hifzLineHeight: 1.8,
     );
@@ -273,10 +273,10 @@ void main() {
       matching: find.byType(Text),
     );
     final readerStyle = DefaultTextStyle.of(tester.element(readerWord)).style;
-    expect(hifzWord.fontFamily, 'PDMS Saleem Quran');
+    expect(hifzWord.fontFamily, 'IndoPak Nastaleeq');
     expect(hifzWord.fontSize, 34);
     expect(hifzWord.height, 1.8);
-    expect(readerStyle.fontFamily, 'KFGQPC Hafs Uthmanic');
+    expect(readerStyle.fontFamily, 'QPC Hafs');
     expect(readerStyle.fontFamily, isNot(hifzWord.fontFamily));
     expect(readerStyle.fontSize, isNot(hifzWord.fontSize));
     expect(readerStyle.height, isNot(hifzWord.height));
@@ -362,8 +362,8 @@ void main() {
         ],
       );
       final preferences = const AppPreferences.defaults().copyWith(
-        quranFont: QuranFontPreference.kfgqpcHafs,
-        hifzQuranFont: QuranFontPreference.muhammadi,
+        quranFont: QuranFontPreference.qpcHafs,
+        hifzQuranFont: QuranFontPreference.indoPak,
         hifzFontSize: 40,
       );
 
@@ -383,7 +383,7 @@ void main() {
 
       expect(find.text('تَبَارَكَ'), findsOneWidget);
       expect(find.text('نٓ'), findsNothing);
-      expect(_wordStyle(tester, '67:1', 1).fontFamily, 'Muhammadi Quranic');
+      expect(_wordStyle(tester, '67:1', 1).fontFamily, 'IndoPak Nastaleeq');
       expect(_wordStyle(tester, '67:1', 1).fontSize, 40);
       expect(find.byKey(const ValueKey('hifz-flow-richtext-0')), findsNothing);
       expect(find.byKey(const ValueKey('hifz-line-1')), findsOneWidget);
@@ -528,7 +528,7 @@ void main() {
             body: HifzMushafSurface(surah: baqarah, window: fixedWindow),
           ),
           preferences: const AppPreferences.defaults().copyWith(
-            hifzQuranFont: QuranFontPreference.alQalam,
+            hifzQuranFont: QuranFontPreference.indoPak,
             hifzFontSize: 44,
           ),
         ),
@@ -536,7 +536,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final style = _wordStyle(tester, '2:1', 1);
-      expect(style.fontFamily, 'AlQalamQuranMajeed');
+      expect(style.fontFamily, 'IndoPak Nastaleeq');
       expect(style.fontSize, 44);
       expect(find.text('ہُدًی'), findsOneWidget);
       expect(

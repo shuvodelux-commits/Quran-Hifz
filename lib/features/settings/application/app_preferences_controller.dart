@@ -46,8 +46,8 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
     (current) => current.copyWith(
       quranScript: value,
       quranFont: value == QuranScriptPreference.indoPak
-          ? QuranFontPreference.defaultGlobal
-          : QuranFontPreference.notoNaskhArabic,
+          ? QuranFontPreference.indoPak
+          : QuranFontPreference.qpcHafs,
     ),
   );
 

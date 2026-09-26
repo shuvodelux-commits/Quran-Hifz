@@ -47,15 +47,14 @@ void main() {
     'Quran font manifest registers every exact family alias and asset',
     () async {
       const expectedAssetsByFamily = <String, List<String>>{
-        'PDMS Saleem Quran': ['assets/fonts/PDMS-Saleem-QuranFont.ttf'],
-        'Indopak Nastaleeq': ['assets/fonts/Indopak-Nastaleeq.ttf'],
-        'Quran DigitalKhatt IndoPak': ['assets/fonts/DigitalKhattIndoPak.otf'],
-        'AlQalamQuranMajeed': ['assets/fonts/Al-Qalam-Quran-Majeed.ttf'],
-        'Muhammadi Quranic': ['assets/fonts/Muhammadi-Quran.ttf'],
-        'KFGQPC Hafs Uthmanic': [
-          'assets/fonts/KFGQPC-Uthmanic-Script-HAFS-Regular.otf',
+        'Inter': ['assets/fonts/Inter.ttf'],
+        'SolaimanLipi': ['assets/fonts/SolaimanLipi.ttf'],
+        'QPC Hafs': ['assets/fonts/UthmanicHafs1Ver18.ttf'],
+        'IndoPak Nastaleeq': [
+          'assets/fonts/indopak-nastaleeq-waqf-lazim-v4.2.1.ttf',
         ],
-        'Noto Naskh Arabic': ['assets/fonts/NotoNaskhArabic.ttf'],
+        'SurahNameV4': ['assets/fonts/surah-name-v4.ttf'],
+        'QPC V4 Tajweed P1': ['assets/fonts/qpc-v4-tajweed-p1.ttf'],
       };
       final manifest =
           jsonDecode(await rootBundle.loadString('FontManifest.json'))
@@ -280,13 +279,13 @@ void main() {
 
       final activeIndoPakContext = tester.element(find.text('INDOPAK'));
       final indoPakStyle = DefaultTextStyle.of(activeIndoPakContext).style;
-      expect(indoPakStyle.fontFamily, 'Indopak Nastaleeq');
+      expect(indoPakStyle.fontFamily, 'IndoPak Nastaleeq');
       expect(indoPakStyle.color, QuranReadingColors.activeWord);
       expect(
         DefaultTextStyle.of(
           tester.element(find.text('Application label')),
         ).style.fontFamily,
-        isNot('Indopak Nastaleeq'),
+        isNot('IndoPak Nastaleeq'),
       );
 
       await container
@@ -296,7 +295,7 @@ void main() {
       final uthmaniStyle = DefaultTextStyle.of(
         tester.element(find.text('UTHMANI')),
       ).style;
-      expect(uthmaniStyle.fontFamily, 'Noto Naskh Arabic');
+      expect(uthmaniStyle.fontFamily, 'QPC Hafs');
       expect(uthmaniStyle.color, QuranReadingColors.activeWord);
     },
   );
@@ -306,7 +305,7 @@ void main() {
   ) async {
     final preferences = _MemoryPreferencesRepository()
       ..value = const AppPreferences.defaults().copyWith(
-        quranFont: QuranFontPreference.pdmsSaleem,
+        quranFont: QuranFontPreference.indoPak,
       );
     await tester.pumpWidget(
       ProviderScope(
@@ -325,7 +324,7 @@ void main() {
     final style = DefaultTextStyle.of(
       tester.element(find.text('اللَّه')),
     ).style;
-    expect(style.fontFamily, 'PDMS Saleem Quran');
+    expect(style.fontFamily, 'IndoPak Nastaleeq');
   });
 
   testWidgets('bundled Bangla meaning never calls fallback service', (
