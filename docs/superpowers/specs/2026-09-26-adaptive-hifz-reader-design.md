@@ -39,19 +39,27 @@ The reader must never:
 
 ## Rendering strategy
 
-### Primary adaptive font
+### Adaptive Quran font and script selection
 
-Adaptive Hifz reading uses a scalable Uthmani/Madani Unicode Quran font compatible with the verified `text_qpc_hafs` Quran Foundation text already used by the project.
+Adaptive Hifz reading supports two Quran Arabic script/font choices:
 
-The target family is QPC Hafs / Uthmanic Hafs style rather than a page-specific QCF glyph font.
+1. **Uthmani / Madani** — default. Uses verified Quran Foundation `text_qpc_hafs` with the QPC Hafs / Uthmanic Hafs-compatible font family.
+2. **IndoPak** — optional Hifz choice. Uses verified Quran Foundation `text_indopak` with the app's IndoPak Nastaleeq family.
+
+The font selector changes both the Quran text field and its matching font. It must never render `text_qpc_hafs` with an IndoPak face or `text_indopak` with an Uthmani face.
+
+Both are scalable Unicode paths rather than page-specific QCF glyph fonts.
 
 Reason:
 
 - Unicode text can scale continuously.
 - It can wrap naturally on narrow screens.
 - It does not require switching among 604 page-specific font files.
-- It preserves Quran Foundation's verified Quran text model.
+- It preserves Quran Foundation's verified script-specific Quran text.
+- It supports users who memorize from either Madani/Uthmani or IndoPak typography.
 - It is better suited to accessibility and Hifz users who prefer larger text.
+
+Uthmani / Madani remains the Hifz default. The user's Hifz script/font choice is persisted independently of the normal Quran reader preference.
 
 QCF/QPC page-glyph rendering may remain available as a separate strict Mushaf mode in the future, but it is not the primary renderer for this adaptive Hifz screen.
 
@@ -77,9 +85,11 @@ Initial target ranges:
 - comfortable-large: approximately 34–36 logical px;
 - large: approximately 38–40 logical px.
 
-These are design targets, not hard-coded guarantees. Actual rendered size must be tuned against the selected Quran font and real Android text scaling.
+These are design targets, not hard-coded guarantees. Actual rendered size must be tuned independently for the selected Quran font and real Android text scaling.
 
-Line height should be font-relative and generous enough that stacked Quran diacritics never collide. Initial target is approximately 1.8–2.0 times font size, adjusted after real-device measurement.
+Uthmani and IndoPak must share the same user-facing size control, but the renderer may apply small script-specific metric compensation so the two choices have comparable perceived size. Switching scripts must not make the Quran suddenly appear dramatically smaller or larger.
+
+Line height should be font-relative and generous enough that stacked Quran diacritics never collide. Initial target is approximately 1.8–2.0 times font size, adjusted independently after real-device measurement for Uthmani and IndoPak.
 
 The final implementation must use rendered measurements rather than assuming that one numeric size behaves identically across fonts and Android text-scale settings.
 
@@ -324,7 +334,8 @@ The screen should feel closer to a premium physical Mushaf than a dashboard.
 
 The Hifz screen uses separate font families by content type:
 
-- Quran Arabic: QPC Hafs / Uthmanic Hafs-compatible font with verified `text_qpc_hafs`.
+- Quran Arabic, Uthmani/Madani: QPC Hafs / Uthmanic Hafs-compatible font with verified `text_qpc_hafs`.
+- Quran Arabic, IndoPak: IndoPak Nastaleeq-compatible font with verified `text_indopak`.
 - Bangla UI: **SolaimanLipi**.
 - English UI: Inter.
 - Surah calligraphy: existing SurahNameV4 asset.
@@ -400,6 +411,8 @@ For each repeat option `1×`, `2×`, `3×`, `5×`:
 Verify:
 
 - canonical page identity remains stable at multiple font sizes;
+- switching Uthmani/Madani ↔ IndoPak preserves the same logical ayah/page anchor;
+- each script uses its matching verified Quran text field and font family;
 - Surah transition stays between the correct Quran words/ayahs;
 - Bismillah rules remain correct;
 - no horizontal overflow at supported phone widths;
@@ -411,7 +424,8 @@ Verify:
 
 On the connected Android device verify at minimum:
 
-- small/default/large Hifz font sizes;
+- small/default/large Hifz font sizes in both Uthmani/Madani and IndoPak;
+- script switching at the same visible ayah without losing position;
 - Surah transition page such as page 440;
 - long ayahs;
 - page-to-page scrolling;
@@ -427,13 +441,14 @@ The redesign is complete when:
 1. The Hifz reader visually feels like a coherent Mushaf rather than a list of ayah cards.
 2. Default Quran text is comfortably readable on a phone.
 3. Increasing text size never forces ugly compression or horizontal scrolling.
-4. Logical 604-page anchors remain visible and correct.
-5. Surah and Bismillah transitions remain canonical.
-6. The compact Hifz player exposes repeat counts `1× 2× 3× 5×`.
-7. Those values control repetition count, not playback speed.
-8. Progressive cumulative repetition follows the approved sequence model.
-9. Existing Hifz word/ayah/audio/session functionality is preserved.
-10. Core reading and repetition behavior work offline except where audio itself requires uncached remote media.
+4. Uthmani/Madani and IndoPak both render from their verified matching Quran text fields and preserve reading position when switched.
+5. Logical 604-page anchors remain visible and correct.
+6. Surah and Bismillah transitions remain canonical.
+7. The compact Hifz player exposes repeat counts `1× 2× 3× 5×`.
+8. Those values control repetition count, not playback speed.
+9. Progressive cumulative repetition follows the approved sequence model.
+10. Existing Hifz word/ayah/audio/session functionality is preserved.
+11. Core reading and repetition behavior work offline except where audio itself requires uncached remote media.
 
 ## Visual prototype reference
 
