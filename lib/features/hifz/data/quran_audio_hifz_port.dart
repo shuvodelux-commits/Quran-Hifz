@@ -91,6 +91,7 @@ class DriftHifzPlaybackRequestResolver implements HifzPlaybackRequestResolver {
       ayahKey: ayah.verseKey,
       repeatCount: repeatCount,
       pauseBetweenRepeats: pauseBetweenRepeats,
+      speed: 1.0,
       timingKey: AudioTimingKey(
         reciterId: reciterId,
         surahNumber: ayah.surahNumber,

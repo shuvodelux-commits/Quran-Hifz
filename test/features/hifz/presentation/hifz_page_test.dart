@@ -488,7 +488,7 @@ void main() {
 
     expect(find.text('Pattern'), findsWidgets);
     expect(find.byKey(const ValueKey('hifz-sequence-preview')), findsOneWidget);
-    await tester.tap(find.text('4x').first);
+    await tester.tap(find.text('4×').first);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('hifz-pattern-save')));
     await tester.pumpAndSettle();

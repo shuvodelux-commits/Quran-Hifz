@@ -29,6 +29,7 @@ void main() {
     expect(sync.chapterCalls, [(reciterId: 7, surahNumber: 67)]);
     expect(request.source, 'https://example.test/67.mp3');
     expect(request.audioKey, 'chapter:7:67');
+    expect(request.speed, 1.0);
     expect(request.timingKey, isNotNull);
   });
 

@@ -6,6 +6,7 @@ import '../application/hifz_session_controller.dart';
 import '../domain/hifz_session.dart';
 import '../domain/hifz_step.dart';
 import 'hifz_pattern_controls.dart';
+import 'hifz_typography.dart';
 
 /// Compact view of the existing Hifz sequence and Quran audio state.
 /// The engine exposes step/repeat progress, but no seekable media timeline.
@@ -47,6 +48,26 @@ class HifzActivePlayer extends StatelessWidget {
     final withinStep = repeatTotal == 0 ? 0.0 : repeatIndex / repeatTotal;
     final progress = total == 0 ? 0.0 : (index + withinStep) / total;
     final paused = session.status == HifzSessionStatus.paused;
+    final patternSummary = config == null
+        ? null
+        : 'New ' +
+              config.preset.ayahRepeatCount.toString() +
+              '× · Build ' +
+              config.preset.combinedRepeatCount.toString() +
+              '× · Final ' +
+              config.preset.finalRangeRepeatCount.toString() +
+              '×';
+    final stepSummary =
+        'Step ' +
+        (total == 0 ? 0 : index + 1).toString() +
+        '/' +
+        total.toString() +
+        (repeatTotal == 0
+            ? ''
+            : ' · Repeat ' +
+                  repeatIndex.toString() +
+                  '/' +
+                  repeatTotal.toString());
 
     return Material(
       key: const ValueKey('hifz-active-player'),
@@ -67,7 +88,7 @@ class HifzActivePlayer extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          'Surah ${surah.nameEnglish}',
+                          'Surah ' + surah.nameEnglish,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.labelLarge,
@@ -75,11 +96,24 @@ class HifzActivePlayer extends StatelessWidget {
                       ),
                       if (config != null)
                         Text(
-                          'Ayah ${config.start.ayahNumber}–${config.end.ayahNumber}',
+                          'Ayah ' +
+                              config.start.ayahNumber.toString() +
+                              '–' +
+                              config.end.ayahNumber.toString(),
                           style: theme.textTheme.labelMedium,
                         ),
                     ],
                   ),
+                  if (patternSummary != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      patternSummary,
+                      key: const ValueKey('hifz-active-pattern-summary'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelSmall,
+                    ),
+                  ],
                   const SizedBox(height: 7),
                   LinearProgressIndicator(
                     value: progress.clamp(0.0, 1.0).toDouble(),
@@ -89,13 +123,22 @@ class HifzActivePlayer extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    'Step ${total == 0 ? 0 : index + 1}/$total'
-                    '${repeatTotal == 0 ? '' : ' · Repeat $repeatIndex/$repeatTotal'}'
-                    ' · ${hifzStepStatusLabel(session.currentStep)}',
+                    stepSummary,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  Text(
+                    hifzStepStatusLabel(session.currentStep),
+                    key: const ValueKey('hifz-active-phase'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: hifzBanglaTextStyle(
+                      theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 3),

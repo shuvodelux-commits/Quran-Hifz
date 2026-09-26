@@ -99,6 +99,96 @@ void main() {
       );
     });
 
+    test('each progressive stage accepts exactly 1 through 5 repeats', () {
+      for (var count = 1; count <= 5; count++) {
+        final ayahSteps = builder.build(
+          HifzSessionConfig(
+            start: const AyahRef(surahNumber: 1, ayahNumber: 1),
+            end: const AyahRef(surahNumber: 1, ayahNumber: 3),
+            preset: HifzPresets.progressive(
+              ayahRepeatCount: count,
+              combinedRepeatCount: 3,
+              finalRangeRepeatCount: 3,
+            ),
+          ),
+        );
+        expect(
+          ayahSteps.whereType<AyahStep>().map((step) => step.repeatCount),
+          everyElement(count),
+        );
+
+        final buildSteps = builder.build(
+          HifzSessionConfig(
+            start: const AyahRef(surahNumber: 1, ayahNumber: 1),
+            end: const AyahRef(surahNumber: 1, ayahNumber: 3),
+            preset: HifzPresets.progressive(
+              ayahRepeatCount: 5,
+              combinedRepeatCount: count,
+              finalRangeRepeatCount: 3,
+            ),
+          ),
+        );
+        expect(
+          buildSteps
+              .whereType<RangeStep>()
+              .where((step) => step.phase == HifzStepPhase.cumulativeReview)
+              .map((step) => step.repeatCount),
+          everyElement(count),
+        );
+
+        final finalSteps = builder.build(
+          HifzSessionConfig(
+            start: const AyahRef(surahNumber: 1, ayahNumber: 1),
+            end: const AyahRef(surahNumber: 1, ayahNumber: 3),
+            preset: HifzPresets.progressive(
+              ayahRepeatCount: 5,
+              combinedRepeatCount: 3,
+              finalRangeRepeatCount: count,
+            ),
+          ),
+        );
+        expect(
+          finalSteps
+              .whereType<RangeStep>()
+              .singleWhere((step) => step.phase == HifzStepPhase.finalReview)
+              .repeatCount,
+          count,
+        );
+      }
+    });
+
+    test('one ayah default progressive session ends with one final review', () {
+      final steps = builder.build(
+        HifzSessionConfig(
+          start: const AyahRef(surahNumber: 1, ayahNumber: 1),
+          end: const AyahRef(surahNumber: 1, ayahNumber: 1),
+          preset: HifzPresets.progressive(),
+        ),
+      );
+
+      expect(steps, hasLength(2));
+      expect(
+        steps.first,
+        isA<AyahStep>().having((step) => step.repeatCount, 'repeat', 5),
+      );
+      expect(
+        steps.last,
+        isA<RangeStep>()
+            .having((step) => step.phase, 'phase', HifzStepPhase.finalReview)
+            .having((step) => step.repeatCount, 'repeat', 3)
+            .having(
+              (step) => step.start,
+              'start',
+              const AyahRef(surahNumber: 1, ayahNumber: 1),
+            )
+            .having(
+              (step) => step.end,
+              'end',
+              const AyahRef(surahNumber: 1, ayahNumber: 1),
+            ),
+      );
+    });
+
     test('custom progressive preset round-trips through persisted id', () {
       final preset = HifzPresets.progressive(
         ayahRepeatCount: 7,

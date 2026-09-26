@@ -4,6 +4,7 @@ import '../application/hifz_sequence_builder.dart';
 import '../domain/hifz_preset.dart';
 import '../domain/hifz_session.dart';
 import '../domain/hifz_step.dart';
+import 'hifz_typography.dart';
 
 class HifzPatternSelection {
   const HifzPatternSelection({
@@ -126,8 +127,10 @@ class _HifzPatternSheetState extends State<HifzPatternSheet> {
             ),
             Text(
               'নির্বাচিত রেঞ্জ ${widget.surahNumber}:${widget.startAyah}–${widget.endAyah}',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+              style: hifzBanglaTextStyle(
+                theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
             const SizedBox(height: 18),
@@ -169,8 +172,10 @@ class _HifzPatternSheetState extends State<HifzPatternSheet> {
                 children: [
                   Text(
                     'অনুশীলন ক্রম (প্রিভিউ)',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
+                    style: hifzBanglaTextStyle(
+                      theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -222,12 +227,12 @@ class _RepeatSelector extends StatelessWidget {
       children: [
         Text(
           title,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
+          style: hifzBanglaTextStyle(
+            theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
           ),
         ),
         const SizedBox(height: 2),
-        Text(subtitle, style: theme.textTheme.bodySmall),
+        Text(subtitle, style: hifzBanglaTextStyle(theme.textTheme.bodySmall)),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -235,7 +240,7 @@ class _RepeatSelector extends StatelessWidget {
           children: [
             for (final value in values)
               ChoiceChip(
-                label: Text('${value}x'),
+                label: Text('${value}×'),
                 selected: selected == value,
                 onSelected: (_) => onSelected(value),
               ),
