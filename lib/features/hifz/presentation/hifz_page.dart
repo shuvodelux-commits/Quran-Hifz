@@ -260,7 +260,7 @@ class _HifzPageState extends ConsumerState<HifzPage>
       }
       unawaited(_jumpToPage(page));
     });
-    ref.listen<HifzMushafVariant>(hifzMushafVariantProvider, (previous, next) {
+    ref.listen<QuranMushafVariant>(hifzMushafVariantProvider, (previous, next) {
       if (next != mushafController.variant) {
         unawaited(mushafController.selectVariant(next));
       }

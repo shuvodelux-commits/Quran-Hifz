@@ -21,7 +21,7 @@ void main() {
     fontRepo.sharedCallOrder = order;
     controller = HifzMushafController(
       pageRepository: pageRepo,
-      fontRepository: fontRepo,
+      fontRepositoryForVariant: (_) => fontRepo,
     );
   });
 
@@ -33,8 +33,8 @@ void main() {
     await controller.openPage(2);
 
     expect(fontRepo.ensuredPages, [2]);
-    expect(pageRepo.loaded, [(HifzMushafVariant.qpcV4Tajweed, 2)]);
-    expect(pageRepo.sharedCallOrder, ['font:2', 'page:qpcV4Tajweed:2']);
+    expect(pageRepo.loaded, [(QuranMushafVariant.qcfV4Tajweed, 2)]);
+    expect(pageRepo.sharedCallOrder, ['font:2', 'page:qcfV4Tajweed:2']);
     expect(controller.state, isA<HifzMushafReady>());
     expect(controller.currentPage, 2);
   });
@@ -54,30 +54,27 @@ void main() {
     },
   );
 
-  test('Digital Khatt unavailable state does not call page loader', () async {
-    pageRepo.digitalAvailable = false;
+  test('QCF V2 unavailable state does not call page or font loader', () async {
+    pageRepo.qcfV2Available = false;
 
-    await controller.selectVariant(HifzMushafVariant.digitalKhattV2);
+    await controller.selectVariant(QuranMushafVariant.qcfV2);
 
     expect(controller.state, isA<HifzMushafUnavailable>());
     expect(pageRepo.loaded, isEmpty);
     expect(fontRepo.ensuredPages, isEmpty);
   });
 
-  test(
-    'Digital Khatt available page never downloads a QPC page font',
-    () async {
-      pageRepo.digitalAvailable = true;
-      await controller.selectVariant(HifzMushafVariant.digitalKhattV2);
+  test('QCF V2 available page uses a strict QCF page font', () async {
+    pageRepo.qcfV2Available = true;
+    await controller.selectVariant(QuranMushafVariant.qcfV2);
 
-      await controller.openPage(1);
+    await controller.openPage(1);
 
-      expect(fontRepo.ensuredPages, isEmpty);
-      expect(pageRepo.loaded, [(HifzMushafVariant.digitalKhattV2, 1)]);
-      final ready = controller.state as HifzMushafReady;
-      expect(ready.page.variant, HifzMushafVariant.digitalKhattV2);
-    },
-  );
+    expect(fontRepo.ensuredPages, [1]);
+    expect(pageRepo.loaded, [(QuranMushafVariant.qcfV2, 1)]);
+    final ready = controller.state as HifzMushafReady;
+    expect(ready.page.variant, QuranMushafVariant.qcfV2);
+  });
 
   test('moves to active ayah page when auto-follow is enabled', () async {
     await controller.openPage(2);
@@ -137,15 +134,15 @@ void main() {
     expect(controller.generation, greaterThan(0));
   });
 
-  test('unsupported saved Digital palette is effective Light only', () async {
+  test('unsupported saved QCF V2 palette is effective Light only', () async {
     controller.dispose();
     controller = HifzMushafController(
       pageRepository: pageRepo,
-      fontRepository: fontRepo,
-      initialVariant: HifzMushafVariant.digitalKhattV2,
+      fontRepositoryForVariant: (_) => fontRepo,
+      initialVariant: QuranMushafVariant.qcfV2,
       initialPalette: HifzMushafPalette.p6,
     );
-    pageRepo.digitalAvailable = true;
+    pageRepo.qcfV2Available = true;
 
     await controller.openPage(1);
 
@@ -158,21 +155,21 @@ void main() {
 }
 
 class _FakePageRepository implements HifzMushafPageRepository {
-  bool digitalAvailable = false;
-  final loaded = <(HifzMushafVariant, int)>[];
+  bool qcfV2Available = false;
+  final loaded = <(QuranMushafVariant, int)>[];
   final callOrder = <String>[];
   final pagesByAyah = <String, int>{};
   final delayedPages = <int, Completer<void>>{};
   List<String>? sharedCallOrder;
 
   @override
-  Future<bool> isVariantAvailable(HifzMushafVariant variant) async {
-    return variant == HifzMushafVariant.qpcV4Tajweed || digitalAvailable;
+  Future<bool> isVariantAvailable(QuranMushafVariant variant) async {
+    return variant == QuranMushafVariant.qcfV4Tajweed || qcfV2Available;
   }
 
   @override
   Future<HifzMushafPage> loadPage({
-    required HifzMushafVariant variant,
+    required QuranMushafVariant variant,
     required int page,
   }) async {
     loaded.add((variant, page));
@@ -187,7 +184,7 @@ class _FakePageRepository implements HifzMushafPageRepository {
 
   @override
   Future<int?> pageForAyah({
-    required HifzMushafVariant variant,
+    required QuranMushafVariant variant,
     required AyahRef ayah,
   }) async => pagesByAyah[ayah.verseKey];
 }

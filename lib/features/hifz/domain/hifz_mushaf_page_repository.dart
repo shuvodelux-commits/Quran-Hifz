@@ -14,7 +14,7 @@ class MushafDataIntegrityException implements Exception {
 class MushafVariantUnavailableException implements Exception {
   const MushafVariantUnavailableException(this.variant);
 
-  final HifzMushafVariant variant;
+  final QuranMushafVariant variant;
 
   @override
   String toString() => 'Mushaf variant is unavailable: ${variant.name}';
@@ -22,14 +22,14 @@ class MushafVariantUnavailableException implements Exception {
 
 abstract interface class HifzMushafPageRepository {
   Future<HifzMushafPage> loadPage({
-    required HifzMushafVariant variant,
+    required QuranMushafVariant variant,
     required int page,
   });
 
   Future<int?> pageForAyah({
-    required HifzMushafVariant variant,
+    required QuranMushafVariant variant,
     required AyahRef ayah,
   });
 
-  Future<bool> isVariantAvailable(HifzMushafVariant variant);
+  Future<bool> isVariantAvailable(QuranMushafVariant variant);
 }

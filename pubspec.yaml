@@ -52,7 +52,6 @@ flutter:
     - assets/mushaf/renderer/
     - assets/mushaf/scripts/
     - assets/mushaf/layouts/
-    - assets/mushaf/fonts/DigitalKhattV2.otf
   fonts:
     - family: Inter
       fonts:

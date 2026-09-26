@@ -52,10 +52,7 @@ class MushafRenderPayload {
       'page': page.page,
       'palette': palette.name,
       'generation': generation,
-      'fontDataUrl': _fontDataUrl(
-        pageFontBytes,
-        page.variant == HifzMushafVariant.qpcV4Tajweed ? 'woff2' : 'otf',
-      ),
+      'fontDataUrl': _fontDataUrl(pageFontBytes, 'woff2'),
       'surahFontDataUrl': _fontDataUrl(surahFontBytes, 'ttf'),
       'bismillahFontDataUrl': _fontDataUrl(bismillahFontBytes, 'otf'),
       'lines': [

@@ -114,7 +114,7 @@ MushafRenderPayload _fixture({required String display}) {
   return MushafRenderPayload(
     page: HifzMushafPage(
       page: 2,
-      variant: HifzMushafVariant.qpcV4Tajweed,
+      variant: QuranMushafVariant.qcfV4Tajweed,
       lines: [
         HifzMushafLine(
           lineNumber: 3,

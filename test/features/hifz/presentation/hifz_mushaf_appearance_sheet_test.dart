@@ -11,7 +11,7 @@ void main() {
   testWidgets('QPC shows common palettes and P1 through P6', (tester) async {
     final repository = _MemoryPreferencesRepository()
       ..value = const AppPreferences.defaults().copyWith(
-        hifzMushafVariant: HifzMushafVariant.qpcV4Tajweed,
+        hifzMushafVariant: QuranMushafVariant.qcfV4Tajweed,
       );
 
     await tester.pumpWidget(_app(repository));
@@ -36,7 +36,7 @@ void main() {
   testWidgets('Digital exposes only common palettes', (tester) async {
     final repository = _MemoryPreferencesRepository()
       ..value = const AppPreferences.defaults().copyWith(
-        hifzMushafVariant: HifzMushafVariant.digitalKhattV2,
+        hifzMushafVariant: QuranMushafVariant.qcfV2,
       );
 
     await tester.pumpWidget(_app(repository));
@@ -55,7 +55,7 @@ void main() {
     (tester) async {
       final repository = _MemoryPreferencesRepository()
         ..value = const AppPreferences.defaults().copyWith(
-          hifzMushafVariant: HifzMushafVariant.digitalKhattV2,
+          hifzMushafVariant: QuranMushafVariant.qcfV2,
           hifzMushafPalette: HifzMushafPalette.p6,
         );
 

@@ -27,7 +27,7 @@ void main() {
     fontRepo = _FontRepository();
     controller = HifzMushafController(
       pageRepository: pageRepo,
-      fontRepository: fontRepo,
+      fontRepositoryForVariant: (_) => fontRepo,
     );
     await controller.openPage(2);
     driver = _FakeDriver();
@@ -175,11 +175,11 @@ void main() {
 
 class _PageRepository implements HifzMushafPageRepository {
   @override
-  Future<bool> isVariantAvailable(HifzMushafVariant variant) async => true;
+  Future<bool> isVariantAvailable(QuranMushafVariant variant) async => true;
 
   @override
   Future<HifzMushafPage> loadPage({
-    required HifzMushafVariant variant,
+    required QuranMushafVariant variant,
     required int page,
   }) async {
     return HifzMushafPage(
@@ -198,7 +198,7 @@ class _PageRepository implements HifzMushafPageRepository {
 
   @override
   Future<int?> pageForAyah({
-    required HifzMushafVariant variant,
+    required QuranMushafVariant variant,
     required AyahRef ayah,
   }) async => 2;
 }

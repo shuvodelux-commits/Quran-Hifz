@@ -18,7 +18,7 @@ final class HifzMushafLoading extends HifzMushafState {
   const HifzMushafLoading({required this.page, required this.variant});
 
   final int page;
-  final HifzMushafVariant variant;
+  final QuranMushafVariant variant;
 }
 
 final class HifzMushafReady extends HifzMushafState {
@@ -48,40 +48,37 @@ final class HifzMushafFailure extends HifzMushafState {
   final Object error;
 }
 
-typedef HifzMushafVariantChanged =
-    Future<void> Function(HifzMushafVariant variant);
+typedef QuranMushafVariantChanged =
+    Future<void> Function(QuranMushafVariant variant);
+typedef QuranPageFontRepositoryResolver =
+    QuranPageFontRepository Function(QuranMushafVariant variant);
 typedef HifzMushafPaletteChanged =
     Future<void> Function(HifzMushafPalette palette);
 
 class HifzMushafController {
   HifzMushafController({
     required HifzMushafPageRepository pageRepository,
-    required QuranPageFontRepository fontRepository,
-    HifzMushafVariant initialVariant = HifzMushafVariant.qpcV4Tajweed,
+    required QuranPageFontRepositoryResolver fontRepositoryForVariant,
+    QuranMushafVariant initialVariant = QuranMushafVariant.qcfV4Tajweed,
     HifzMushafPalette initialPalette = HifzMushafPalette.light,
-    HifzMushafVariantChanged? onVariantChanged,
+    QuranMushafVariantChanged? onVariantChanged,
     HifzMushafPaletteChanged? onPaletteChanged,
   }) : _pageRepository = pageRepository,
-       _fontRepository = fontRepository,
+       _fontRepositoryForVariant = fontRepositoryForVariant,
        _variant = initialVariant,
        _palette = initialPalette,
        _onVariantChanged = onVariantChanged,
        _onPaletteChanged = onPaletteChanged;
 
-  static final Uri digitalKhattFontAssetUri = Uri(
-    scheme: 'asset',
-    path: 'assets/mushaf/fonts/DigitalKhattV2.otf',
-  );
-
   final HifzMushafPageRepository _pageRepository;
-  final QuranPageFontRepository _fontRepository;
-  final HifzMushafVariantChanged? _onVariantChanged;
+  final QuranPageFontRepositoryResolver _fontRepositoryForVariant;
+  final QuranMushafVariantChanged? _onVariantChanged;
   final HifzMushafPaletteChanged? _onPaletteChanged;
   final StreamController<HifzMushafState> _stateChanges =
       StreamController<HifzMushafState>.broadcast();
 
   HifzMushafState _state = const HifzMushafInitial();
-  HifzMushafVariant _variant;
+  QuranMushafVariant _variant;
   HifzMushafPalette _palette;
   int _generation = 0;
   int? _currentPage;
@@ -90,7 +87,7 @@ class HifzMushafController {
   bool _disposed = false;
 
   HifzMushafState get state => _state;
-  HifzMushafVariant get variant => _variant;
+  QuranMushafVariant get variant => _variant;
   HifzMushafPalette get palette => _palette;
   HifzMushafPalette get effectiveCurrentPalette =>
       effectivePalette(_variant, _palette);
@@ -113,28 +110,21 @@ class HifzMushafController {
     _emit(HifzMushafLoading(page: page, variant: _variant));
 
     try {
-      if (_variant == HifzMushafVariant.digitalKhattV2) {
+      if (_variant == QuranMushafVariant.qcfV2) {
         final available = await _pageRepository.isVariantAvailable(_variant);
         if (!_isCurrent(token)) return;
         if (!available) {
           _emit(
-            const HifzMushafUnavailable(
-              'Digital Khatt V2 exact Quran script is not installed.',
+            HifzMushafUnavailable(
+              _variant.name + ' Quran data is not installed.',
             ),
           );
           return;
         }
-
-        final mushafPage = await _pageRepository.loadPage(
-          variant: _variant,
-          page: page,
-        );
-        if (!_isCurrent(token)) return;
-        _publishReady(page: mushafPage, fontUri: digitalKhattFontAssetUri);
-        return;
       }
 
-      final fontUri = await _fontRepository.ensurePageFont(page);
+      final fontRepository = _fontRepositoryForVariant(_variant);
+      final fontUri = await fontRepository.ensurePageFont(page);
       if (!_isCurrent(token)) return;
       final mushafPage = await _pageRepository.loadPage(
         variant: _variant,
@@ -144,7 +134,7 @@ class HifzMushafController {
       _publishReady(page: mushafPage, fontUri: fontUri);
 
       try {
-        await _fontRepository.prefetchNeighbors(page);
+        await fontRepository.prefetchNeighbors(page);
       } on Object {
         // Neighbor prefetch is opportunistic and never blocks the ready page.
       }
@@ -160,19 +150,17 @@ class HifzMushafController {
     await openPage(page);
   }
 
-  Future<void> selectVariant(HifzMushafVariant variant) async {
+  Future<void> selectVariant(QuranMushafVariant variant) async {
     _ensureAlive();
     _variant = variant;
     await _onVariantChanged?.call(variant);
 
-    if (variant == HifzMushafVariant.digitalKhattV2) {
+    if (variant == QuranMushafVariant.qcfV2) {
       final available = await _pageRepository.isVariantAvailable(variant);
       if (!available) {
         ++_requestToken;
         _emit(
-          const HifzMushafUnavailable(
-            'Digital Khatt V2 exact Quran script is not installed.',
-          ),
+          HifzMushafUnavailable(variant.name + ' Quran data is not installed.'),
         );
         return;
       }

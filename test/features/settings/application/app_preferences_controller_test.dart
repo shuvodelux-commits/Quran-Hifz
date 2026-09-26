@@ -56,13 +56,13 @@ void main() {
     );
 
     await controller.setHifzReadingMode(HifzReadingMode.mushaf);
-    await controller.setHifzMushafVariant(HifzMushafVariant.qpcV4Tajweed);
+    await controller.setHifzMushafVariant(QuranMushafVariant.qcfV4Tajweed);
     await controller.setHifzMushafPalette(HifzMushafPalette.p6);
 
     expect(container.read(hifzReadingModeProvider), HifzReadingMode.mushaf);
     expect(
       container.read(hifzMushafVariantProvider),
-      HifzMushafVariant.qpcV4Tajweed,
+      QuranMushafVariant.qcfV4Tajweed,
     );
     expect(container.read(hifzMushafPaletteProvider), HifzMushafPalette.p6);
     expect(repository.value.hifzReadingMode, HifzReadingMode.mushaf);
@@ -85,7 +85,7 @@ void main() {
       await container.read(appPreferencesControllerProvider.future);
       await container
           .read(appPreferencesControllerProvider.notifier)
-          .setHifzMushafVariant(HifzMushafVariant.digitalKhattV2);
+          .setHifzMushafVariant(QuranMushafVariant.qcfV2);
 
       expect(
         container.read(effectiveHifzMushafPaletteProvider),

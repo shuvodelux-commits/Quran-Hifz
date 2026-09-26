@@ -28,6 +28,13 @@ void main() {
     expect(preferences.asrSchool, AsrSchool.hanafi);
   });
 
+  test('strict Mushaf defaults to shared QCF V4 identity', () {
+    expect(
+      const AppPreferences.defaults().hifzMushafVariant,
+      QuranMushafVariant.qcfV4Tajweed,
+    );
+  });
+
   test('regular is the default reading mode', () {
     expect(
       const AppPreferences.defaults().hifzReadingMode,
@@ -36,14 +43,8 @@ void main() {
   });
 
   test('P palettes are not supported by Digital Khatt', () {
-    expect(
-      HifzMushafPalette.p4.supports(HifzMushafVariant.digitalKhattV2),
-      isFalse,
-    );
-    expect(
-      HifzMushafPalette.sepia.supports(HifzMushafVariant.digitalKhattV2),
-      isTrue,
-    );
+    expect(HifzMushafPalette.p4.supports(QuranMushafVariant.qcfV2), isFalse);
+    expect(HifzMushafPalette.sepia.supports(QuranMushafVariant.qcfV2), isTrue);
   });
 
   test('copyWith changes one field without resetting the others', () {

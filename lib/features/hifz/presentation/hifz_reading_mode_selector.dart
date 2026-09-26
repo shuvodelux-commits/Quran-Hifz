@@ -42,19 +42,19 @@ class HifzReadingModeSelector extends ConsumerWidget {
         ),
         if (mode == HifzReadingMode.mushaf) ...[
           const SizedBox(height: 8),
-          DropdownButton<HifzMushafVariant>(
+          DropdownButton<QuranMushafVariant>(
             key: const ValueKey('hifz-mushaf-variant-selector'),
             value: variant,
             isDense: true,
             isExpanded: true,
             items: const [
               DropdownMenuItem(
-                value: HifzMushafVariant.qpcV4Tajweed,
-                child: Text('QPC V4 Tajweed (Preview)'),
+                value: QuranMushafVariant.qcfV4Tajweed,
+                child: Text('QCF V4 Tajweed'),
               ),
               DropdownMenuItem(
-                value: HifzMushafVariant.digitalKhattV2,
-                child: Text('Digital Khatt V2'),
+                value: QuranMushafVariant.qcfV2,
+                child: Text('QCF V2 Madani'),
               ),
             ],
             onChanged: (value) {

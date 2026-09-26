@@ -64,7 +64,7 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
   Future<void> setHifzReadingMode(HifzReadingMode value) =>
       _update((current) => current.copyWith(hifzReadingMode: value));
 
-  Future<void> setHifzMushafVariant(HifzMushafVariant value) =>
+  Future<void> setHifzMushafVariant(QuranMushafVariant value) =>
       _update((current) => current.copyWith(hifzMushafVariant: value));
 
   Future<void> setHifzMushafPalette(HifzMushafPalette value) =>
@@ -241,9 +241,9 @@ final hifzReadingModeProvider = Provider<HifzReadingMode>((ref) {
       HifzReadingMode.regular;
 });
 
-final hifzMushafVariantProvider = Provider<HifzMushafVariant>((ref) {
+final hifzMushafVariantProvider = Provider<QuranMushafVariant>((ref) {
   return ref.watch(appPreferencesControllerProvider).value?.hifzMushafVariant ??
-      HifzMushafVariant.qpcV4Tajweed;
+      QuranMushafVariant.qcfV4Tajweed;
 });
 
 final hifzMushafPaletteProvider = Provider<HifzMushafPalette>((ref) {

@@ -69,7 +69,7 @@ class AppPreferences {
       hifzQuranFont = QuranFontPreference.defaultHifz,
       hifzLayoutMode = HifzLayoutMode.freeFlow,
       hifzReadingMode = HifzReadingMode.regular,
-      hifzMushafVariant = HifzMushafVariant.qpcV4Tajweed,
+      hifzMushafVariant = QuranMushafVariant.qcfV4Tajweed,
       hifzMushafPalette = HifzMushafPalette.light,
       hifzFontSize = 32,
       hifzLineHeight = 1.35,
@@ -98,7 +98,7 @@ class AppPreferences {
   final QuranFontPreference hifzQuranFont;
   final HifzLayoutMode hifzLayoutMode;
   final HifzReadingMode hifzReadingMode;
-  final HifzMushafVariant hifzMushafVariant;
+  final QuranMushafVariant hifzMushafVariant;
   final HifzMushafPalette hifzMushafPalette;
   final double hifzFontSize;
   final double hifzLineHeight;
@@ -128,7 +128,7 @@ class AppPreferences {
     QuranFontPreference? hifzQuranFont,
     HifzLayoutMode? hifzLayoutMode,
     HifzReadingMode? hifzReadingMode,
-    HifzMushafVariant? hifzMushafVariant,
+    QuranMushafVariant? hifzMushafVariant,
     HifzMushafPalette? hifzMushafPalette,
     double? hifzFontSize,
     double? hifzLineHeight,

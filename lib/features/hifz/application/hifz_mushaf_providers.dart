@@ -42,9 +42,14 @@ final hifzMushafControllerProvider = Provider<HifzMushafController>((ref) {
   final preferences = ref.read(appPreferencesControllerProvider).value;
   final controller = HifzMushafController(
     pageRepository: ref.watch(hifzMushafPageRepositoryProvider),
-    fontRepository: ref.watch(hifzMushafPageFontRepositoryProvider),
+    fontRepositoryForVariant: (variant) {
+      if (variant == QuranMushafVariant.qcfV4Tajweed) {
+        return ref.read(hifzMushafPageFontRepositoryProvider);
+      }
+      return ref.read(quranPageFontRepositoryProvider(variant.fontPreference));
+    },
     initialVariant:
-        preferences?.hifzMushafVariant ?? HifzMushafVariant.qpcV4Tajweed,
+        preferences?.hifzMushafVariant ?? QuranMushafVariant.qcfV4Tajweed,
     initialPalette: preferences?.hifzMushafPalette ?? HifzMushafPalette.light,
     onVariantChanged: (variant) => ref
         .read(appPreferencesControllerProvider.notifier)
@@ -65,13 +70,13 @@ class _MaterializedMushafPageRepository implements HifzMushafPageRepository {
   Future<BundledHifzMushafPageRepository>? _delegate;
 
   @override
-  Future<bool> isVariantAvailable(HifzMushafVariant variant) async {
+  Future<bool> isVariantAvailable(QuranMushafVariant variant) async {
     return (await _repository()).isVariantAvailable(variant);
   }
 
   @override
   Future<HifzMushafPage> loadPage({
-    required HifzMushafVariant variant,
+    required QuranMushafVariant variant,
     required int page,
   }) async {
     return (await _repository()).loadPage(variant: variant, page: page);
@@ -79,7 +84,7 @@ class _MaterializedMushafPageRepository implements HifzMushafPageRepository {
 
   @override
   Future<int?> pageForAyah({
-    required HifzMushafVariant variant,
+    required QuranMushafVariant variant,
     required AyahRef ayah,
   }) async {
     return (await _repository()).pageForAyah(variant: variant, ayah: ayah);
@@ -94,28 +99,28 @@ class _MaterializedMushafPageRepository implements HifzMushafPageRepository {
     final directory = Directory(p.join(support.path, 'mushaf', 'data'));
     await directory.create(recursive: true);
 
-    final qpcLayout = await _materialize(
+    final qcfV4Layout = await _materialize(
       assetPath: 'assets/mushaf/layouts/qpc-v4-tajweed-15-lines.sqlite',
       directory: directory,
     );
-    final qpcScript = await _materialize(
+    final qcfV4Script = await _materialize(
       assetPath: 'assets/mushaf/scripts/qpc-v4-words.sqlite',
       directory: directory,
     );
-    final digitalLayout = await _materialize(
-      assetPath: 'assets/mushaf/layouts/digital-khatt-15-lines.sqlite',
+    final qcfV2Layout = await _materializeOptional(
+      assetPath: 'assets/mushaf/layouts/qcf-v2-15-lines.sqlite',
       directory: directory,
     );
-    final digitalScript = await _materializeOptional(
-      assetPath: 'assets/mushaf/scripts/digital-khatt-v2-words.sqlite',
+    final qcfV2Script = await _materializeOptional(
+      assetPath: 'assets/mushaf/scripts/qcf-v2-words.sqlite',
       directory: directory,
     );
 
     return BundledHifzMushafPageRepository.forFiles(
-      qpcLayoutPath: qpcLayout.path,
-      qpcScriptPath: qpcScript.path,
-      digitalKhattLayoutPath: digitalLayout.path,
-      digitalKhattScriptPath: digitalScript?.path,
+      qcfV4LayoutPath: qcfV4Layout.path,
+      qcfV4ScriptPath: qcfV4Script.path,
+      qcfV2LayoutPath: qcfV2Layout?.path ?? '',
+      qcfV2ScriptPath: qcfV2Script?.path ?? '',
     );
   }
 

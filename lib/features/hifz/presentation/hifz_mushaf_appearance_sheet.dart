@@ -20,7 +20,7 @@ class HifzMushafAppearanceSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final variant = ref.watch(hifzMushafVariantProvider);
     final selected = ref.watch(effectiveHifzMushafPaletteProvider);
-    final options = variant == HifzMushafVariant.qpcV4Tajweed
+    final options = variant == QuranMushafVariant.qcfV4Tajweed
         ? HifzMushafPalette.values
         : _common;
 
@@ -41,7 +41,7 @@ class HifzMushafAppearanceSheet extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              variant == HifzMushafVariant.qpcV4Tajweed
+              variant == QuranMushafVariant.qcfV4Tajweed
                   ? 'QPC V4 Tajweed (Preview)'
                   : 'Digital Khatt V2',
               style: Theme.of(context).textTheme.bodySmall,

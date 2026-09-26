@@ -33,15 +33,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.value.hifzReadingMode, HifzReadingMode.mushaf);
-    expect(find.text('QPC V4 Tajweed (Preview)'), findsOneWidget);
+    expect(find.text('QCF V4 Tajweed'), findsOneWidget);
 
     await tester.tap(
       find.byKey(const ValueKey('hifz-mushaf-variant-selector')),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('QPC V4 Tajweed (Preview)'), findsWidgets);
-    expect(find.text('Digital Khatt V2'), findsOneWidget);
+    expect(find.text('QCF V4 Tajweed'), findsWidgets);
+    expect(find.text('QCF V2 Madani'), findsOneWidget);
   });
 }
 

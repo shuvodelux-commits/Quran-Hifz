@@ -1,12 +1,14 @@
-enum HifzReadingMode { regular, mushaf }
+import '../../quran/domain/quran_mushaf_variant.dart';
 
-enum HifzMushafVariant { qpcV4Tajweed, digitalKhattV2 }
+export '../../quran/domain/quran_mushaf_variant.dart';
+
+enum HifzReadingMode { regular, mushaf }
 
 enum HifzMushafPalette { light, sepia, dark, black, p1, p2, p3, p4, p5, p6 }
 
 extension HifzMushafPaletteRules on HifzMushafPalette {
-  bool supports(HifzMushafVariant variant) {
-    if (variant == HifzMushafVariant.qpcV4Tajweed) return true;
+  bool supports(QuranMushafVariant variant) {
+    if (variant == QuranMushafVariant.qcfV4Tajweed) return true;
     return switch (this) {
       HifzMushafPalette.light ||
       HifzMushafPalette.sepia ||
@@ -23,7 +25,7 @@ extension HifzMushafPaletteRules on HifzMushafPalette {
 }
 
 HifzMushafPalette effectivePalette(
-  HifzMushafVariant variant,
+  QuranMushafVariant variant,
   HifzMushafPalette palette,
 ) {
   return palette.supports(variant) ? palette : HifzMushafPalette.light;

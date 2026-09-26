@@ -130,10 +130,9 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
         values[25],
         defaults.hifzReadingMode,
       ),
-      hifzMushafVariant: _enumOr(
-        HifzMushafVariant.values,
+      hifzMushafVariant: _mushafVariantFromName(
         values[26],
-        defaults.hifzMushafVariant,
+        fallback: defaults.hifzMushafVariant,
       ),
       hifzMushafPalette: _enumOr(
         HifzMushafPalette.values,
@@ -337,6 +336,20 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       (value) => value.name == raw,
       orElse: () => fallback,
     );
+  }
+
+  QuranMushafVariant _mushafVariantFromName(
+    String? raw, {
+    required QuranMushafVariant fallback,
+  }) {
+    for (final variant in QuranMushafVariant.values) {
+      if (variant.name == raw) return variant;
+    }
+    return switch (raw) {
+      'qpcV4Tajweed' => QuranMushafVariant.qcfV4Tajweed,
+      'digitalKhattV2' => QuranMushafVariant.qcfV2,
+      _ => fallback,
+    };
   }
 
   QuranFontPreference _fontFromName(

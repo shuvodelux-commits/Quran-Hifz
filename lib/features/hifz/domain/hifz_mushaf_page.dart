@@ -44,7 +44,7 @@ class HifzMushafPage {
   });
 
   final int page;
-  final HifzMushafVariant variant;
+  final QuranMushafVariant variant;
   final List<HifzMushafLine> lines;
 
   List<HifzMushafToken> get tokens => [

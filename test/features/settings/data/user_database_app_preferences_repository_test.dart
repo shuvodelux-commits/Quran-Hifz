@@ -109,15 +109,43 @@ void main() {
     await repository.save(
       const AppPreferences.defaults().copyWith(
         hifzReadingMode: HifzReadingMode.mushaf,
-        hifzMushafVariant: HifzMushafVariant.qpcV4Tajweed,
+        hifzMushafVariant: QuranMushafVariant.qcfV4Tajweed,
         hifzMushafPalette: HifzMushafPalette.p6,
       ),
     );
 
     final restored = await repository.load();
     expect(restored.hifzReadingMode, HifzReadingMode.mushaf);
-    expect(restored.hifzMushafVariant, HifzMushafVariant.qpcV4Tajweed);
+    expect(restored.hifzMushafVariant, QuranMushafVariant.qcfV4Tajweed);
     expect(restored.hifzMushafPalette, HifzMushafPalette.p6);
+  });
+
+  test('migrates legacy strict Mushaf variant names', () async {
+    final database = UserDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final repository = UserDatabaseAppPreferencesRepository(database);
+
+    for (final entry in const {
+      'qpcV4Tajweed': QuranMushafVariant.qcfV4Tajweed,
+      'digitalKhattV2': QuranMushafVariant.qcfV2,
+    }.entries) {
+      await database.saveSetting(
+        UserDatabaseAppPreferencesRepository.hifzMushafVariantKey,
+        entry.key,
+      );
+
+      final restored = await repository.load();
+      expect(restored.hifzMushafVariant, entry.value, reason: entry.key);
+
+      await repository.save(restored);
+      expect(
+        await database.getSetting(
+          UserDatabaseAppPreferencesRepository.hifzMushafVariantKey,
+        ),
+        entry.value.name,
+        reason: entry.key,
+      );
+    }
   });
 
   test('unknown Mushaf preference values fail closed to defaults', () async {
@@ -140,7 +168,7 @@ void main() {
 
     final restored = await repository.load();
     expect(restored.hifzReadingMode, HifzReadingMode.regular);
-    expect(restored.hifzMushafVariant, HifzMushafVariant.qpcV4Tajweed);
+    expect(restored.hifzMushafVariant, QuranMushafVariant.qcfV4Tajweed);
     expect(restored.hifzMushafPalette, HifzMushafPalette.light);
   });
 
