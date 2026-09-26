@@ -47,7 +47,7 @@
 
 - [ ] **Step 1: Add the CI workflow**
 
-Pin a stable Flutter channel/version compatible with the repository, cache pub packages, then run:
+Use `subosito/flutter-action@v2` with `channel: stable` (the repository requires Dart `>=3.12.0 <4.0.0`), cache pub packages, then run:
 `flutter pub get` → `flutter analyze` → `flutter test` → `flutter build apk --debug`.
 
 - [ ] **Step 2: Push only the workflow change and verify the workflow starts**
@@ -79,7 +79,7 @@ Commit message: `ci: add Flutter verification for Hifz repair`.
 
 **Interfaces:**
 - Produces `HifzPlanRepository.watchPlans(String)`, `createPlan(...)`, `deletePlan(int)`.
-- Produces `HifzRepository.loadProgress(...)`, `saveProgress(...)`, `markRangeLearning(...)`, checkpoint persistence.
+- Produces `HifzRepository.loadProgress(...)`, `loadSurahProgress({required String profileKey, required int surahNumber})`, `saveProgress(...)`, `markRangeLearning(...)`, checkpoint persistence.
 - Produces restored Drift tables: `HifzProgressEntries`, `HifzReviewHistoryRows`, `HifzSessionCheckpoints`, `HifzPlans`, `ReadingPageVisits`, `DailyGoals`.
 
 - [ ] **Step 1: Write failing migration tests**
@@ -104,7 +104,7 @@ Expected: migration tests pass and generated schema contains restored Hifz acces
 
 - [ ] **Step 5: Write repository tests first**
 
-Test plan create/watch/delete ordering, invalid cross-Surah ranges, progress upsert, range-marking, and checkpoint round-trip.
+Test plan create/watch/delete ordering, invalid cross-Surah ranges, progress upsert, `loadSurahProgress` ordering/filtering, range-marking, and checkpoint round-trip.
 
 - [ ] **Step 6: Restore/adapt Hifz domain + Drift repositories**
 
@@ -318,9 +318,9 @@ Assert compact top chrome, Quran surface occupying the main viewport, one compac
 
 Assert QCF V2/V4 are the only skin choices; slider range is 20–56; changing size updates Hifz surface live and persists; reset returns V4/32/1.35; normal Quran preference remains unchanged.
 
-- [ ] **Step 3: Write range/playback/fallback tests**
+- [ ] **Step 3: Write range/playback/fallback and mobile-state tests**
 
-Assert selected start/end range is passed to the QCF surface; active playback highlighting is forwarded; unavailable QCF font/page shows compact readable fallback + retry without leaving Hifz.
+Assert selected start/end range is passed to the QCF surface; active playback highlighting is forwarded; unavailable QCF font/page shows compact readable fallback + retry without leaving Hifz; opening/closing appearance keeps the reader's scroll/page position; the appearance sheet remains scrollable under enlarged system text; primary icon controls meet the practical 44px touch target.
 
 - [ ] **Step 4: Verify RED**
 
@@ -348,6 +348,7 @@ Commit message: `feat: add focused Hifz Mushaf reader`.
 - Create: `lib/features/hifz/presentation/hifz_surah_picker_sheet.dart`
 - Create: `lib/features/hifz/presentation/hifz_setup_sheet.dart`
 - Create: `lib/features/hifz/application/hifz_start_defaults.dart`
+- Modify: `lib/features/hifz/presentation/hifz_reader_page.dart` — reuse the same Surah change flow from the reader top bar.
 - Modify: `lib/features/home/presentation/more_page.dart`
 - Modify: `test/app/quran_hifz_shell_test.dart`
 - Create: `test/features/hifz/application/hifz_start_defaults_test.dart`
@@ -357,8 +358,9 @@ Commit message: `feat: add focused Hifz Mushaf reader`.
 
 **Interfaces:**
 - `HifzStartDefaults.forSurah({required QuranSurahSummary surah, required List<HifzProgress> progress}) -> HifzStartRange`.
-- `HifzHomePage` opens `HifzSurahPickerSheet`, then `HifzSetupSheet`, creates/resumes a plan, then pushes `HifzReaderPage`.
+- `HifzHomePage` opens `HifzSurahPickerSheet`, then `HifzSetupSheet`, resolves the selected start ayah with `QuranRepository.loadAyah(...)` to obtain its real `pageNumber`, creates/resumes a plan, then pushes `HifzReaderPage`.
 - Saved-plan row tap reconstructs `HifzSessionConfig` and resumes the correct Surah/range.
+- The reader's Surah action reuses the same Surah picker + setup flow instead of creating a second selector implementation.
 
 - [ ] **Step 1: Write start-default tests**
 
@@ -374,12 +376,13 @@ Assert:
 - first primary action is `সূরা থেকে হিফজ শুরু করুন` / localized English equivalent;
 - empty state is compact and has no retry button;
 - repository load error shows inline retry while Surah-start remains usable;
-- saved plans are compact rows, not large cards/FABs;
+- saved plans are compact rows, not large cards/FABs, and expose range + progress/status + last-activity text;
+- row secondary actions live behind an overflow/long-press affordance rather than permanent buttons;
 - raw repository/SQLite exception text is not rendered.
 
 - [ ] **Step 4: Write full Surah → setup → plan → reader widget test**
 
-Select Al-Fatihah, choose range, tap `হিফজ শুরু করুন`, assert plan is saved and reader receives correct config/page.
+Select Al-Fatihah, choose a range whose first ayah fixture has a known `pageNumber`, tap `হিফজ শুরু করুন`, assert the plan stores that real start page and the reader receives the same config/page. Then invoke the reader Surah action and assert it opens the same Surah picker.
 
 - [ ] **Step 5: Verify RED**
 
@@ -498,4 +501,4 @@ Commit message: `test: cover restored Hifz experience`.
 
 - [ ] **Step 7: Finish branch**
 
-Use `superpowers:verification-before-completion`, then `superpowers:finishing-a-development-branch`. Merge only after branch CI and review are clean.
+Use `superpowers:verification-before-completion`, then `superpowers:finishing-a-development-branch`. Merge only after branch CI and review are clean. In CI, run `git fetch origin main --depth=1` followed by `git diff --check origin/main...HEAD` as the whitespace/diff sanity check.
