@@ -18,25 +18,6 @@ class HifzLineWord {
   final bool endsAyah;
 }
 
-/// Finds the largest size at or below [requestedSize] that fits a fixed line.
-double fitRenderedFontSize({
-  required double requestedSize,
-  required bool Function(double size) fits,
-}) {
-  if (requestedSize <= 0 || fits(requestedSize)) return requestedSize;
-  var low = 0.0;
-  var high = requestedSize;
-  for (var index = 0; index < 28; index++) {
-    final candidate = (low + high) / 2;
-    if (fits(candidate)) {
-      low = candidate;
-    } else {
-      high = candidate;
-    }
-  }
-  return low;
-}
-
 /// Resolves a stored fixed-line membership without changing its word order.
 List<HifzLineWord> resolveMushafLine(
   QuranPageWindow window,

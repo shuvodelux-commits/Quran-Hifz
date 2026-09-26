@@ -276,6 +276,7 @@ class _CanonicalHifzMushaf extends StatelessWidget {
           key: ValueKey('hifz-surah-banner-${line.surahNumber}'),
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: SurahNameBanner(
+            surahNumber: line.surahNumber,
             nameArabic: _findSurah(line.surahNumber!).nameArabic,
           ),
         );

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'surah_name_v4_text.dart';
+
 /// The ornamental banner that opens a Surah in a printed Mushaf: a framed
 /// bar with a light corner flourish, holding the Surah's Arabic name.
 ///
@@ -9,11 +11,13 @@ class SurahNameBanner extends StatelessWidget {
   const SurahNameBanner({
     super.key,
     required this.nameArabic,
+    this.surahNumber,
     this.subtitle,
     this.height = 52,
   });
 
   final String nameArabic;
+  final int? surahNumber;
   final String? subtitle;
   final double height;
 
@@ -38,19 +42,30 @@ class SurahNameBanner extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: height * .8),
                 child: Directionality(
                   textDirection: TextDirection.rtl,
-                  child: Text(
-                    nameArabic,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'KFGQPC Hafs Uthmanic',
-                      fontSize: height * .44,
-                      height: 1,
-                      color: scheme.onSurface,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  child: surahNumber == null
+                      ? Text(
+                          nameArabic,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'QPC Hafs',
+                            fontSize: height * .44,
+                            height: 1,
+                            color: scheme.onSurface,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      : SurahNameV4Text(
+                          surahNumber: surahNumber!,
+                          arabicName: nameArabic,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: height * .72,
+                            height: 1,
+                            color: scheme.onSurface,
+                          ),
+                        ),
                 ),
               ),
             ),

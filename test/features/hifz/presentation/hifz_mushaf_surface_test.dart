@@ -117,6 +117,102 @@ void main() {
     expect(wordStyle.fontSize, greaterThanOrEqualTo(27));
   });
 
+  testWidgets(
+    'page 440 keeps Ya-Sin transition while larger text reflows naturally',
+    (tester) async {
+      const yasin = QuranSurahSummary(
+        number: 36,
+        nameArabic: 'يس',
+        nameEnglish: 'Ya-Sin',
+        ayahCount: 83,
+        pageStart: 440,
+        pageEnd: 445,
+        juzStart: 22,
+      );
+      final page440 = QuranPageWindow(
+        page: 440,
+        previousPage: 439,
+        nextPage: 441,
+        ayahs: const [
+          QuranAyah(
+            surahNumber: 36,
+            ayahNumber: 1,
+            pageNumber: 440,
+            words: [
+              QuranWord(position: 1, arabic: 'يس'),
+              QuranWord(position: 2, arabic: 'وَالْقُرْآنِ'),
+            ],
+          ),
+        ],
+        lines: [
+          QuranMushafLine(
+            lineNumber: 4,
+            type: QuranMushafLineType.surahName,
+            centered: true,
+            surahNumber: 36,
+          ),
+          QuranMushafLine(
+            lineNumber: 5,
+            type: QuranMushafLineType.bismillah,
+            centered: true,
+            surahNumber: 36,
+          ),
+          QuranMushafLine(
+            lineNumber: 6,
+            type: QuranMushafLineType.ayah,
+            centered: false,
+            surahNumber: 36,
+            wordLocations: const [
+              QuranWordLocation(surahNumber: 36, ayahNumber: 1, position: 1),
+              QuranWordLocation(surahNumber: 36, ayahNumber: 1, position: 2),
+            ],
+          ),
+        ],
+      );
+
+      Future<double> pumpAt(double size) async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+        await tester.pumpWidget(
+          _testApp(
+            Scaffold(
+              body: SizedBox(
+                width: 360,
+                height: 700,
+                child: HifzMushafSurface(
+                  surah: yasin,
+                  surahs: const [yasin],
+                  window: page440,
+                ),
+              ),
+            ),
+            preferences: const AppPreferences.defaults().copyWith(
+              hifzFontSize: size,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('hifz-surah-banner-36')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('surah-bismillah-36')),
+          findsOneWidget,
+        );
+        expect(find.text('Page 440'), findsOneWidget);
+        expect(find.byKey(const ValueKey('hifz-word-36:1:1')), findsOneWidget);
+        expect(find.byType(FittedBox), findsNothing);
+        return tester.getSize(find.byKey(const ValueKey('hifz-line-6'))).height;
+      }
+
+      final normalHeight = await pumpAt(31);
+      final largeHeight = await pumpAt(40);
+
+      expect(largeHeight, greaterThan(normalHeight));
+    },
+  );
+
   testWidgets('ayah marker selects a Hifz range endpoint', (tester) async {
     AyahRef? selected;
 
