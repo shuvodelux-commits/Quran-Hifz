@@ -5,18 +5,26 @@ import 'package:quran_hifz/features/audio/application/audio_providers.dart';
 import 'package:quran_hifz/features/audio/application/quran_audio_controller.dart';
 import 'package:quran_hifz/features/audio/domain/playback_requests.dart';
 import 'package:quran_hifz/features/audio/domain/quran_audio_state.dart';
+import 'package:quran_hifz/features/hifz/application/hifz_mushaf_providers.dart';
+import 'package:quran_hifz/features/hifz/domain/hifz_mushaf_page.dart';
+import 'package:quran_hifz/features/hifz/domain/hifz_mushaf_page_repository.dart';
+import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
+import 'package:quran_hifz/features/hifz/domain/hifz_session.dart';
 import 'package:quran_hifz/features/quran/application/quran_providers.dart';
 import 'package:quran_hifz/features/quran/application/reader_audio_actions.dart';
 import 'package:quran_hifz/features/quran/application/reader_controller.dart';
 import 'package:quran_hifz/features/quran/data/bengali_word_meanings.dart';
 import 'package:quran_hifz/features/quran/domain/quran_ayah.dart';
 import 'package:quran_hifz/features/quran/domain/quran_juz.dart';
+import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
+import 'package:quran_hifz/features/quran/domain/quran_page_font_repository.dart';
 import 'package:quran_hifz/features/quran/domain/quran_page_window.dart';
 import 'package:quran_hifz/features/quran/domain/quran_repository.dart';
 import 'package:quran_hifz/features/quran/domain/quran_surah.dart';
 import 'package:quran_hifz/features/quran/domain/quran_word.dart';
 import 'package:quran_hifz/features/quran/presentation/quran_reader_page.dart';
 import 'package:quran_hifz/features/quran/presentation/quran_reading_colors.dart';
+import 'package:quran_hifz/features/quran/presentation/mushaf/quran_strict_mushaf_surface.dart';
 import 'package:quran_hifz/features/settings/application/app_preferences_controller.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences_repository.dart';
@@ -461,6 +469,66 @@ void main() {
     expect(_wordColor(tester, 'A'), isNot(QuranReadingColors.activeWord));
     expect(_wordColor(tester, 'B'), isNot(QuranReadingColors.activeWord));
   });
+
+  testWidgets(
+    'strict Quran font keeps the current page anchor and returns to adaptive',
+    (tester) async {
+      final preferences = _MemoryPreferencesRepository()
+        ..value = const AppPreferences.defaults().copyWith(
+          quranFont: QuranFontPreference.qpcHafs,
+        );
+      final pageRepository = _StrictPageRepository();
+      final fontRepository = _UnavailablePageFontRepository();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ..._overrides(preferences: preferences),
+            hifzMushafPageRepositoryProvider.overrideWithValue(pageRepository),
+            quranPageFontRepositoryProvider.overrideWith(
+              (ref, font) => fontRepository,
+            ),
+          ],
+          child: const MaterialApp(home: QuranReaderPage(surah: _surah)),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(QuranReaderPage)),
+      );
+      await container
+          .read(readerControllerProvider.notifier)
+          .openPage(2, preferredSurahNumber: 1, firstPage: 1, lastPage: 2);
+      await tester.pumpAndSettle();
+      expect(find.text('C'), findsOneWidget);
+
+      await container
+          .read(appPreferencesControllerProvider.notifier)
+          .setQuranFont(QuranFontPreference.qcfV4Tajweed);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(QuranStrictMushafSurface), findsOneWidget);
+      expect(find.text('Page 2'), findsOneWidget);
+      expect(pageRepository.loadedPages, contains(2));
+
+      await container
+          .read(appPreferencesControllerProvider.notifier)
+          .setQuranFont(QuranFontPreference.qcfV2);
+      await tester.pumpAndSettle();
+      expect(find.text('Page 2'), findsOneWidget);
+      expect(pageRepository.loadedVariants, contains(QuranMushafVariant.qcfV2));
+
+      await container
+          .read(appPreferencesControllerProvider.notifier)
+          .setQuranFont(QuranFontPreference.qpcHafs);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(QuranStrictMushafSurface), findsNothing);
+      expect(find.text('C'), findsOneWidget);
+      expect(container.read(readerControllerProvider).value?.currentPage, 2);
+    },
+  );
 }
 
 Color? _wordColor(WidgetTester tester, String text) =>
@@ -718,4 +786,44 @@ class _NoopLocationStore implements ReadingLocationStore {
 
   @override
   Future<void> save(ReadingLocation location) async {}
+}
+
+class _StrictPageRepository implements HifzMushafPageRepository {
+  final loadedPages = <int>[];
+  final loadedVariants = <QuranMushafVariant>[];
+
+  @override
+  Future<bool> isVariantAvailable(QuranMushafVariant variant) async => true;
+
+  @override
+  Future<HifzMushafPage> loadPage({
+    required QuranMushafVariant variant,
+    required int page,
+  }) async {
+    loadedPages.add(page);
+    loadedVariants.add(variant);
+    return HifzMushafPage(page: page, variant: variant, lines: const []);
+  }
+
+  @override
+  Future<int?> pageForAyah({
+    required QuranMushafVariant variant,
+    required AyahRef ayah,
+  }) async => ayah.ayahNumber.clamp(1, 2);
+}
+
+class _UnavailablePageFontRepository implements QuranPageFontRepository {
+  @override
+  Future<Uri> ensurePageFont(int page) async {
+    throw QuranPageFontUnavailableException(
+      page: page,
+      message: 'offline fixture',
+    );
+  }
+
+  @override
+  Future<bool> isCached(int page) async => false;
+
+  @override
+  Future<void> prefetchNeighbors(int page) async {}
 }
