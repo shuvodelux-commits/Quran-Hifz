@@ -14,8 +14,8 @@ NavigationDecision mushafNavigationDecision(String url) {
       : NavigationDecision.prevent;
 }
 
-class HifzMushafWebView extends StatefulWidget {
-  const HifzMushafWebView({
+class QuranMushafWebView extends StatefulWidget {
+  const QuranMushafWebView({
     required this.onEvent,
     required this.onDriverReady,
     this.onDiagnostic,
@@ -27,10 +27,10 @@ class HifzMushafWebView extends StatefulWidget {
   final MushafRendererDiagnostic? onDiagnostic;
 
   @override
-  State<HifzMushafWebView> createState() => _HifzMushafWebViewState();
+  State<QuranMushafWebView> createState() => _QuranMushafWebViewState();
 }
 
-class _HifzMushafWebViewState extends State<HifzMushafWebView> {
+class _QuranMushafWebViewState extends State<QuranMushafWebView> {
   late final WebViewController _controller;
   late final ControllerMushafWebViewDriver _driver;
   late final MushafRendererChannel _channel;

@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_mushaf_page.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
-import 'package:quran_hifz/features/hifz/presentation/hifz_mushaf_webview.dart';
-import 'package:quran_hifz/features/hifz/presentation/mushaf_renderer_message.dart';
-import 'package:quran_hifz/features/hifz/presentation/mushaf_webview_driver.dart';
+import 'package:quran_hifz/features/quran/presentation/mushaf/quran_mushaf_webview.dart';
+import 'package:quran_hifz/features/quran/presentation/mushaf/mushaf_renderer_message.dart';
+import 'package:quran_hifz/features/quran/presentation/mushaf/mushaf_webview_driver.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
@@ -56,6 +56,58 @@ void main() {
       expect(page['fontDataUrl'], startsWith('data:font/woff2;base64,'));
     },
   );
+
+  test('QCF V2 and V4 use distinct page font family identities', () {
+    final v2 = _fixture(
+      display: 'A',
+      variant: QuranMushafVariant.qcfV2,
+    ).toRendererJson();
+    final v4 = _fixture(
+      display: 'B',
+      variant: QuranMushafVariant.qcfV4Tajweed,
+    ).toRendererJson();
+
+    expect(v2['pageFontFamily'], 'QcfV2Page');
+    expect(v4['pageFontFamily'], 'QcfV4TajweedPage');
+    expect(v2['pageFontFamily'], isNot(v4['pageFontFamily']));
+  });
+
+  test('ayah end carries Unicode Hafs fallback text', () {
+    final payload = MushafRenderPayload(
+      page: HifzMushafPage(
+        page: 2,
+        variant: QuranMushafVariant.qcfV4Tajweed,
+        lines: const [
+          HifzMushafLine(
+            lineNumber: 3,
+            type: HifzMushafLineType.ayah,
+            isCentered: true,
+            tokens: [
+              HifzMushafToken(
+                wordIndex: 38,
+                type: HifzMushafTokenType.end,
+                display: 'glyph-end',
+                unicodeFallback: '١',
+                ayahKey: '2:1',
+              ),
+            ],
+          ),
+        ],
+      ),
+      palette: HifzMushafPalette.light,
+      generation: 1,
+      pageFontBytes: const [1],
+      surahFontBytes: const [2],
+      bismillahFontBytes: const [3],
+      endMarkerFontBytes: const [4],
+    ).toRendererJson();
+
+    final lines = payload['lines']! as List<Object?>;
+    final tokens =
+        (lines.single as Map<String, Object?>)['tokens']! as List<Object?>;
+    expect((tokens.single as Map<String, Object?>)['unicodeFallback'], '١');
+    expect(payload['endMarkerFontFamily'], 'QuranUnicodeHafs');
+  });
 
   test(
     'typed commands encode arguments instead of interpolating them',
@@ -110,11 +162,14 @@ void main() {
   });
 }
 
-MushafRenderPayload _fixture({required String display}) {
+MushafRenderPayload _fixture({
+  required String display,
+  QuranMushafVariant variant = QuranMushafVariant.qcfV4Tajweed,
+}) {
   return MushafRenderPayload(
     page: HifzMushafPage(
       page: 2,
-      variant: QuranMushafVariant.qcfV4Tajweed,
+      variant: variant,
       lines: [
         HifzMushafLine(
           lineNumber: 3,
@@ -137,6 +192,7 @@ MushafRenderPayload _fixture({required String display}) {
     pageFontBytes: const [0x77, 0x4f, 0x46, 0x32, 1, 2, 3],
     surahFontBytes: const [1, 2, 3],
     bismillahFontBytes: const [4, 5, 6],
+    endMarkerFontBytes: const [7, 8, 9],
   );
 }
 

@@ -37,6 +37,14 @@ void main() {
       }
       expect(css, contains('.word.active-word'));
       expect(css, contains('.active-ayah'));
+      expect(css, contains('QcfV4TajweedPage'));
+      expect(css, contains('QcfV2Page'));
+      expect(css, contains('QuranUnicodeHafs'));
+      expect(js, contains("payload.variant === 'qcfV4Tajweed'"));
+      expect(js, contains("payload.variant === 'qcfV2'"));
+      expect(js, contains('unicodeFallback'));
+      expect(js, isNot(contains('digitalKhattV2')));
+      expect(js, isNot(contains('qpcV4Tajweed')));
       expect(css, contains('#fff7ea'));
       expect(css, contains('#343a40'));
     },

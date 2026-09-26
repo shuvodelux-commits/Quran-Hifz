@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import '../domain/hifz_mushaf_page.dart';
-import '../domain/hifz_reading_mode.dart';
+import '../../../hifz/domain/hifz_mushaf_page.dart';
+import '../../../hifz/domain/hifz_reading_mode.dart';
 import 'mushaf_renderer_message.dart';
 
 abstract interface class MushafJavaScriptController {
@@ -34,6 +34,7 @@ class MushafRenderPayload {
     required this.pageFontBytes,
     required this.surahFontBytes,
     required this.bismillahFontBytes,
+    required this.endMarkerFontBytes,
   });
 
   final HifzMushafPage page;
@@ -42,6 +43,7 @@ class MushafRenderPayload {
   final List<int> pageFontBytes;
   final List<int> surahFontBytes;
   final List<int> bismillahFontBytes;
+  final List<int> endMarkerFontBytes;
 
   Map<String, Object?> toRendererJson() {
     if (generation < 0) {
@@ -49,12 +51,18 @@ class MushafRenderPayload {
     }
     return <String, Object?>{
       'variant': page.variant.name,
+      'pageFontFamily': switch (page.variant) {
+        QuranMushafVariant.qcfV2 => 'QcfV2Page',
+        QuranMushafVariant.qcfV4Tajweed => 'QcfV4TajweedPage',
+      },
+      'endMarkerFontFamily': 'QuranUnicodeHafs',
       'page': page.page,
       'palette': palette.name,
       'generation': generation,
       'fontDataUrl': _fontDataUrl(pageFontBytes, 'woff2'),
       'surahFontDataUrl': _fontDataUrl(surahFontBytes, 'ttf'),
-      'bismillahFontDataUrl': _fontDataUrl(bismillahFontBytes, 'otf'),
+      'bismillahFontDataUrl': _fontDataUrl(bismillahFontBytes, 'ttf'),
+      'endMarkerFontDataUrl': _fontDataUrl(endMarkerFontBytes, 'ttf'),
       'lines': [
         for (final line in page.lines)
           <String, Object?>{
@@ -68,6 +76,8 @@ class MushafRenderPayload {
                   'wordIndex': token.wordIndex,
                   'type': token.type.name,
                   'display': token.display,
+                  if (token.unicodeFallback != null)
+                    'unicodeFallback': token.unicodeFallback,
                   if (token.ayahKey != null) 'ayahKey': token.ayahKey,
                   if (token.wordPosition != null)
                     'wordPosition': token.wordPosition,

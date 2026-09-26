@@ -178,7 +178,7 @@ class BundledHifzMushafPageRepository implements HifzMushafPageRepository {
     }
     final rows = script.select(
       '''
-      SELECT word_index, ayah_key, word_position, char_type, display
+      SELECT word_index, ayah_key, word_position, char_type, display, unicode_fallback
       FROM words
       WHERE word_index BETWEEN ? AND ?
       ORDER BY word_index
@@ -214,6 +214,7 @@ class BundledHifzMushafPageRepository implements HifzMushafPageRepository {
           wordIndex: actualIndex,
           type: _tokenType(row['char_type']?.toString()),
           display: display,
+          unicodeFallback: row['unicode_fallback']?.toString(),
           ayahKey: row['ayah_key']?.toString(),
           wordPosition: _optionalInt(row['word_position']),
         ),

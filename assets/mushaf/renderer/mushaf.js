@@ -55,20 +55,23 @@
 
   function installFonts(payload) {
     const rules = [];
-    if (payload.variant === 'qpcV4Tajweed') {
+    const pageFamily = String(payload.pageFontFamily || '');
+    if (payload.variant === 'qcfV4Tajweed' &&
+        pageFamily === 'QcfV4TajweedPage') {
       rules.push(fontFace(
-        'QpcV4Page',
+        pageFamily,
         assertFontDataUrl(payload.fontDataUrl, 'fontDataUrl'),
         'woff2',
       ));
-    } else if (payload.variant === 'digitalKhattV2') {
+    } else if (payload.variant === 'qcfV2' &&
+               pageFamily === 'QcfV2Page') {
       rules.push(fontFace(
-        'DigitalKhattV2',
+        pageFamily,
         assertFontDataUrl(payload.fontDataUrl, 'fontDataUrl'),
-        'opentype',
+        'woff2',
       ));
     } else {
-      throw new Error('Unknown Mushaf variant');
+      throw new Error('Unknown Mushaf variant/font family');
     }
     if (payload.surahFontDataUrl) {
       rules.push(fontFace(
@@ -81,10 +84,21 @@
       rules.push(fontFace(
         'MushafBismillah',
         assertFontDataUrl(payload.bismillahFontDataUrl, 'bismillahFontDataUrl'),
-        'opentype',
+        'truetype',
+      ));
+    }
+    if (payload.endMarkerFontDataUrl) {
+      rules.push(fontFace(
+        'QuranUnicodeHafs',
+        assertFontDataUrl(
+          payload.endMarkerFontDataUrl,
+          'endMarkerFontDataUrl',
+        ),
+        'truetype',
       ));
     }
     dynamicFonts.textContent = rules.join('\n');
+    document.body.dataset.pageFontFamily = pageFamily;
   }
 
   function verseParts(key) {
@@ -155,7 +169,9 @@
     const isEnd = token.type === 'end';
     const element = document.createElement('span');
     element.className = isEnd ? 'ayah-end' : 'word';
-    element.textContent = String(token.display ?? '');
+    element.textContent = String(
+      isEnd && token.unicodeFallback ? token.unicodeFallback : token.display ?? '',
+    );
 
     if (token.ayahKey) {
       element.setAttribute('data-ayah-key', token.ayahKey);

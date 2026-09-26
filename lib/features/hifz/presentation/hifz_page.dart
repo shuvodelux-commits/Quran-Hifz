@@ -352,6 +352,7 @@ class _HifzPageState extends ConsumerState<HifzPage>
           ),
           HifzReadingMode.mushaf => HifzMushafPageView(
             controller: mushafController,
+            fallbackWindow: _loadedPages[visiblePage],
             activeAyahKey: activeAyahKey,
             activeWordPosition: activeAyahKey == null
                 ? null

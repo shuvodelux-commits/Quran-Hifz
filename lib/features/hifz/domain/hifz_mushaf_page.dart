@@ -9,6 +9,7 @@ class HifzMushafToken {
     required this.wordIndex,
     required this.type,
     required this.display,
+    this.unicodeFallback,
     this.ayahKey,
     this.wordPosition,
   });
@@ -16,6 +17,7 @@ class HifzMushafToken {
   final int wordIndex;
   final HifzMushafTokenType type;
   final String display;
+  final String? unicodeFallback;
   final String? ayahKey;
   final int? wordPosition;
 }

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quran_hifz/features/hifz/presentation/mushaf_renderer_message.dart';
+import 'package:quran_hifz/features/quran/presentation/mushaf/mushaf_renderer_message.dart';
 
 void main() {
   test('parses a valid word tap and ayah-end tap', () {

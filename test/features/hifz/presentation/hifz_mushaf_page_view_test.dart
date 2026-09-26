@@ -7,8 +7,8 @@ import 'package:quran_hifz/features/hifz/domain/hifz_reading_mode.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_session.dart';
 import 'package:quran_hifz/features/quran/domain/quran_page_font_repository.dart';
 import 'package:quran_hifz/features/hifz/presentation/hifz_mushaf_page_view.dart';
-import 'package:quran_hifz/features/hifz/presentation/mushaf_renderer_message.dart';
-import 'package:quran_hifz/features/hifz/presentation/mushaf_webview_driver.dart';
+import 'package:quran_hifz/features/quran/presentation/mushaf/mushaf_renderer_message.dart';
+import 'package:quran_hifz/features/quran/presentation/mushaf/mushaf_webview_driver.dart';
 
 void main() {
   late _PageRepository pageRepo;
@@ -69,6 +69,7 @@ void main() {
             pageFontBytes: [0x77, 0x4f, 0x46, 0x32, 1],
             surahFontBytes: [1, 2, 3],
             bismillahFontBytes: [4, 5, 6],
+            endMarkerFontBytes: [7, 8, 9],
           ),
         ),
       ),

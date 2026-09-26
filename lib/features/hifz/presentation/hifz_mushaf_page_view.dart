@@ -1,31 +1,32 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../application/hifz_mushaf_controller.dart';
 import '../domain/hifz_session.dart';
-import 'hifz_mushaf_webview.dart';
-import 'mushaf_renderer_message.dart';
-import 'mushaf_webview_driver.dart';
+import '../../quran/domain/quran_page_window.dart';
+import '../../quran/presentation/mushaf/quran_mushaf_webview.dart';
+import '../../quran/presentation/mushaf/quran_strict_mushaf_surface.dart';
+import '../../quran/presentation/mushaf/mushaf_renderer_message.dart';
+import '../../quran/presentation/mushaf/mushaf_webview_driver.dart';
 
 class HifzMushafRenderFonts {
   const HifzMushafRenderFonts({
     required this.pageFontBytes,
     required this.surahFontBytes,
     required this.bismillahFontBytes,
+    required this.endMarkerFontBytes,
   });
 
   final List<int> pageFontBytes;
   final List<int> surahFontBytes;
   final List<int> bismillahFontBytes;
+  final List<int> endMarkerFontBytes;
 }
 
 typedef HifzMushafFontLoader =
     Future<HifzMushafRenderFonts> Function(HifzMushafReady ready);
 
-typedef HifzMushafWebViewBuilder =
+typedef QuranMushafWebViewBuilder =
     Widget Function(
       Key key,
       ValueChanged<MushafRendererEvent> onEvent,
@@ -49,6 +50,7 @@ class HifzMushafPageView extends StatefulWidget {
     required this.onUseRegularHifz,
     this.webViewBuilder,
     this.fontLoader,
+    this.fallbackWindow,
     super.key,
   });
 
@@ -64,8 +66,9 @@ class HifzMushafPageView extends StatefulWidget {
   final ValueChanged<AyahRef> onAyahSelected;
   final VoidCallback onToggleControls;
   final VoidCallback onUseRegularHifz;
-  final HifzMushafWebViewBuilder? webViewBuilder;
+  final QuranMushafWebViewBuilder? webViewBuilder;
   final HifzMushafFontLoader? fontLoader;
+  final QuranPageWindow? fallbackWindow;
 
   @override
   State<HifzMushafPageView> createState() => _HifzMushafPageViewState();
@@ -75,17 +78,10 @@ class _HifzMushafPageViewState extends State<HifzMushafPageView> {
   late HifzMushafState _state;
   late final PageController _pageController;
   StreamSubscription<HifzMushafState>? _stateSubscription;
-  MushafWebViewDriver? _driver;
-  int _webViewEpoch = 0;
-  int? _rendererFailureGeneration;
-  int _rendererFailureCount = 0;
-  bool _showRendererFallback = false;
-  Object? _localRenderError;
-
   HifzMushafFontLoader get _fontLoader =>
       widget.fontLoader ?? _loadProductionFonts;
 
-  HifzMushafWebViewBuilder get _webViewBuilder =>
+  QuranMushafWebViewBuilder get _webViewBuilder =>
       widget.webViewBuilder ?? _defaultWebViewBuilder;
 
   @override
@@ -109,10 +105,8 @@ class _HifzMushafPageViewState extends State<HifzMushafPageView> {
 
     if (oldWidget.activeAyahKey != widget.activeAyahKey ||
         oldWidget.activeWordPosition != widget.activeWordPosition ||
-        oldWidget.selectedStartAyah != widget.selectedStartAyah ||
-        oldWidget.selectedEndAyah != widget.selectedEndAyah ||
         oldWidget.autoFollow != widget.autoFollow) {
-      unawaited(_syncPlaybackAndSelection());
+      _followPlaybackIfNeeded();
     }
   }
 
@@ -126,21 +120,23 @@ class _HifzMushafPageViewState extends State<HifzMushafPageView> {
   void _handleState(HifzMushafState next) {
     if (!mounted || identical(next, _state)) return;
     _state = next;
-
     if (next is HifzMushafReady) {
-      if (_rendererFailureGeneration != next.generation) {
-        _rendererFailureGeneration = next.generation;
-        _rendererFailureCount = 0;
-        _showRendererFallback = false;
-      }
-      _localRenderError = null;
       _schedulePageSync(next.page.page);
+      _followPlaybackIfNeeded();
     }
-
     setState(() {});
-    if (next is HifzMushafReady && _driver != null) {
-      unawaited(_renderReady(next, _driver!));
-    }
+  }
+
+  void _followPlaybackIfNeeded() {
+    final ayahKey = widget.activeAyahKey;
+    if (ayahKey == null) return;
+    unawaited(
+      widget.controller.followPlayback(
+        ayahKey: ayahKey,
+        wordPosition: widget.activeWordPosition,
+        autoFollow: widget.autoFollow,
+      ),
+    );
   }
 
   void _schedulePageSync(int page) {
@@ -169,29 +165,41 @@ class _HifzMushafPageViewState extends State<HifzMushafPageView> {
     final state = _state;
 
     if (state is HifzMushafReady && state.page.page == page) {
-      if (_showRendererFallback) {
-        return _RendererFallback(
-          onRetry: _retryRenderer,
-          onUseRegularHifz: widget.onUseRegularHifz,
-        );
-      }
-      if (_localRenderError != null) {
-        return _LoadFailure(
-          message: 'Could not prepare this Mushaf page.',
-          onRetry: _retryRenderer,
-          onUseRegularHifz: widget.onUseRegularHifz,
-        );
-      }
-
-      return GestureDetector(
+      final fallback = widget.fallbackWindow;
+      return KeyedSubtree(
         key: const ValueKey('hifz-mushaf-page-tap-target'),
-        behavior: HitTestBehavior.translucent,
-        onTap: widget.onToggleControls,
-        child: _webViewBuilder(
-          ValueKey('hifz-mushaf-webview-${state.generation}-$_webViewEpoch'),
-          _handleRendererEvent,
-          _handleDriverReady,
-          _handleDiagnostic,
+        child: QuranStrictMushafSurface(
+          page: state.page,
+          palette: state.palette,
+          generation: state.generation,
+          pageFontUri: state.fontUri,
+          activeAyahKey: widget.activeAyahKey,
+          activeWordPosition: widget.activeWordPosition,
+          selectedStartAyahKey: widget.selectedStartAyah?.verseKey,
+          selectedEndAyahKey: widget.selectedEndAyah?.verseKey,
+          fallbackWindow: fallback?.page == page ? fallback : null,
+          fontLoader: (_) async {
+            final fonts = await _fontLoader(state);
+            return QuranStrictMushafFonts(
+              pageFontBytes: fonts.pageFontBytes,
+              surahFontBytes: fonts.surahFontBytes,
+              bismillahFontBytes: fonts.bismillahFontBytes,
+              endMarkerFontBytes: fonts.endMarkerFontBytes,
+            );
+          },
+          webViewBuilder: _webViewBuilder,
+          onRetry: () => unawaited(widget.controller.retry()),
+          onWordTap: widget.onWordTap,
+          onWordLongPress: widget.onWordLongPress,
+          onAyahTap: (ayahKey) {
+            if (!widget.playbackRunning) {
+              widget.onAyahSelected(_ayahRefFromKey(ayahKey));
+            }
+          },
+          onTap: widget.onToggleControls,
+          secondaryActionLabel: 'Use Regular Hifz',
+          onSecondaryAction: widget.onUseRegularHifz,
+          onDiagnostic: _handleDiagnostic,
         ),
       );
     }
@@ -229,128 +237,6 @@ class _HifzMushafPageViewState extends State<HifzMushafPageView> {
     unawaited(widget.controller.openPage(page));
   }
 
-  void _handleDriverReady(MushafWebViewDriver driver) {
-    _driver = driver;
-    final state = _state;
-    if (state is HifzMushafReady) {
-      unawaited(_renderReady(state, driver));
-    }
-  }
-
-  Future<void> _renderReady(
-    HifzMushafReady ready,
-    MushafWebViewDriver driver,
-  ) async {
-    try {
-      final fonts = await _fontLoader(ready);
-      if (!mounted ||
-          !identical(driver, _driver) ||
-          _state is! HifzMushafReady ||
-          (_state as HifzMushafReady).generation != ready.generation) {
-        return;
-      }
-
-      await driver.renderPage(
-        MushafRenderPayload(
-          page: ready.page,
-          palette: ready.palette,
-          generation: ready.generation,
-          pageFontBytes: fonts.pageFontBytes,
-          surahFontBytes: fonts.surahFontBytes,
-          bismillahFontBytes: fonts.bismillahFontBytes,
-        ),
-      );
-      await _syncPlaybackAndSelection();
-    } on Object catch (error) {
-      if (!mounted) return;
-      setState(() => _localRenderError = error);
-    }
-  }
-
-  Future<void> _syncPlaybackAndSelection() async {
-    final driver = _driver;
-    if (driver == null) return;
-
-    await driver.setRange(
-      widget.selectedStartAyah?.verseKey,
-      widget.selectedEndAyah?.verseKey,
-    );
-
-    final ayahKey = widget.activeAyahKey;
-    if (ayahKey == null) {
-      await driver.clearPlaybackHighlight();
-      return;
-    }
-
-    await driver.setActiveAyah(ayahKey);
-    final wordPosition = widget.activeWordPosition;
-    if (wordPosition != null) {
-      await driver.setActiveWord(ayahKey, wordPosition);
-    }
-
-    unawaited(
-      widget.controller.followPlayback(
-        ayahKey: ayahKey,
-        wordPosition: wordPosition,
-        autoFollow: widget.autoFollow,
-      ),
-    );
-  }
-
-  void _handleRendererEvent(MushafRendererEvent event) {
-    switch (event) {
-      case MushafWordTapEvent():
-        widget.onWordTap(event.ayahKey, event.wordPosition);
-      case MushafWordLongPressEvent():
-        widget.onWordLongPress(event.ayahKey, event.wordPosition);
-      case MushafAyahTapEvent():
-        if (!widget.playbackRunning) {
-          widget.onAyahSelected(_ayahRefFromKey(event.ayahKey));
-        }
-      case MushafPageReadyEvent():
-        final current = _state;
-        if (current is HifzMushafReady &&
-            current.generation == event.generation &&
-            current.page.page == event.page) {
-          unawaited(_syncPlaybackAndSelection());
-        }
-      case MushafRendererErrorEvent():
-        _recoverRenderer();
-    }
-  }
-
-  void _recoverRenderer() {
-    final state = _state;
-    if (state is! HifzMushafReady) return;
-
-    if (_rendererFailureGeneration != state.generation) {
-      _rendererFailureGeneration = state.generation;
-      _rendererFailureCount = 0;
-    }
-
-    _rendererFailureCount++;
-    _driver = null;
-    if (_rendererFailureCount == 1) {
-      setState(() {
-        _webViewEpoch++;
-        _localRenderError = null;
-      });
-      return;
-    }
-
-    setState(() => _showRendererFallback = true);
-  }
-
-  void _retryRenderer() {
-    setState(() {
-      _rendererFailureCount = 0;
-      _showRendererFallback = false;
-      _localRenderError = null;
-      _driver = null;
-      _webViewEpoch++;
-    });
-  }
-
   void _handleDiagnostic(Object diagnostic) {
     debugPrint('Mushaf renderer diagnostic: $diagnostic');
   }
@@ -381,7 +267,7 @@ class _HifzMushafPageViewState extends State<HifzMushafPageView> {
     ValueChanged<MushafWebViewDriver> onDriverReady,
     MushafRendererDiagnostic onDiagnostic,
   ) {
-    return HifzMushafWebView(
+    return QuranMushafWebView(
       key: key,
       onEvent: onEvent,
       onDriverReady: onDriverReady,
@@ -392,58 +278,12 @@ class _HifzMushafPageViewState extends State<HifzMushafPageView> {
   Future<HifzMushafRenderFonts> _loadProductionFonts(
     HifzMushafReady ready,
   ) async {
-    final pageFont = await _readFontUri(ready.fontUri);
-    final surahFont = await _readAsset('assets/fonts/surah-name-v4.ttf');
-    final bismillahFont = await _readAsset(
-      'assets/fonts/KFGQPC-Uthmanic-Script-HAFS-Regular.otf',
-    );
+    final fonts = await loadQuranStrictMushafFonts(ready.fontUri);
     return HifzMushafRenderFonts(
-      pageFontBytes: pageFont,
-      surahFontBytes: surahFont,
-      bismillahFontBytes: bismillahFont,
-    );
-  }
-
-  Future<List<int>> _readFontUri(Uri uri) async {
-    if (uri.scheme == 'file') {
-      return File.fromUri(uri).readAsBytes();
-    }
-    if (uri.scheme == 'asset') {
-      return _readAsset(uri.path);
-    }
-    throw FormatException('Unsupported Mushaf font URI scheme: ${uri.scheme}');
-  }
-
-  Future<List<int>> _readAsset(String path) async {
-    final data = await rootBundle.load(path);
-    return Uint8List.sublistView(data);
-  }
-}
-
-class _RendererFallback extends StatelessWidget {
-  const _RendererFallback({
-    required this.onRetry,
-    required this.onUseRegularHifz,
-  });
-
-  final VoidCallback onRetry;
-  final VoidCallback onUseRegularHifz;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('Mushaf renderer could not recover.'),
-          const SizedBox(height: 8),
-          FilledButton.tonal(onPressed: onRetry, child: const Text('Retry')),
-          TextButton(
-            onPressed: onUseRegularHifz,
-            child: const Text('Use Regular Hifz'),
-          ),
-        ],
-      ),
+      pageFontBytes: fonts.pageFontBytes,
+      surahFontBytes: fonts.surahFontBytes,
+      bismillahFontBytes: fonts.bismillahFontBytes,
+      endMarkerFontBytes: fonts.endMarkerFontBytes,
     );
   }
 }

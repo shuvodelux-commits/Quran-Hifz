@@ -20,7 +20,7 @@ body {
 }
 
 body {
-  font-family: "QpcV4Page", "DigitalKhattV2", serif;
+  font-family: "QcfV4TajweedPage", "QcfV2Page", serif;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
@@ -57,7 +57,7 @@ body {
   width: 100%;
 }
 .mushaf-line.ayah {
-  font-family: "QpcV4Page", "DigitalKhattV2", serif;
+  font-family: "QcfV4TajweedPage", "QcfV2Page", serif;
   font-size: clamp(18px, 5.6vw, 38px);
   line-height: 1;
   font-palette: var(--qpc-palette, --Light);
@@ -69,8 +69,16 @@ body {
 }
 
 .mushaf-line.basmallah {
-  font-family: "MushafBismillah", "DigitalKhattV2", serif;
+  font-family: "MushafBismillah", "QuranUnicodeHafs", serif;
   font-size: clamp(20px, 5.8vw, 40px);
+}
+
+.word {
+  font-family: inherit;
+}
+
+.ayah-end {
+  font-family: "QuranUnicodeHafs", serif;
 }
 
 .word,
@@ -121,7 +129,7 @@ body[data-palette="p4"] {
   --page-fg: #e8e8e8;
 }
 @font-palette-values --Light {
-  font-family: "QpcV4Page";
+  font-family: "QcfV4TajweedPage";
   base-palette: 0;
   override-colors:
     0 #000000ff, 1 #A5A5A5ff, 2 #A5A5A5ff, 3 #B50000ff,
@@ -132,7 +140,7 @@ body[data-palette="p4"] {
 }
 
 @font-palette-values --Dark {
-  font-family: "QpcV4Page";
+  font-family: "QcfV4TajweedPage";
   base-palette: 5;
   override-colors:
     0 #E8E8E8ff, 1 #B0B0B0ff, 2 #B0B0B0ff, 3 #FF6B6Bff,
@@ -142,7 +150,7 @@ body[data-palette="p4"] {
     16 #FFD700ff, 17 #69F0AEff;
 }
 @font-palette-values --Sepia {
-  font-family: "QpcV4Page";
+  font-family: "QcfV4TajweedPage";
   base-palette: 2;
   override-colors:
     0 #3D2914ff, 1 #5C4033ff, 2 #5C4033ff, 3 #B84000ff,
@@ -153,7 +161,7 @@ body[data-palette="p4"] {
 }
 
 @font-palette-values --Black {
-  font-family: "QpcV4Page";
+  font-family: "QcfV4TajweedPage";
   base-palette: 5;
   override-colors:
     0 #ffffffff, 1 #ffffffff, 2 #ffffffff, 3 #ffffffff,
@@ -163,26 +171,26 @@ body[data-palette="p4"] {
     16 #ffffffff, 17 #ffffffff, 18 #ffffffff;
 }
 @font-palette-values --P1 {
-  font-family: "QpcV4Page";
+  font-family: "QcfV4TajweedPage";
   base-palette: 1;
 }
 @font-palette-values --P2 {
-  font-family: "QpcV4Page";
+  font-family: "QcfV4TajweedPage";
   base-palette: 2;
 }
 @font-palette-values --P3 {
-  font-family: "QpcV4Page";
+  font-family: "QcfV4TajweedPage";
   base-palette: 3;
 }
 @font-palette-values --P4 {
-  font-family: "QpcV4Page";
+  font-family: "QcfV4TajweedPage";
   base-palette: 4;
 }
 @font-palette-values --P5 {
-  font-family: "QpcV4Page";
+  font-family: "QcfV4TajweedPage";
   base-palette: 5;
 }
 @font-palette-values --P6 {
-  font-family: "QpcV4Page";
+  font-family: "QcfV4TajweedPage";
   base-palette: 6;
 }
