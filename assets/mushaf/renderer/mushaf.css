@@ -3,48 +3,58 @@
   --page-fg: #111;
   --active-accent: #2563eb;
   --range-accent: #16a34a;
+  --hifz-font-size: 32px;
+  --hifz-line-height: 1.35;
 }
 
 * {
   box-sizing: border-box;
 }
 
-html,
-body {
+html {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   margin: 0;
-  overflow: hidden;
   background: var(--page-bg);
   color: var(--page-fg);
 }
 
 body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--page-bg);
+  color: var(--page-fg);
   font-family: "QcfV4TajweedPage", "QcfV2Page", serif;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
+
 #mushaf-root {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
 }
 
 .mushaf-page {
   width: 100%;
-  height: 100%;
-  display: grid;
-  grid-template-rows: repeat(15, minmax(0, 1fr));
-  padding: 1.6% 3.2%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px 24px;
   background: var(--page-bg);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .mushaf-line {
   min-width: 0;
+  width: 100%;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   direction: rtl;
-  white-space: nowrap;
+  flex-wrap: wrap;
+  white-space: normal;
   overflow: visible;
 }
 
@@ -54,23 +64,35 @@ body {
 
 .mushaf-line.justified {
   justify-content: space-between;
-  width: 100%;
+  column-gap: .08em;
 }
+
 .mushaf-line.ayah {
   font-family: "QcfV4TajweedPage", "QcfV2Page", serif;
-  font-size: clamp(18px, 5.6vw, 38px);
-  line-height: 1;
+  font-size: var(--hifz-font-size);
+  line-height: var(--hifz-line-height);
   font-palette: var(--qpc-palette, --Light);
+  padding-block: .08em;
+}
+
+body[data-tajweed-colors="off"] .mushaf-line.ayah {
+  font-palette: --Monochrome;
 }
 
 .mushaf-line.surah-name {
+  justify-content: center;
   font-family: "SurahNameV4", serif;
-  font-size: clamp(22px, 6.2vw, 42px);
+  font-size: calc(var(--hifz-font-size) * 1.08);
+  line-height: 1.25;
+  padding-block: .18em;
 }
 
 .mushaf-line.basmallah {
+  justify-content: center;
   font-family: "MushafBismillah", "QuranUnicodeHafs", serif;
-  font-size: clamp(20px, 5.8vw, 40px);
+  font-size: calc(var(--hifz-font-size) * 1.08);
+  line-height: 1.35;
+  padding-block: .16em;
 }
 
 .word {
@@ -96,6 +118,7 @@ body {
   border-radius: .35em;
   box-shadow: 0 0 0 .08em color-mix(in srgb, var(--active-accent) 40%, transparent);
 }
+
 .word.active-ayah:not(.active-word),
 .ayah-end.active-ayah {
   background: color-mix(in srgb, var(--active-accent) 8%, transparent);
@@ -128,6 +151,18 @@ body[data-palette="p4"] {
   --page-bg: #343a40;
   --page-fg: #e8e8e8;
 }
+
+@font-palette-values --Monochrome {
+  font-family: "QcfV4TajweedPage";
+  base-palette: 0;
+  override-colors:
+    0 #111111ff, 1 #111111ff, 2 #111111ff, 3 #111111ff,
+    4 #111111ff, 5 #111111ff, 6 #111111ff, 7 #111111ff,
+    8 #111111ff, 9 #111111ff, 10 #111111ff, 11 #111111ff,
+    12 #ffffffff, 13 #111111ff, 14 #111111ff, 15 #111111ff,
+    16 #111111ff, 17 #111111ff, 18 #111111ff;
+}
+
 @font-palette-values --Light {
   font-family: "QcfV4TajweedPage";
   base-palette: 0;
@@ -149,6 +184,7 @@ body[data-palette="p4"] {
     12 #343A40ff, 13 #E8E8E8ff, 14 #E8E8E8ff, 15 #B0B0B0ff,
     16 #FFD700ff, 17 #69F0AEff;
 }
+
 @font-palette-values --Sepia {
   font-family: "QcfV4TajweedPage";
   base-palette: 2;
@@ -170,6 +206,7 @@ body[data-palette="p4"] {
     12 #ffffffff, 13 #ffffffff, 14 #ffffffff, 15 #ffffffff,
     16 #ffffffff, 17 #ffffffff, 18 #ffffffff;
 }
+
 @font-palette-values --P1 {
   font-family: "QcfV4TajweedPage";
   base-palette: 1;

@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import '../../domain/quran_mushaf_page.dart';
 import '../../domain/quran_mushaf_palette.dart';
-import 'mushaf_renderer_message.dart';
 import '../../domain/quran_mushaf_variant.dart';
+import 'mushaf_renderer_message.dart';
 
 abstract interface class MushafJavaScriptController {
   Future<void> loadFlutterAsset(String key);
@@ -17,6 +17,12 @@ abstract interface class MushafWebViewDriver {
   Future<void> renderPage(MushafRenderPayload payload);
 
   Future<void> setPalette(QuranMushafPalette palette);
+
+  Future<void> setTypography({
+    required double fontSize,
+    required double lineHeight,
+    required bool showTajweedColors,
+  });
 
   Future<void> setActiveWord(String ayahKey, int wordPosition);
 
@@ -36,6 +42,9 @@ class MushafRenderPayload {
     required this.surahFontBytes,
     required this.bismillahFontBytes,
     required this.endMarkerFontBytes,
+    required this.fontSize,
+    required this.lineHeight,
+    required this.showTajweedColors,
   });
 
   final QcfMushafPage page;
@@ -45,11 +54,15 @@ class MushafRenderPayload {
   final List<int> surahFontBytes;
   final List<int> bismillahFontBytes;
   final List<int> endMarkerFontBytes;
+  final double fontSize;
+  final double lineHeight;
+  final bool showTajweedColors;
 
   Map<String, Object?> toRendererJson() {
     if (generation < 0) {
       throw const FormatException('Mushaf generation must be non-negative.');
     }
+    _validateTypography(fontSize: fontSize, lineHeight: lineHeight);
     return <String, Object?>{
       'variant': page.variant.name,
       'pageFontFamily': switch (page.variant) {
@@ -60,6 +73,9 @@ class MushafRenderPayload {
       'page': page.page,
       'palette': palette.name,
       'generation': generation,
+      'fontSize': fontSize,
+      'lineHeight': lineHeight,
+      'showTajweedColors': showTajweedColors,
       'fontDataUrl': _fontDataUrl(pageFontBytes, 'woff2'),
       'surahFontDataUrl': _fontDataUrl(surahFontBytes, 'ttf'),
       'bismillahFontDataUrl': _fontDataUrl(bismillahFontBytes, 'ttf'),
@@ -94,6 +110,7 @@ class MushafRenderPayload {
     QcfMushafLineType.basmallah => 'basmallah',
     QcfMushafLineType.surahName => 'surah_name',
   };
+
   static String _fontDataUrl(List<int> bytes, String subtype) {
     if (bytes.isEmpty) {
       throw const FormatException('Mushaf font bytes must not be empty.');
@@ -123,6 +140,19 @@ class ControllerMushafWebViewDriver implements MushafWebViewDriver {
   }
 
   @override
+  Future<void> setTypography({
+    required double fontSize,
+    required double lineHeight,
+    required bool showTajweedColors,
+  }) {
+    _validateTypography(fontSize: fontSize, lineHeight: lineHeight);
+    return _runEncoded(
+      'setTypography',
+      <Object?>[fontSize, lineHeight, showTajweedColors],
+    );
+  }
+
+  @override
   Future<void> setActiveWord(String ayahKey, int wordPosition) {
     return _runEncoded('setActiveWord', <Object?>[ayahKey, wordPosition]);
   }
@@ -146,6 +176,7 @@ class ControllerMushafWebViewDriver implements MushafWebViewDriver {
     const allowedMethods = <String>{
       'renderPage',
       'setPalette',
+      'setTypography',
       'setActiveWord',
       'setActiveAyah',
       'setRange',
@@ -164,6 +195,18 @@ class ControllerMushafWebViewDriver implements MushafWebViewDriver {
         method +
         "(...args);})()";
     return _controller.runJavaScript(script);
+  }
+}
+
+void _validateTypography({
+  required double fontSize,
+  required double lineHeight,
+}) {
+  if (!fontSize.isFinite || fontSize < 20 || fontSize > 56) {
+    throw ArgumentError.value(fontSize, 'fontSize', 'must be in 20..56');
+  }
+  if (!lineHeight.isFinite || lineHeight < 1.2 || lineHeight > 2.4) {
+    throw ArgumentError.value(lineHeight, 'lineHeight', 'must be in 1.2..2.4');
   }
 }
 

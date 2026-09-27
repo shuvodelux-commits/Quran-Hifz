@@ -15,6 +15,9 @@ class QuranStrictReaderBody extends ConsumerStatefulWidget {
   const QuranStrictReaderBody({
     required this.state,
     required this.variant,
+    required this.fontSize,
+    required this.lineHeight,
+    required this.showTajweedColors,
     required this.activeAyahKey,
     required this.activeWordPosition,
     required this.onPageChanged,
@@ -26,6 +29,9 @@ class QuranStrictReaderBody extends ConsumerStatefulWidget {
 
   final ReaderState state;
   final QuranMushafVariant variant;
+  final double fontSize;
+  final double lineHeight;
+  final bool showTajweedColors;
   final String? activeAyahKey;
   final int? activeWordPosition;
   final ValueChanged<int> onPageChanged;
@@ -112,6 +118,9 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
             page: data.page,
             palette: QuranMushafPalette.light,
             generation: Object.hash(widget.variant, page) & 0x7fffffff,
+            fontSize: widget.fontSize,
+            lineHeight: widget.lineHeight,
+            showTajweedColors: widget.showTajweedColors,
             pageFontUri: data.fontUri,
             fallbackWindow: fallbackWindow,
             fontLoader: data.fontError == null
@@ -132,6 +141,9 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
             page: QcfMushafPage(page: page, variant: variant, lines: const []),
             palette: QuranMushafPalette.light,
             generation: Object.hash(widget.variant, page) & 0x7fffffff,
+            fontSize: widget.fontSize,
+            lineHeight: widget.lineHeight,
+            showTajweedColors: widget.showTajweedColors,
             pageFontUri: Uri.parse('unavailable://qcf-page/$page'),
             fallbackWindow: fallbackWindow,
             fontLoader: (_) async => throw snapshot.error!,
