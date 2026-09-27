@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
+import '../time/calendar_day.dart';
+
 part 'user_database.g.dart';
 
 @DataClassName('AudioFileRecord')
@@ -543,13 +545,60 @@ class UserDatabase extends _$UserDatabase {
     required int lastPage,
     DateTime? readAt,
   }) async {
-    await into(readingProgress).insertOnConflictUpdate(
-      ReadingProgressCompanion.insert(
+    final timestamp = readAt ?? DateTime.now();
+    await transaction(() async {
+      await into(readingProgress).insertOnConflictUpdate(
+        ReadingProgressCompanion.insert(
+          profileKey: profileKey,
+          lastSurah: lastSurah,
+          lastAyah: lastAyah,
+          lastPage: lastPage,
+          lastReadAt: Value(timestamp),
+        ),
+      );
+      await recordReadingPageVisit(
         profileKey: profileKey,
-        lastSurah: lastSurah,
-        lastAyah: lastAyah,
-        lastPage: lastPage,
-        lastReadAt: Value(readAt ?? DateTime.now()),
+        pageNumber: lastPage,
+        readAt: timestamp,
+      );
+    });
+  }
+
+  Future<void> recordReadingPageVisit({
+    required String profileKey,
+    required int pageNumber,
+    required DateTime readAt,
+  }) async {
+    await into(readingPageVisits).insertOnConflictUpdate(
+      ReadingPageVisitsCompanion.insert(
+        profileKey: profileKey,
+        dayKey: calendarDayKey(readAt),
+        pageNumber: pageNumber,
+        readAt: readAt,
+      ),
+    );
+  }
+
+  Future<void> saveDailyGoal({
+    required String profileKey,
+    required DateTime day,
+    required int newHifzAyahsTarget,
+    required int revisionAyahsTarget,
+    required int readingPagesTarget,
+  }) async {
+    if (newHifzAyahsTarget < 0 ||
+        revisionAyahsTarget < 0 ||
+        readingPagesTarget < 0) {
+      throw ArgumentError('Daily Quran goals must not be negative.');
+    }
+
+    await into(dailyGoals).insertOnConflictUpdate(
+      DailyGoalsCompanion.insert(
+        profileKey: profileKey,
+        dayKey: calendarDayKey(day),
+        newHifzAyahsTarget: Value(newHifzAyahsTarget),
+        revisionAyahsTarget: Value(revisionAyahsTarget),
+        readingPagesTarget: Value(readingPagesTarget),
       ),
     );
   }
