@@ -20,3 +20,6 @@ Ruling: Store the SDD ledger as a temporary tracked docs file instead of the nor
 Ruling: Execute each task on the isolated feature branch `fix/restore-hifz-skin`; never mutate `main` — matches the approved GitHub-first constraint — cost if wrong: branch cleanup/rebase only.
 
 Task 1: complete (commits baae8dc..0fd2983; GitHub Actions run 36290028209 reached Analyze=success, Test=success; Android build remains a Task 9 full-suite gate).
+
+Task 2: Ruling: Generate and commit Drift code in GitHub Actions because this GitHub-only harness has no local Dart/Flutter executable — build_runner remains the canonical generator — cost if wrong: one bot-generated commit may need cleanup.
+Task 2: complete (RED run 36290789457 failed on missing hifz_progress_entries as expected; GREEN run 36291443841 Hifz focused regression passed after schema v13, repository, and migration restoration).
