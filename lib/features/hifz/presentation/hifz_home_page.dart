@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/localization/app_locale_text.dart';
 import '../../quran/application/quran_providers.dart';
 import '../../quran/domain/quran_surah.dart';
-import '../../quran/presentation/surah_localized_text.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/domain/app_preferences.dart';
 import '../application/hifz_plan_providers.dart';
