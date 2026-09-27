@@ -196,6 +196,12 @@ class _FakeHifzRepository implements HifzRepository {
   }
 
   @override
+  Future<List<HifzProgress>> loadSurahProgress({
+    required String profileKey,
+    required int surahNumber,
+  }) async => const <HifzProgress>[];
+
+  @override
   Future<void> saveProgress({
     required String profileKey,
     required HifzProgress progress,
