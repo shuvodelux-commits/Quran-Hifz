@@ -38,7 +38,7 @@ jobs:
         run: flutter pub get
 
       - name: Generate Drift code
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build
 
       - name: Commit generated Drift code
         shell: bash
@@ -50,7 +50,8 @@ jobs:
             git commit -m "chore: regenerate Drift database"
             git push origin HEAD:fix/restore-hifz-skin
           fi
-          git diff --exit-code -- . ':(exclude)lib/core/database/user_database.g.dart'
+          git restore -- .flutter-plugins-dependencies
+          git diff --exit-code
 
       - name: Analyze
         run: flutter analyze
