@@ -13,6 +13,7 @@ import '../application/hifz_plan_providers.dart';
 import '../application/hifz_session_controller.dart';
 import '../application/hifz_start_defaults.dart';
 import '../domain/hifz_plan.dart';
+import '../domain/hifz_preset.dart';
 import '../domain/hifz_progress.dart';
 import '../domain/hifz_session.dart';
 import 'hifz_reader_page.dart';
