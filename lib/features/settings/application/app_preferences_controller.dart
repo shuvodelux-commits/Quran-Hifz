@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_providers.dart';
 import '../../quran/domain/quran_font_preference.dart';
+import '../../quran/domain/quran_mushaf_variant.dart';
 import '../data/user_database_app_preferences_repository.dart';
 import '../domain/app_preferences.dart';
 import '../domain/app_preferences_repository.dart';
@@ -45,7 +46,7 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
     (current) => current.copyWith(
       quranScript: value,
       quranFont: value == QuranScriptPreference.indoPak
-          ? QuranFontPreference.defaultGlobal
+          ? QuranFontPreference.indoPak
           : QuranFontPreference.qpcHafs,
     ),
   );
@@ -53,6 +54,30 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
   Future<void> setQuranFont(QuranFontPreference value) => _update(
     (current) => current.copyWith(quranFont: value, quranScript: value.script),
   );
+
+  Future<void> setHifzMushafVariant(QuranMushafVariant value) =>
+      _update((current) => current.copyWith(hifzMushafVariant: value));
+
+  Future<void> setHifzFontSize(double value) {
+    if (!value.isFinite ||
+        value < AppPreferences.minHifzFontSize ||
+        value > AppPreferences.maxHifzFontSize) {
+      throw ArgumentError.value(value, 'value');
+    }
+    return _update((current) => current.copyWith(hifzFontSize: value));
+  }
+
+  Future<void> setHifzLineHeight(double value) {
+    if (!value.isFinite ||
+        value < AppPreferences.minHifzLineHeight ||
+        value > AppPreferences.maxHifzLineHeight) {
+      throw ArgumentError.value(value, 'value');
+    }
+    return _update((current) => current.copyWith(hifzLineHeight: value));
+  }
+
+  Future<void> setHifzShowTajweedColors(bool value) =>
+      _update((current) => current.copyWith(hifzShowTajweedColors: value));
 
   Future<void> setArabicFontSize(double value) {
     if (value < 20 || value > 56) {
@@ -184,6 +209,29 @@ final quranScriptPreferenceProvider = Provider<QuranScriptPreference>((ref) {
 final quranFontProvider = Provider<QuranFontPreference>((ref) {
   return ref.watch(appPreferencesControllerProvider).value?.quranFont ??
       QuranFontPreference.defaultGlobal;
+});
+
+final hifzMushafVariantProvider = Provider<QuranMushafVariant>((ref) {
+  return ref.watch(appPreferencesControllerProvider).value?.hifzMushafVariant ??
+      const AppPreferences.defaults().hifzMushafVariant;
+});
+
+final hifzFontSizeProvider = Provider<double>((ref) {
+  return ref.watch(appPreferencesControllerProvider).value?.hifzFontSize ??
+      const AppPreferences.defaults().hifzFontSize;
+});
+
+final hifzLineHeightProvider = Provider<double>((ref) {
+  return ref.watch(appPreferencesControllerProvider).value?.hifzLineHeight ??
+      const AppPreferences.defaults().hifzLineHeight;
+});
+
+final hifzShowTajweedColorsProvider = Provider<bool>((ref) {
+  return ref
+          .watch(appPreferencesControllerProvider)
+          .value
+          ?.hifzShowTajweedColors ??
+      const AppPreferences.defaults().hifzShowTajweedColors;
 });
 
 final arabicFontSizeProvider = Provider<double>((ref) {
