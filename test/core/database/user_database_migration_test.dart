@@ -110,6 +110,7 @@ void main() {
     await seed.close();
 
     final legacy = sqlite3.open(file.path);
+    legacy.execute('DROP TABLE IF EXISTS hifz_plans;');
     legacy.execute('''
       CREATE TABLE hifz_plans (
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
