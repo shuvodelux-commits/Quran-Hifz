@@ -351,21 +351,6 @@ class UserDatabase extends _$UserDatabase {
       if (from < 10) {
         await migrator.createTable(customDuas);
       }
-      if (from < 11) {
-        for (final table in const [
-          'hifz_progress_entries',
-          'hifz_review_history_rows',
-          'hifz_session_checkpoints',
-          'hifz_plans',
-          'reading_page_visits',
-          'daily_goals',
-        ]) {
-          await customStatement('DROP TABLE IF EXISTS $table');
-        }
-        await customStatement(
-          "DELETE FROM app_settings WHERE setting_key LIKE 'hifz_%'",
-        );
-      }
       if (from < 12) {
         await migrator.createTable(installedTranslationPackages);
       }
