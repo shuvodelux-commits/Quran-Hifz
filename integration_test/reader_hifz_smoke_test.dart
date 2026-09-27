@@ -89,6 +89,26 @@ void main() {
     await tester.pageBack();
     await _pumpFlow(tester);
     expect(find.text('Al-Fatihah 1–2'), findsOneWidget);
+
+    await tester.tap(find.text('Al-Fatihah 1–2'));
+    await _pumpFlow(tester);
+    expect(find.byType(HifzReaderPage), findsOneWidget);
+    final reopened = tester.widget<QuranStrictReaderBody>(
+      find.byType(QuranStrictReaderBody),
+    );
+    expect(reopened.fontSize, 56);
+
+    await container
+        .read(appPreferencesControllerProvider.notifier)
+        .setHifzMushafVariant(QuranMushafVariant.qcfV4Tajweed);
+    await _pumpFlow(tester);
+    expect(
+      tester.widget<QuranStrictReaderBody>(find.byType(QuranStrictReaderBody)).variant,
+      QuranMushafVariant.qcfV4Tajweed,
+    );
+
+    await tester.pageBack();
+    await _pumpFlow(tester);
     await tester.pageBack();
     await _pumpFlow(tester);
 
