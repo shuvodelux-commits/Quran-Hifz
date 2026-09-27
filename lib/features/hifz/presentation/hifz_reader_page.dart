@@ -12,9 +12,12 @@ import '../../quran/domain/quran_surah.dart';
 import '../../quran/presentation/mushaf/quran_strict_reader_body.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../application/hifz_session_controller.dart';
+import '../application/hifz_start_defaults.dart';
 import '../domain/hifz_session.dart';
 import 'hifz_appearance_sheet.dart';
 import 'hifz_controls_bar.dart';
+import 'hifz_setup_sheet.dart';
+import 'hifz_surah_picker_sheet.dart';
 
 class HifzReaderPage extends ConsumerStatefulWidget {
   const HifzReaderPage({
@@ -37,10 +40,16 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
   Object? _loadError;
   bool _hidden = false;
   bool _loadingPage = false;
+  late HifzSessionConfig _config;
+  late String _planTitle;
+  late int _initialPage;
 
   @override
   void initState() {
     super.initState();
+    _config = widget.config;
+    _planTitle = widget.planTitle;
+    _initialPage = widget.initialPage;
     unawaited(_loadInitial());
   }
 
@@ -48,8 +57,8 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
     try {
       final repository = ref.read(quranRepositoryProvider);
       final surahs = await repository.listSurahs();
-      final surah = _surahFor(surahs, widget.config.start.surahNumber);
-      final page = _boundedPage(widget.initialPage, surah);
+      final surah = _surahFor(surahs, _config.start.surahNumber);
+      final page = _boundedPage(_initialPage, surah);
       final translationId = ref.read(quranTranslationResourceIdProvider);
       final window = await repository.loadPageWindow(
         page: page,
@@ -138,7 +147,7 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.planTitle,
+              _planTitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.titleMedium,
@@ -152,6 +161,12 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
           ],
         ),
         actions: [
+          IconButton(
+            key: const ValueKey('hifz-reader-surah'),
+            tooltip: 'Change Surah',
+            onPressed: () => unawaited(_changeSurah()),
+            icon: const Icon(Icons.menu_book_outlined),
+          ),
           IconButton(
             key: const ValueKey('hifz-reader-settings'),
             tooltip: 'Hifz appearance',
@@ -240,8 +255,8 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
       showTajweedColors: tajweed,
       activeAyahKey: activeAyahKey,
       activeWordPosition: activeWordPosition,
-      selectedStartAyahKey: widget.config.start.verseKey,
-      selectedEndAyahKey: widget.config.end.verseKey,
+      selectedStartAyahKey: _config.start.verseKey,
+      selectedEndAyahKey: _config.end.verseKey,
       onPageChanged: (page) => unawaited(_openPage(page)),
       onWordTap: (_, __) {},
       onWordLongPress: (_, __) {},
@@ -290,7 +305,95 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
       unawaited(controller.resume());
       return;
     }
-    unawaited(controller.start(widget.config));
+    unawaited(controller.start(_config));
+  }
+
+  Future<void> _changeSurah() async {
+    final repository = ref.read(quranRepositoryProvider);
+    try {
+      final surahs = await repository.listSurahs();
+      if (!mounted) return;
+      final selected = await showModalBottomSheet<QuranSurahSummary>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (_) => HifzSurahPickerSheet(
+          surahs: surahs,
+          selectedSurahNumber: _config.start.surahNumber,
+        ),
+      );
+      if (!mounted || selected == null) return;
+
+      var progress = await ref
+          .read(hifzRepositoryProvider)
+          .loadSurahProgress(
+            profileKey: HifzSessionController.defaultProfileKey,
+            surahNumber: selected.number,
+          );
+      if (!mounted) return;
+      final defaults = HifzStartDefaults.forSurah(
+        surah: selected,
+        progress: progress,
+      );
+      final setup = await showModalBottomSheet<HifzSetupResult>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (_) => HifzSetupSheet(
+          surah: selected,
+          initialStartAyah: defaults.startAyah,
+          initialEndAyah: defaults.endAyah,
+          initialPreset: _config.preset,
+        ),
+      );
+      if (!mounted || setup == null) return;
+
+      final ayah = await repository.loadAyah(
+        surahNumber: selected.number,
+        ayahNumber: setup.startAyah,
+        translationResourceId: ref.read(quranTranslationResourceIdProvider),
+      );
+      if (!mounted || ayah == null) {
+        if (mounted) _showSurahChangeError();
+        return;
+      }
+
+      await ref.read(hifzSessionControllerProvider.notifier).stop();
+      if (!mounted) return;
+      setState(() {
+        _config = HifzSessionConfig(
+          start: AyahRef(
+            surahNumber: selected.number,
+            ayahNumber: setup.startAyah,
+          ),
+          end: AyahRef(
+            surahNumber: selected.number,
+            ayahNumber: setup.endAyah,
+          ),
+          preset: setup.preset,
+        );
+        _planTitle =
+            selected.nameEnglish +
+            ' ' +
+            setup.startAyah.toString() +
+            '–' +
+            setup.endAyah.toString();
+        _initialPage = ayah.pageNumber;
+        _readerState = null;
+        _loadError = null;
+      });
+      unawaited(_loadInitial());
+    } on Object {
+      if (mounted) _showSurahChangeError();
+    }
+  }
+
+  void _showSurahChangeError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not change the Hifz Surah. Please try again.'),
+      ),
+    );
   }
 
   void _showAppearance() {
@@ -303,7 +406,7 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
   }
 
   void _showRepeatPattern() {
-    final preset = widget.config.preset;
+    final preset = _config.preset;
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
