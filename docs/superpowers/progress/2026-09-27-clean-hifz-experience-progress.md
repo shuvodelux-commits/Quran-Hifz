@@ -18,3 +18,5 @@ Ruling: Store the SDD ledger as a temporary tracked docs file instead of the nor
 | 2/3/4/5/6/7/8 → 9 | Completed Hifz stack → integration/QA | Compatible. |
 
 Ruling: Execute each task on the isolated feature branch `fix/restore-hifz-skin`; never mutate `main` — matches the approved GitHub-first constraint — cost if wrong: branch cleanup/rebase only.
+
+Task 1: complete (commits baae8dc..0fd2983; GitHub Actions run 36290028209 reached Analyze=success, Test=success; Android build remains a Task 9 full-suite gate).
