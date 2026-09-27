@@ -4,9 +4,10 @@ on:
   push:
     branches:
       - fix/restore-hifz-skin
-  pull_request:
-    branches:
-      - main
+
+concurrency:
+  group: hifz-repair-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
