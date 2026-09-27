@@ -11,10 +11,8 @@ import '../../reciters/application/reciter_catalog_controller.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/domain/app_preferences.dart';
 import '../../settings/presentation/settings_page.dart';
-import '../../study/application/study_providers.dart';
 import '../../study/domain/bookmark.dart';
 import '../../study/presentation/bookmarks_page.dart';
-import '../../study/presentation/word_details_sheet.dart';
 import '../../tafsir/presentation/tafsir_reader_page.dart';
 import '../application/quran_providers.dart';
 import '../application/reader_controller.dart';
@@ -24,9 +22,7 @@ import '../domain/quran_page_window.dart';
 import '../domain/quran_ayah.dart';
 import '../domain/reader_scope.dart';
 import '../domain/quran_surah.dart';
-import '../domain/quran_word.dart';
 import 'surah_localized_text.dart';
-import 'mushaf/quran_strict_reader_body.dart';
 import 'widgets/reader_window.dart';
 import 'widgets/reader_offline_audio_prompt.dart';
 import 'widgets/reader_playback_panel.dart';
@@ -202,7 +198,6 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
     final audio = ref.watch(quranAudioControllerProvider);
     final showTranslation = ref.watch(showTranslationPreferenceProvider);
     final language = ref.watch(appLanguageProvider);
-    final quranFont = ref.watch(quranFontProvider);
     ref.listen<String?>(activeAyahPlaybackKeyProvider, (previous, next) {
       if (next == null || next == previous) return;
       unawaited(_ensurePlaybackAyahLoaded(next));
@@ -339,32 +334,7 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
                   onSelected: _openSurahScope,
                 ),
                 Expanded(
-                  child: quranFont.isStrict
-                      ? QuranStrictReaderBody(
-                          state: state,
-                          font: quranFont,
-                          activeAyahKey: audio.ayahKey,
-                          activeWordPosition: audio.activeWordPosition,
-                          onPageChanged: (page) => unawaited(
-                            ref
-                                .read(readerControllerProvider.notifier)
-                                .openPage(
-                                  page,
-                                  preferredSurahNumber:
-                                      _scope.initialSurahNumber,
-                                  firstPage: _scope.firstPage,
-                                  lastPage: _scope.lastPage,
-                                ),
-                          ),
-                          onWordTap: (ayahKey, wordPosition) =>
-                              unawaited(_playStrictWord(ayahKey, wordPosition)),
-                          onWordLongPress: (ayahKey, wordPosition) => unawaited(
-                            _showStrictWordDetails(ayahKey, wordPosition),
-                          ),
-                          onAyahTap: (ayahKey) =>
-                              unawaited(_playStrictAyah(ayahKey)),
-                        )
-                      : Stack(
+                  child: Stack(
                           children: [
                             NotificationListener<ScrollNotification>(
                               onNotification: _handleScrollNotification,
@@ -446,75 +416,6 @@ class _QuranReaderPageState extends ConsumerState<QuranReaderPage> {
         },
       ),
     );
-  }
-
-  Future<QuranAyah?> _strictAyah(String ayahKey) async {
-    final parts = ayahKey.split(':');
-    if (parts.length != 2) return null;
-    final surahNumber = int.tryParse(parts[0]);
-    final ayahNumber = int.tryParse(parts[1]);
-    if (surahNumber == null || ayahNumber == null) return null;
-    return ref
-        .read(quranRepositoryProvider)
-        .loadAyah(
-          surahNumber: surahNumber,
-          ayahNumber: ayahNumber,
-          translationResourceId: ref.read(quranTranslationResourceIdProvider),
-        );
-  }
-
-  Future<({QuranAyah ayah, QuranWord word})?> _strictWord(
-    String ayahKey,
-    int wordPosition,
-  ) async {
-    final ayah = await _strictAyah(ayahKey);
-    if (ayah == null) return null;
-    for (final word in ayah.words) {
-      if (word.position == wordPosition) return (ayah: ayah, word: word);
-    }
-    return null;
-  }
-
-  Future<void> _playStrictWord(String ayahKey, int wordPosition) async {
-    final target = await _strictWord(ayahKey, wordPosition);
-    if (!mounted || target == null) return;
-    try {
-      await ref
-          .read(readerAudioActionsProvider)
-          .playWord(target.ayah, target.word);
-    } on ReaderAudioUnavailableException catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error.message)));
-      }
-    }
-  }
-
-  Future<void> _showStrictWordDetails(String ayahKey, int wordPosition) async {
-    final target = await _strictWord(ayahKey, wordPosition);
-    if (!mounted || target == null) return;
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (_) => WordDetailsSheet(
-        target: StudyTarget.word(
-          surahNumber: target.ayah.surahNumber,
-          ayahNumber: target.ayah.ayahNumber,
-          wordPosition: target.word.position,
-        ),
-        word: target.word,
-        controller: ref.read(studyControllerProvider),
-      ),
-    );
-  }
-
-  Future<void> _playStrictAyah(String ayahKey) async {
-    final ayah = await _strictAyah(ayahKey);
-    if (!mounted || ayah == null || !_scope.contains(ayah)) return;
-    _expandPlayer();
-    await _goToAndPlay(ayah);
   }
 
   void _expandPlayer() {
