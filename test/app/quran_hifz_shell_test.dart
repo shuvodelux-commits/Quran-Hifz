@@ -97,7 +97,7 @@ void main() {
       expect(find.text('কুরআন'), findsWidgets, reason: '$theme Quran');
       await tester.tap(find.text('আরও').last);
       await tester.pumpAndSettle();
-      expect(find.text('হিফজ'), findsNothing, reason: '$theme more');
+      expect(find.text('হিফজ'), findsOneWidget, reason: '$theme more');
       expect(find.text('সেটিংস'), findsOneWidget, reason: '$theme more');
       expect(tester.takeException(), isNull, reason: '$theme raised an error');
     }
