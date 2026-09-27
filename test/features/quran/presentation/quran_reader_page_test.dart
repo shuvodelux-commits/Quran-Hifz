@@ -757,4 +757,3 @@ class _NoopLocationStore implements ReadingLocationStore {
   @override
   Future<void> save(ReadingLocation location) async {}
 }
-
