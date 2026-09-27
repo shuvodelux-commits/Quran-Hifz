@@ -10,7 +10,6 @@ import 'package:quran_hifz/features/hifz/presentation/hifz_controls_bar.dart';
 import 'package:quran_hifz/features/hifz/presentation/hifz_reader_page.dart';
 import 'package:quran_hifz/features/quran/application/quran_mushaf_providers.dart';
 import 'package:quran_hifz/features/quran/application/quran_providers.dart';
-import 'package:quran_hifz/features/quran/data/quran_foundation_page_font_repository.dart';
 import 'package:quran_hifz/features/quran/domain/quran_ayah.dart';
 import 'package:quran_hifz/features/quran/domain/quran_juz.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_page.dart';
