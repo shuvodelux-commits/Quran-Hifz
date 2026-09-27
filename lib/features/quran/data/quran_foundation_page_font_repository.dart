@@ -17,7 +17,6 @@ Uri quranFoundationPageFontUri(QuranMushafVariant variant, int page) {
       'https://verses.quran.foundation/fonts/quran/hafs/v2/woff2/p$page.woff2',
     QuranMushafVariant.qcfV4Tajweed =>
       'https://verses.quran.foundation/fonts/quran/hafs/v4/colrv1/woff2/p$page.woff2',
-    _ => throw ArgumentError.value(font, 'font', 'Strict QCF font required'),
   });
 }
 
@@ -35,9 +34,7 @@ class QuranFoundationPageFontRepository implements QuranPageFontRepository {
     QuranFontSupportDirectory? supportDirectory,
   }) : _variant = variant,
        _client = client ?? http.Client(),
-       _supportDirectory = supportDirectory ?? getApplicationSupportDirectory {
-    _validateStrictFont(font);
-  }
+       _supportDirectory = supportDirectory ?? getApplicationSupportDirectory;
 
   final QuranMushafVariant _variant;
   final http.Client _client;
