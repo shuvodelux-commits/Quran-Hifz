@@ -11,7 +11,6 @@ import '../../reciters/application/reciter_catalog_controller.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/domain/app_preferences.dart';
 import '../../settings/presentation/settings_page.dart';
-import '../../study/domain/bookmark.dart';
 import '../../study/presentation/bookmarks_page.dart';
 import '../../tafsir/presentation/tafsir_reader_page.dart';
 import '../application/quran_providers.dart';
