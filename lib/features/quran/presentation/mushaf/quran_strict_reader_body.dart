@@ -24,6 +24,8 @@ class QuranStrictReaderBody extends ConsumerStatefulWidget {
     required this.onWordTap,
     required this.onWordLongPress,
     required this.onAyahTap,
+    this.selectedStartAyahKey,
+    this.selectedEndAyahKey,
     super.key,
   });
 
@@ -38,6 +40,8 @@ class QuranStrictReaderBody extends ConsumerStatefulWidget {
   final void Function(String ayahKey, int wordPosition) onWordTap;
   final void Function(String ayahKey, int wordPosition) onWordLongPress;
   final ValueChanged<String> onAyahTap;
+  final String? selectedStartAyahKey;
+  final String? selectedEndAyahKey;
 
   @override
   ConsumerState<QuranStrictReaderBody> createState() =>
@@ -128,6 +132,8 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
                 : (_) async => throw data.fontError!,
             activeAyahKey: widget.activeAyahKey,
             activeWordPosition: widget.activeWordPosition,
+            selectedStartAyahKey: widget.selectedStartAyahKey,
+            selectedEndAyahKey: widget.selectedEndAyahKey,
             onRetry: () => _retry(page),
             onWordTap: widget.onWordTap,
             onWordLongPress: widget.onWordLongPress,
@@ -147,6 +153,10 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
             pageFontUri: Uri.parse('unavailable://qcf-page/$page'),
             fallbackWindow: fallbackWindow,
             fontLoader: (_) async => throw snapshot.error!,
+            activeAyahKey: widget.activeAyahKey,
+            activeWordPosition: widget.activeWordPosition,
+            selectedStartAyahKey: widget.selectedStartAyahKey,
+            selectedEndAyahKey: widget.selectedEndAyahKey,
             onRetry: () => _retry(page),
             onWordTap: widget.onWordTap,
             onWordLongPress: widget.onWordLongPress,
