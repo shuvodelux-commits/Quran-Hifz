@@ -225,7 +225,7 @@ class _SetupRow extends StatelessWidget {
   }
 }
 
-class _HifzAyahPicker extends StatelessWidget {
+class _HifzAyahPicker extends StatefulWidget {
   const _HifzAyahPicker({
     required this.title,
     required this.minimum,
@@ -237,6 +237,31 @@ class _HifzAyahPicker extends StatelessWidget {
   final int minimum;
   final int maximum;
   final int selected;
+
+  @override
+  State<_HifzAyahPicker> createState() => _HifzAyahPickerState();
+}
+
+class _HifzAyahPickerState extends State<_HifzAyahPicker> {
+  static const _itemExtent = 52.0;
+  late final ScrollController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    final selectedIndex = widget.selected - widget.minimum;
+    _controller = ScrollController(
+      initialScrollOffset: selectedIndex <= 0
+          ? 0
+          : (selectedIndex - 1) * _itemExtent,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -251,23 +276,25 @@ class _HifzAyahPicker extends StatelessWidget {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  title,
+                  widget.title,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
               ),
             ),
             Expanded(
               child: ListView.builder(
-                itemCount: maximum - minimum + 1,
+                controller: _controller,
+                itemExtent: _itemExtent,
+                itemCount: widget.maximum - widget.minimum + 1,
                 itemBuilder: (context, index) {
-                  final ayah = minimum + index;
+                  final ayah = widget.minimum + index;
                   return ListTile(
                     key: ValueKey(
                       'hifz-ayah-choice-' + ayah.toString(),
                     ),
                     title: Text('Ayah ' + ayah.toString()),
-                    selected: selected == ayah,
-                    trailing: selected == ayah
+                    selected: widget.selected == ayah,
+                    trailing: widget.selected == ayah
                         ? const Icon(Icons.check_rounded)
                         : null,
                     onTap: () => Navigator.of(context).pop(ayah),
