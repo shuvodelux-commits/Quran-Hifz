@@ -71,9 +71,10 @@ void main() {
     await tester.pump();
     expect(find.byKey(const ValueKey('hifz-hidden-overlay')), findsNothing);
 
-    await tester.drag(
+    await tester.fling(
       find.byType(PageView),
-      const Offset(-320, 0),
+      const Offset(-700, 0),
+      1200,
     );
     await tester.pumpAndSettle();
     expect(find.text('2 / 2'), findsOneWidget);
