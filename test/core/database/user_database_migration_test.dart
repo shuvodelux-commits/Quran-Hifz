@@ -250,12 +250,26 @@ void main() {
     expect(await db.select(db.customDuas).get(), hasLength(1));
   });
 
-  test('v10 cleanup still reaches the restored Hifz schema', () async {
+  test('v10 direct upgrade preserves pre-removal Hifz data', () async {
     final temp = await Directory.systemTemp.createTemp('quran_hifz_v10_');
     final file = File('${temp.path}/user_data.sqlite');
 
     final seed = UserDatabase.forTesting(NativeDatabase(file));
     await seed.saveSetting('sentinel', 'keep-me');
+    await seed.saveSetting('hifz_font_size', '40');
+    await seed.customStatement(
+      "INSERT INTO hifz_plans "
+      "(profile_key, title, start_surah, start_ayah, end_surah, end_ayah, "
+      "start_page, preset_id, created_at, updated_at) "
+      "VALUES ('default', 'Legacy plan', 2, 1, 2, 5, 2, "
+      "'new-memorization', 100, 200)",
+    );
+    await seed.customStatement(
+      "INSERT INTO hifz_progress_entries "
+      "(profile_key, surah_number, ayah_number, status, strength_score, "
+      "review_count, mistake_count, revision_interval_index) "
+      "VALUES ('default', 2, 1, 'learning', 3, 2, 1, 0)",
+    );
     await seed.saveReadingProgress(
       profileKey: 'default',
       lastSurah: 2,
@@ -266,25 +280,6 @@ void main() {
     await seed.close();
 
     final legacy = sqlite3.open(file.path);
-    for (final statement in const [
-      'CREATE TABLE hifz_progress_entries (id INTEGER)',
-      'CREATE TABLE hifz_review_history_rows (id INTEGER)',
-      'CREATE TABLE hifz_session_checkpoints (id INTEGER)',
-      'CREATE TABLE hifz_plans (id INTEGER)',
-      'CREATE TABLE reading_page_visits (id INTEGER)',
-      'CREATE TABLE daily_goals (id INTEGER)',
-    ]) {
-      legacy.execute('DROP TABLE IF EXISTS ' + statement.split(' ')[2]);
-      legacy.execute(statement);
-    }
-    legacy.execute(
-      "INSERT OR REPLACE INTO app_settings(setting_key, setting_value) "
-      "VALUES ('hifz_layout_mode', 'fixedMushaf');",
-    );
-    legacy.execute(
-      "INSERT OR REPLACE INTO app_settings(setting_key, setting_value) "
-      "VALUES ('hifz_font_size', '40');",
-    );
     legacy.execute('PRAGMA user_version = 10;');
     legacy.close();
 
@@ -295,8 +290,26 @@ void main() {
     });
 
     expect(await db.getSetting('sentinel'), 'keep-me');
-    expect(await db.getSetting('hifz_layout_mode'), isNull);
-    expect(await db.getSetting('hifz_font_size'), isNull);
+    expect(await db.getSetting('hifz_font_size'), '40');
+
+    final plan = await db.customSelect(
+      "SELECT title, start_surah, start_ayah, end_ayah "
+      "FROM hifz_plans WHERE profile_key = 'default'",
+    ).getSingle();
+    expect(plan.read<String>('title'), 'Legacy plan');
+    expect(plan.read<int>('start_surah'), 2);
+    expect(plan.read<int>('start_ayah'), 1);
+    expect(plan.read<int>('end_ayah'), 5);
+
+    final hifzProgress = await db.customSelect(
+      "SELECT status, strength_score, review_count, mistake_count "
+      "FROM hifz_progress_entries "
+      "WHERE profile_key = 'default' AND surah_number = 2 AND ayah_number = 1",
+    ).getSingle();
+    expect(hifzProgress.read<String>('status'), 'learning');
+    expect(hifzProgress.read<int>('strength_score'), 3);
+    expect(hifzProgress.read<int>('review_count'), 2);
+    expect(hifzProgress.read<int>('mistake_count'), 1);
 
     final progress = await db.getReadingProgress('default');
     expect(progress, isNotNull);
@@ -308,7 +321,7 @@ void main() {
       expect(
         await _tableExists(db, table),
         isTrue,
-        reason: 'current schema must restore $table',
+        reason: 'current schema must contain $table',
       );
     }
   });
