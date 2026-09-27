@@ -1,5 +1,6 @@
 import '../../../core/database/user_database.dart';
 import '../../quran/domain/quran_font_preference.dart';
+import '../../quran/domain/quran_mushaf_variant.dart';
 import '../domain/app_preferences.dart';
 import '../domain/app_preferences_repository.dart';
 
@@ -11,6 +12,10 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
   static const quranFontKey = 'quran_font';
   static const arabicFontSizeKey = 'arabic_font_size';
   static const arabicLineHeightKey = 'arabic_line_height';
+  static const hifzMushafVariantKey = 'hifz_mushaf_variant_v2';
+  static const hifzFontSizeKey = 'hifz_font_size_v2';
+  static const hifzLineHeightKey = 'hifz_line_height_v2';
+  static const hifzShowTajweedColorsKey = 'hifz_tajweed_colors_v2';
   static const banglaLineHeightKey = 'bangla_line_height';
   static const banglaFontSizeKey = 'bangla_font_size';
   static const showTranslationKey = 'show_translation';
@@ -53,6 +58,10 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       _database.getSetting(tapToShowBanglaWordMeaningKey),
       _database.getSetting(banglaFontSizeKey),
       _database.getSetting(quranFontKey),
+      _database.getSetting(hifzMushafVariantKey),
+      _database.getSetting(hifzFontSizeKey),
+      _database.getSetting(hifzLineHeightKey),
+      _database.getSetting(hifzShowTajweedColorsKey),
     ]);
 
     final theme = switch (values[0]) {
@@ -82,6 +91,8 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
     final speed = double.tryParse(values[8] ?? '');
     final pauseMs = int.tryParse(values[9] ?? '');
     final banglaFontSize = double.tryParse(values[17] ?? '');
+    final hifzFontSize = double.tryParse(values[20] ?? '');
+    final hifzLineHeight = double.tryParse(values[21] ?? '');
 
     return AppPreferences(
       theme: theme,
@@ -96,6 +107,30 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
               arabicLineHeight <= AppPreferences.maxArabicLineHeight
           ? arabicLineHeight
           : defaults.arabicLineHeight,
+      hifzMushafVariant: _mushafVariantFromName(
+        values[19],
+        defaults.hifzMushafVariant,
+      ),
+      hifzFontSize:
+          _isFiniteInRange(
+            hifzFontSize,
+            AppPreferences.minHifzFontSize,
+            AppPreferences.maxHifzFontSize,
+          )
+          ? hifzFontSize!
+          : defaults.hifzFontSize,
+      hifzLineHeight:
+          _isFiniteInRange(
+            hifzLineHeight,
+            AppPreferences.minHifzLineHeight,
+            AppPreferences.maxHifzLineHeight,
+          )
+          ? hifzLineHeight!
+          : defaults.hifzLineHeight,
+      hifzShowTajweedColors: _parseBool(
+        values[22],
+        defaults.hifzShowTajweedColors,
+      ),
       banglaLineHeight:
           banglaLineHeight != null &&
               banglaLineHeight >= AppPreferences.minBanglaLineHeight &&
@@ -163,6 +198,22 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
         preferences.arabicLineHeight.toString(),
       );
       await _database.saveSetting(
+        hifzMushafVariantKey,
+        preferences.hifzMushafVariant.name,
+      );
+      await _database.saveSetting(
+        hifzFontSizeKey,
+        preferences.hifzFontSize.toString(),
+      );
+      await _database.saveSetting(
+        hifzLineHeightKey,
+        preferences.hifzLineHeight.toString(),
+      );
+      await _database.saveSetting(
+        hifzShowTajweedColorsKey,
+        preferences.hifzShowTajweedColors.toString(),
+      );
+      await _database.saveSetting(
         banglaLineHeightKey,
         preferences.banglaLineHeight.toString(),
       );
@@ -221,6 +272,23 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
     return fallback;
   }
 
+  bool _isFiniteInRange(double? value, double minimum, double maximum) {
+    return value != null &&
+        value.isFinite &&
+        value >= minimum &&
+        value <= maximum;
+  }
+
+  QuranMushafVariant _mushafVariantFromName(
+    String? raw,
+    QuranMushafVariant fallback,
+  ) {
+    for (final variant in QuranMushafVariant.values) {
+      if (variant.name == raw) return variant;
+    }
+    return fallback;
+  }
+
   QuranFontPreference _fontFromName(
     String? raw, {
     required QuranFontPreference fallback,
@@ -228,6 +296,17 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
     for (final font in QuranFontPreference.values) {
       if (font.name == raw) return font;
     }
-    return fallback;
+    return switch (raw) {
+      'pdmsSaleem' ||
+      'indopakNastaleeq' ||
+      'digitalKhatt' ||
+      'alQalam' ||
+      'muhammadi' => QuranFontPreference.indoPak,
+      'kfgqpcHafs' ||
+      'notoNaskhArabic' ||
+      'qcfV2' ||
+      'qcfV4Tajweed' => QuranFontPreference.qpcHafs,
+      _ => fallback,
+    };
   }
 }
