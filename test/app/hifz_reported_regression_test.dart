@@ -29,8 +29,6 @@ void main() {
     'reported regression: Hifz owns QCF skins and normal Quran stays adaptive',
     (tester) async {
       final database = UserDatabase.forTesting(NativeDatabase.memory());
-      addTearDown(database.close);
-
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -55,19 +53,19 @@ void main() {
           child: const MaterialApp(home: QuranHifzShell()),
         ),
       );
-      await tester.pumpAndSettle();
+      await _pumpFlow(tester);
 
       await tester.tap(find.text('আরও').last);
-      await tester.pumpAndSettle();
+      await _pumpFlow(tester);
       await tester.tap(find.text('হিফজ').first);
-      await tester.pumpAndSettle();
+      await _pumpFlow(tester);
 
       await tester.tap(find.text('সূরা থেকে হিফজ শুরু করুন'));
-      await tester.pumpAndSettle();
+      await _pumpFlow(tester);
       await tester.tap(find.byKey(const ValueKey('hifz-surah-1')));
-      await tester.pumpAndSettle();
+      await _pumpFlow(tester);
       await tester.tap(find.byKey(const ValueKey('hifz-setup-start')));
-      await tester.pumpAndSettle();
+      await _pumpFlow(tester);
 
       expect(find.byType(HifzReaderPage), findsOneWidget);
       expect(find.byType(QuranStrictReaderBody), findsOneWidget);
@@ -80,7 +78,7 @@ void main() {
       await container
           .read(appPreferencesControllerProvider.notifier)
           .setHifzMushafVariant(QuranMushafVariant.qcfV2);
-      await tester.pumpAndSettle();
+      await _pumpFlow(tester);
 
       var hifzSurface = tester.widget<QuranStrictReaderBody>(
         find.byType(QuranStrictReaderBody),
@@ -91,22 +89,22 @@ void main() {
       await container
           .read(appPreferencesControllerProvider.notifier)
           .setHifzMushafVariant(QuranMushafVariant.qcfV4Tajweed);
-      await tester.pumpAndSettle();
+      await _pumpFlow(tester);
       hifzSurface = tester.widget<QuranStrictReaderBody>(
         find.byType(QuranStrictReaderBody),
       );
       expect(hifzSurface.variant, QuranMushafVariant.qcfV4Tajweed);
 
       await tester.pageBack();
-      await tester.pumpAndSettle();
+      await _pumpFlow(tester);
       expect(find.text('Al-Fatihah 1–2'), findsOneWidget);
 
       await tester.pageBack();
-      await tester.pumpAndSettle();
+      await _pumpFlow(tester);
       await tester.tap(find.text('কুরআন').last);
-      await tester.pumpAndSettle();
+      await _pumpFlow(tester);
       await tester.tap(find.byType(QuranSurahRow).first);
-      await tester.pumpAndSettle();
+      await _pumpFlow(tester);
 
       expect(find.byType(QuranReaderPage), findsOneWidget);
       expect(find.byType(QuranStrictReaderBody), findsNothing);
@@ -116,6 +114,11 @@ void main() {
           QuranMushafVariant.qcfV4Tajweed);
       expect(container.read(hifzFontSizeProvider), 56);
       expect(tester.takeException(), isNull);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 1));
+      await database.close();
     },
   );
 }
@@ -159,4 +162,11 @@ class _UnavailablePageFontRepository implements QuranPageFontRepository {
 class _FixtureAudioController extends QuranAudioController {
   @override
   QuranAudioState build() => const QuranAudioState.initial();
+}
+
+
+Future<void> _pumpFlow(WidgetTester tester) async {
+  for (var i = 0; i < 8; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
 }
