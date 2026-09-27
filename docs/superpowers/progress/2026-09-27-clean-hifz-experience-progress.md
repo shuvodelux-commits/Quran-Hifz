@@ -28,3 +28,5 @@ Task 3: Ruling: `lib/features/quran/presentation/mushaf/quran_strict_reader_body
 Task 3: complete (RED run 36291717034 failed on the missing independent Hifz/QCF APIs as expected; GREEN run 36297925954 reached Analyze=success, Hifz focused regression=success, full Test=success at head e534784; Android build remains a Task 9 gate).
 
 Task 4: complete (RED run 36298407239 failed on the intentionally missing Hifz engine classes; GREEN run 36298605192 reached Analyze=success, Hifz focused regression=success, full Test=success after restoring only Hifz domain/application/audio engine behavior; Android build remains a Task 9 gate).
+
+Task 5: complete (RED run 36298923387 failed on the new responsive Mushaf typography contract as expected; GREEN run 36299163977 reached Analyze=success, Hifz focused regression=success, full Test=success, and Android debug build=success after adding exact 20–56px typography, line-height/Tajweed controls, and scroll/wrap rendering).
