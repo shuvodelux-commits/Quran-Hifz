@@ -30,6 +30,31 @@ const _surahs = [
 ];
 
 void main() {
+  testWidgets('Surah picker remains clean on a narrow phone viewport', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWithValue(AppLanguage.english),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(body: HifzSurahPickerSheet(surahs: _surahs)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('hifz-surah-search')), findsOneWidget);
+    expect(find.byKey(const ValueKey('hifz-surah-1')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Surah picker searches number, English, Bangla, and Arabic', (
     tester,
   ) async {
