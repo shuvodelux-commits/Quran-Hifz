@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/features/audio/application/audio_providers.dart';
 import 'package:quran_hifz/features/audio/application/quran_audio_controller.dart';
+import 'package:quran_hifz/features/audio/domain/playback_requests.dart';
 import 'package:quran_hifz/features/audio/domain/quran_audio_state.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_preset.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_session.dart';
@@ -10,6 +11,7 @@ import 'package:quran_hifz/features/hifz/presentation/hifz_controls_bar.dart';
 import 'package:quran_hifz/features/hifz/presentation/hifz_reader_page.dart';
 import 'package:quran_hifz/features/quran/application/quran_mushaf_providers.dart';
 import 'package:quran_hifz/features/quran/application/quran_providers.dart';
+import 'package:quran_hifz/features/quran/application/reader_audio_actions.dart';
 import 'package:quran_hifz/features/quran/domain/quran_ayah.dart';
 import 'package:quran_hifz/features/quran/domain/quran_juz.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_page.dart';
@@ -19,6 +21,7 @@ import 'package:quran_hifz/features/quran/domain/quran_page_font_repository.dart
 import 'package:quran_hifz/features/quran/domain/quran_page_window.dart';
 import 'package:quran_hifz/features/quran/domain/quran_repository.dart';
 import 'package:quran_hifz/features/quran/domain/quran_surah.dart';
+import 'package:quran_hifz/features/quran/domain/quran_word.dart';
 import 'package:quran_hifz/features/quran/presentation/mushaf/quran_strict_reader_body.dart';
 import 'package:quran_hifz/features/settings/application/app_preferences_controller.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
@@ -55,6 +58,31 @@ void main() {
     expect(mushaf.activeWordPosition, 2);
   });
 
+
+  testWidgets('word tap keeps the existing Quran pronunciation interaction', (
+    tester,
+  ) async {
+    final port = _RecordingReaderAudioPort();
+    final actions = ReaderAudioActions(
+      repository: _FixtureQuranRepository(),
+      resolver: _FixtureReaderPlaybackRequestResolver(),
+      audio: port,
+      translationResourceId: 1,
+    );
+
+    await tester.pumpWidget(_readerApp(readerAudioActions: actions));
+    await tester.pumpAndSettle();
+
+    final mushaf = tester.widget<QuranStrictReaderBody>(
+      find.byType(QuranStrictReaderBody),
+    );
+    mushaf.onWordTap('1:1', 1);
+    await tester.pump();
+    await tester.pump();
+
+    expect(port.wordRequests, hasLength(1));
+    expect(port.wordRequests.single.wordKey, '1:1:1');
+  });
 
   testWidgets('56px Hifz text remains selected on a narrow phone for both skins', (
     tester,
@@ -131,7 +159,7 @@ void main() {
   });
 }
 
-Widget _readerApp() {
+Widget _readerApp({ReaderAudioActions? readerAudioActions}) {
   return ProviderScope(
     overrides: [
       quranRepositoryProvider.overrideWithValue(_FixtureQuranRepository()),
@@ -145,6 +173,8 @@ Widget _readerApp() {
         _MemoryPreferencesRepository(),
       ),
       quranAudioControllerProvider.overrideWith(_FixtureAudioController.new),
+      if (readerAudioActions != null)
+        readerAudioActionsProvider.overrideWithValue(readerAudioActions),
     ],
     child: const MaterialApp(
       home: HifzReaderPage(
@@ -191,7 +221,20 @@ class _FixtureQuranRepository implements QuranRepository {
     required int surahNumber,
     required int ayahNumber,
     required int translationResourceId,
-  }) async => null;
+  }) async {
+    if (surahNumber != 1 || ayahNumber != 1) return null;
+    return const QuranAyah(
+      surahNumber: 1,
+      ayahNumber: 1,
+      words: [
+        QuranWord(
+          position: 1,
+          arabic: 'بِسْمِ',
+          audioUrl: '001_001_001.mp3',
+        ),
+      ],
+    );
+  }
 
   @override
   Future<QuranPageWindow> loadPageWindow({
@@ -205,6 +248,50 @@ class _FixtureQuranRepository implements QuranRepository {
       nextPage: page == 2 ? null : page + 1,
     );
   }
+}
+
+class _FixtureReaderPlaybackRequestResolver
+    implements ReaderPlaybackRequestResolver {
+  @override
+  Future<WordPlaybackRequest> resolveWord(
+    QuranAyah ayah,
+    QuranWord word,
+  ) async {
+    return WordPlaybackRequest(
+      source: 'https://example.test/word.mp3',
+      wordKey: ayah.key + ':' + word.position.toString(),
+      ayahKey: ayah.key,
+      wordPosition: word.position,
+    );
+  }
+
+  @override
+  Future<AyahPlaybackRequest> resolveAyah(
+    QuranAyah ayah, {
+    required int repeatCount,
+    required Duration pauseBetweenRepeats,
+    required double speed,
+  }) {
+    throw UnimplementedError();
+  }
+}
+
+class _RecordingReaderAudioPort implements ReaderAudioPort {
+  final wordRequests = <WordPlaybackRequest>[];
+
+  @override
+  Future<void> playWord(WordPlaybackRequest request) async {
+    wordRequests.add(request);
+  }
+
+  @override
+  Future<void> playAyah(AyahPlaybackRequest request) async {}
+
+  @override
+  QuranAudioState readState() => const QuranAudioState.initial();
+
+  @override
+  Future<void> stop() async {}
 }
 
 class _FixtureMushafPageRepository implements QuranMushafPageRepository {
