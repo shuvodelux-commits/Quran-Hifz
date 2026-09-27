@@ -5,12 +5,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../audio/application/audio_providers.dart';
 import '../../quran/application/quran_providers.dart';
+import '../../quran/application/reader_audio_actions.dart';
 import '../../quran/application/reader_state.dart';
+import '../../quran/domain/quran_ayah.dart';
 import '../../quran/domain/quran_mushaf_variant.dart';
 import '../../quran/domain/quran_page_window.dart';
 import '../../quran/domain/quran_surah.dart';
+import '../../quran/domain/quran_word.dart';
 import '../../quran/presentation/mushaf/quran_strict_reader_body.dart';
 import '../../settings/application/app_preferences_controller.dart';
+import '../../study/application/study_providers.dart';
+import '../../study/domain/bookmark.dart';
+import '../../study/presentation/word_details_sheet.dart';
 import '../application/hifz_session_controller.dart';
 import '../application/hifz_start_defaults.dart';
 import '../domain/hifz_session.dart';
@@ -258,8 +264,10 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
       selectedStartAyahKey: _config.start.verseKey,
       selectedEndAyahKey: _config.end.verseKey,
       onPageChanged: (page) => unawaited(_openPage(page)),
-      onWordTap: (_, __) {},
-      onWordLongPress: (_, __) {},
+      onWordTap: (ayahKey, wordPosition) =>
+          unawaited(_playMushafWord(ayahKey, wordPosition)),
+      onWordLongPress: (ayahKey, wordPosition) =>
+          unawaited(_showMushafWordDetails(ayahKey, wordPosition)),
       onAyahTap: (_) {},
     );
 
@@ -286,6 +294,79 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
           ),
       ],
     );
+  }
+
+  Future<void> _playMushafWord(
+    String ayahKey,
+    int wordPosition,
+  ) async {
+    final target = await _resolveMushafWord(ayahKey, wordPosition);
+    if (target == null) return;
+    try {
+      await ref.read(readerAudioActionsProvider).playWord(
+            target.ayah,
+            target.word,
+          );
+    } on ReaderAudioUnavailableException catch (error) {
+      if (mounted) _showMessage(error.message);
+    } on Object catch (error, stackTrace) {
+      debugPrint('Hifz word audio failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (mounted) _showMessage('Word pronunciation could not be played.');
+    }
+  }
+
+  Future<void> _showMushafWordDetails(
+    String ayahKey,
+    int wordPosition,
+  ) async {
+    final target = await _resolveMushafWord(ayahKey, wordPosition);
+    if (!mounted || target == null) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => WordDetailsSheet(
+        target: StudyTarget.word(
+          surahNumber: target.ayah.surahNumber,
+          ayahNumber: target.ayah.ayahNumber,
+          wordPosition: target.word.position,
+        ),
+        word: target.word,
+        controller: ref.read(studyControllerProvider),
+      ),
+    );
+  }
+
+  Future<({QuranAyah ayah, QuranWord word})?> _resolveMushafWord(
+    String ayahKey,
+    int wordPosition,
+  ) async {
+    final parts = ayahKey.split(':');
+    if (parts.length != 2 || wordPosition < 1) return null;
+    final surahNumber = int.tryParse(parts[0]);
+    final ayahNumber = int.tryParse(parts[1]);
+    if (surahNumber == null || ayahNumber == null) return null;
+
+    final ayah = await ref.read(quranRepositoryProvider).loadAyah(
+          surahNumber: surahNumber,
+          ayahNumber: ayahNumber,
+          translationResourceId: ref.read(quranTranslationResourceIdProvider),
+        );
+    if (ayah == null) return null;
+    for (final word in ayah.words) {
+      if (word.position == wordPosition) {
+        return (ayah: ayah, word: word);
+      }
+    }
+    return null;
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   String _pageProgress(ReaderState state) {
