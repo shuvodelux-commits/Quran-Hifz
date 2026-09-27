@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
+import 'package:quran_hifz/features/quran/domain/quran_mushaf_variant.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 
 void main() {
@@ -24,6 +25,10 @@ void main() {
     expect(preferences.highlightActiveWord, isTrue);
     expect(preferences.language, AppLanguage.bangla);
     expect(preferences.asrSchool, AsrSchool.hanafi);
+    expect(preferences.hifzMushafVariant, QuranMushafVariant.qcfV4Tajweed);
+    expect(preferences.hifzFontSize, 32);
+    expect(preferences.hifzLineHeight, 1.35);
+    expect(preferences.hifzShowTajweedColors, isTrue);
   });
 
   test(
@@ -67,4 +72,27 @@ void main() {
     expect(indoPak.quranFont, QuranFontPreference.indoPak);
     expect(indoPak.quranScript, QuranScriptPreference.indoPak);
   });
+
+  test('normal Quran and Hifz appearance copy independently', () {
+    const original = AppPreferences.defaults();
+    final hifzChanged = original.copyWith(
+      hifzMushafVariant: QuranMushafVariant.qcfV2,
+      hifzFontSize: 48,
+      hifzLineHeight: 1.8,
+      hifzShowTajweedColors: false,
+    );
+    expect(hifzChanged.quranFont, QuranFontPreference.qpcHafs);
+    expect(hifzChanged.hifzMushafVariant, QuranMushafVariant.qcfV2);
+    expect(hifzChanged.hifzFontSize, 48);
+    expect(hifzChanged.hifzLineHeight, 1.8);
+    expect(hifzChanged.hifzShowTajweedColors, isFalse);
+
+    final quranChanged = hifzChanged.copyWith(
+      quranFont: QuranFontPreference.indoPak,
+    );
+    expect(quranChanged.quranFont, QuranFontPreference.indoPak);
+    expect(quranChanged.hifzMushafVariant, QuranMushafVariant.qcfV2);
+    expect(quranChanged.hifzFontSize, 48);
+  });
+
 }
