@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - fix/restore-hifz-skin
+    paths-ignore:
+      - "docs/superpowers/progress/**"
 
 concurrency:
   group: hifz-repair-${{ github.ref }}
