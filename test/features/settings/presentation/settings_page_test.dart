@@ -145,6 +145,8 @@ void main() {
     for (final font in QuranFontPreference.values) {
       expect(find.text(font.label), findsWidgets);
     }
+    expect(find.text('QCF V2 Madani'), findsNothing);
+    expect(find.text('QCF V4 Tajweed'), findsNothing);
   });
 
   testWidgets('font selection derives script and renders its selected face', (
