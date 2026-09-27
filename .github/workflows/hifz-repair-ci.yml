@@ -41,7 +41,7 @@ jobs:
         run: flutter analyze
 
       - name: Test
-        run: flutter test
+        run: flutter test --fail-fast
 
       - name: Build Android debug APK
         run: flutter build apk --debug
