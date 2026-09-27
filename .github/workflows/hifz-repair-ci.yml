@@ -37,22 +37,6 @@ jobs:
       - name: Resolve dependencies
         run: flutter pub get
 
-      - name: Generate Drift code
-        run: dart run build_runner build
-
-      - name: Commit generated Drift code
-        shell: bash
-        run: |
-          if ! git diff --quiet -- lib/core/database/user_database.g.dart; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add lib/core/database/user_database.g.dart
-            git commit -m "chore: regenerate Drift database"
-            git push origin HEAD:fix/restore-hifz-skin
-          fi
-          git restore -- .flutter-plugins-dependencies
-          git diff --exit-code
-
       - name: Analyze
         run: flutter analyze
 
