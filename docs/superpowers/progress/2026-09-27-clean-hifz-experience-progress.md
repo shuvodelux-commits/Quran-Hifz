@@ -26,3 +26,5 @@ Task 2: complete (RED run 36290789457 failed on missing hifz_progress_entries as
 
 Task 3: Ruling: `lib/features/quran/presentation/mushaf/quran_strict_reader_body.dart` is also modified as a dependent generic Mushaf adapter because removing QCF values from `QuranFontPreference` otherwise leaves the reusable QCF infrastructure uncompilable — this preserves the spec boundary that only Hifz chooses QCF skins — cost if wrong: one extra support-file refactor.
 Task 3: complete (RED run 36291717034 failed on the missing independent Hifz/QCF APIs as expected; GREEN run 36297925954 reached Analyze=success, Hifz focused regression=success, full Test=success at head e534784; Android build remains a Task 9 gate).
+
+Task 4: complete (RED run 36298407239 failed on the intentionally missing Hifz engine classes; GREEN run 36298605192 reached Analyze=success, Hifz focused regression=success, full Test=success after restoring only Hifz domain/application/audio engine behavior; Android build remains a Task 9 gate).
