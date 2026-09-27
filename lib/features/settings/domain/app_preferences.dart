@@ -1,4 +1,5 @@
 import '../../quran/domain/quran_font_preference.dart';
+import '../../quran/domain/quran_mushaf_variant.dart';
 import '../../quran/domain/quran_script.dart';
 
 export '../../quran/domain/quran_script.dart';
@@ -18,6 +19,10 @@ class AppPreferences {
   static const maxBanglaLineHeight = 2.2;
   static const minBanglaFontSize = 12.0;
   static const maxBanglaFontSize = 28.0;
+  static const minHifzFontSize = 20.0;
+  static const maxHifzFontSize = 56.0;
+  static const minHifzLineHeight = 1.20;
+  static const maxHifzLineHeight = 2.40;
 
   const AppPreferences({
     required this.theme,
@@ -25,6 +30,10 @@ class AppPreferences {
     required this.quranFont,
     required this.arabicFontSize,
     required this.arabicLineHeight,
+    required this.hifzMushafVariant,
+    required this.hifzFontSize,
+    required this.hifzLineHeight,
+    required this.hifzShowTajweedColors,
     required this.banglaLineHeight,
     required this.banglaFontSize,
     required this.showTranslation,
@@ -47,6 +56,10 @@ class AppPreferences {
       quranFont = QuranFontPreference.defaultGlobal,
       arabicFontSize = 27,
       arabicLineHeight = 1.2,
+      hifzMushafVariant = QuranMushafVariant.qcfV4Tajweed,
+      hifzFontSize = 32,
+      hifzLineHeight = 1.35,
+      hifzShowTajweedColors = true,
       banglaLineHeight = 1.2,
       banglaFontSize = 18,
       showTranslation = true,
@@ -67,6 +80,10 @@ class AppPreferences {
   final QuranFontPreference quranFont;
   final double arabicFontSize;
   final double arabicLineHeight;
+  final QuranMushafVariant hifzMushafVariant;
+  final double hifzFontSize;
+  final double hifzLineHeight;
+  final bool hifzShowTajweedColors;
   final double banglaLineHeight;
   final double banglaFontSize;
   final bool showTranslation;
@@ -88,6 +105,10 @@ class AppPreferences {
     QuranFontPreference? quranFont,
     double? arabicFontSize,
     double? arabicLineHeight,
+    QuranMushafVariant? hifzMushafVariant,
+    double? hifzFontSize,
+    double? hifzLineHeight,
+    bool? hifzShowTajweedColors,
     double? banglaLineHeight,
     double? banglaFontSize,
     bool? showTranslation,
@@ -117,6 +138,11 @@ class AppPreferences {
       quranFont: nextQuranFont,
       arabicFontSize: arabicFontSize ?? this.arabicFontSize,
       arabicLineHeight: arabicLineHeight ?? this.arabicLineHeight,
+      hifzMushafVariant: hifzMushafVariant ?? this.hifzMushafVariant,
+      hifzFontSize: hifzFontSize ?? this.hifzFontSize,
+      hifzLineHeight: hifzLineHeight ?? this.hifzLineHeight,
+      hifzShowTajweedColors:
+          hifzShowTajweedColors ?? this.hifzShowTajweedColors,
       banglaLineHeight: banglaLineHeight ?? this.banglaLineHeight,
       banglaFontSize: banglaFontSize ?? this.banglaFontSize,
       showTranslation: showTranslation ?? this.showTranslation,
