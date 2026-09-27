@@ -40,6 +40,22 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
+      - name: Hifz focused regression
+        shell: bash
+        run: |
+          targets=(
+            test/core/database/user_database_migration_test.dart
+            test/features/quran/domain/quran_font_preference_test.dart
+            test/features/quran/presentation/quran_reader_page_test.dart
+            test/features/settings
+          )
+          for optional in test/features/hifz test/features/progress test/features/revision test/assets; do
+            if [[ -e "$optional" ]]; then
+              targets+=("$optional")
+            fi
+          done
+          flutter test --fail-fast "${targets[@]}"
+
       - name: Test
         run: flutter test --fail-fast
 
