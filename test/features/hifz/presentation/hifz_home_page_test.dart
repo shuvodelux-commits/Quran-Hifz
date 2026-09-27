@@ -54,6 +54,24 @@ void main() {
     expect(find.byKey(const ValueKey('hifz-plans-retry')), findsNothing);
   });
 
+
+  testWidgets('Focused Hifz home stays clean on a narrow phone viewport', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(_homeApp(plans: Stream.value(const [])));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('hifz-start-surah')), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.byType(Card), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('plan load error stays inline and never exposes raw SQLite text', (
     tester,
   ) async {

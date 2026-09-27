@@ -55,6 +55,48 @@ void main() {
     expect(mushaf.activeWordPosition, 2);
   });
 
+
+  testWidgets('56px Hifz text remains selected on a narrow phone for both skins', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(_readerApp());
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HifzReaderPage)),
+    );
+    await container
+        .read(appPreferencesControllerProvider.notifier)
+        .setHifzFontSize(56);
+    await container
+        .read(appPreferencesControllerProvider.notifier)
+        .setHifzMushafVariant(QuranMushafVariant.qcfV2);
+    await tester.pumpAndSettle();
+
+    var mushaf = tester.widget<QuranStrictReaderBody>(
+      find.byType(QuranStrictReaderBody),
+    );
+    expect(mushaf.fontSize, 56);
+    expect(mushaf.variant, QuranMushafVariant.qcfV2);
+    expect(tester.takeException(), isNull);
+
+    await container
+        .read(appPreferencesControllerProvider.notifier)
+        .setHifzMushafVariant(QuranMushafVariant.qcfV4Tajweed);
+    await tester.pumpAndSettle();
+    mushaf = tester.widget<QuranStrictReaderBody>(
+      find.byType(QuranStrictReaderBody),
+    );
+    expect(mushaf.fontSize, 56);
+    expect(mushaf.variant, QuranMushafVariant.qcfV4Tajweed);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('hide/reveal keeps the Mushaf mounted and appearance keeps page', (
     tester,
   ) async {
