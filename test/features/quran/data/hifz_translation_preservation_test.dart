@@ -7,6 +7,7 @@ import 'package:quran_hifz/features/hifz/domain/hifz_preset.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_progress.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_session.dart';
 import 'package:quran_hifz/features/quran/data/quran_translation_selection_store.dart';
+import 'package:quran_hifz/features/quran/domain/quran_translation_source.dart';
 
 void main() {
   test('Hifz writes preserve installed and selected translation sources', () async {
@@ -30,7 +31,7 @@ void main() {
 
     final selection = UserDatabaseQuranTranslationSelectionStore(database);
     await selection.write(const [
-      'bundled.primary.bn',
+      bundledPrimaryTranslationSourceId,
       'qf.translation.20',
     ]);
 
@@ -69,7 +70,7 @@ void main() {
     expect(installed!.resourceId, 20);
     expect(installed.recordCount, 6236);
     expect(await selection.read(), [
-      'bundled.primary.bn',
+      bundledPrimaryTranslationSourceId,
       'qf.translation.20',
     ]);
   });

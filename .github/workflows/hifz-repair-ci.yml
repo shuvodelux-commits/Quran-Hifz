@@ -8,7 +8,7 @@ on:
       - "docs/superpowers/progress/**"
 
 concurrency:
-  group: hifz-repair-${{ github.ref }}
+  group: hifz-repair-final-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -58,6 +60,12 @@ jobs:
 
       - name: Test
         run: flutter test --fail-fast
+
+      - name: Diff check
+        shell: bash
+        run: |
+          git fetch origin main
+          git diff --check origin/main...HEAD
 
       - name: Build Android debug APK
         run: flutter build apk --debug
