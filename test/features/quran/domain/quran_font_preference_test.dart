@@ -1,67 +1,37 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
+import 'package:quran_hifz/features/quran/domain/quran_mushaf_variant.dart';
 import 'package:quran_hifz/features/quran/domain/quran_script.dart';
 
 void main() {
-  test('catalog exposes exactly the four approved Quran font choices', () {
+  test('normal Quran catalog exposes only adaptive reading fonts', () {
     expect(QuranFontPreference.values, [
       QuranFontPreference.qpcHafs,
       QuranFontPreference.indoPak,
-      QuranFontPreference.qcfV2,
-      QuranFontPreference.qcfV4Tajweed,
     ]);
     expect(QuranFontPreference.defaultGlobal, QuranFontPreference.qpcHafs);
   });
 
-  test('font choices map to the correct script renderer and Mushaf id', () {
-    final expected =
-        <
-          QuranFontPreference,
-          ({
-            String label,
-            QuranScriptPreference script,
-            QuranFontRenderKind renderKind,
-            int mushafId,
-            String? fontFamily,
-          })
-        >{
-          QuranFontPreference.qpcHafs: (
-            label: 'QPC Hafs / Uthmani',
-            script: QuranScriptPreference.uthmaniMadani,
-            renderKind: QuranFontRenderKind.adaptiveUnicode,
-            mushafId: 5,
-            fontFamily: 'QPC Hafs',
-          ),
-          QuranFontPreference.indoPak: (
-            label: 'IndoPak Nastaleeq',
-            script: QuranScriptPreference.indoPak,
-            renderKind: QuranFontRenderKind.adaptiveUnicode,
-            mushafId: 3,
-            fontFamily: 'IndoPak Nastaleeq',
-          ),
-          QuranFontPreference.qcfV2: (
-            label: 'QCF V2 Madani',
-            script: QuranScriptPreference.uthmaniMadani,
-            renderKind: QuranFontRenderKind.strictQcfV2,
-            mushafId: 1,
-            fontFamily: null,
-          ),
-          QuranFontPreference.qcfV4Tajweed: (
-            label: 'QCF V4 Tajweed',
-            script: QuranScriptPreference.uthmaniMadani,
-            renderKind: QuranFontRenderKind.strictQcfV4Tajweed,
-            mushafId: 19,
-            fontFamily: null,
-          ),
-        };
+  test('normal Quran fonts keep their approved typography metadata', () {
+    expect(QuranFontPreference.qpcHafs.label, 'QPC Hafs / Uthmani');
+    expect(QuranFontPreference.qpcHafs.fontFamily, 'QPC Hafs');
+    expect(
+      QuranFontPreference.qpcHafs.script,
+      QuranScriptPreference.uthmaniMadani,
+    );
+    expect(QuranFontPreference.indoPak.label, 'IndoPak Nastaleeq');
+    expect(QuranFontPreference.indoPak.fontFamily, 'IndoPak Nastaleeq');
+    expect(QuranFontPreference.indoPak.script, QuranScriptPreference.indoPak);
+  });
 
-    for (final font in QuranFontPreference.values) {
-      final mapping = expected[font]!;
-      expect(font.label, mapping.label);
-      expect(font.script, mapping.script);
-      expect(font.renderKind, mapping.renderKind);
-      expect(font.mushafId, mapping.mushafId);
-      expect(font.fontFamily, mapping.fontFamily);
-    }
+  test('QCF variants form an independent Hifz Mushaf catalog', () {
+    expect(QuranMushafVariant.values, [
+      QuranMushafVariant.qcfV2,
+      QuranMushafVariant.qcfV4Tajweed,
+    ]);
+    expect(QuranMushafVariant.qcfV2.label, 'QCF V2 Madani');
+    expect(QuranMushafVariant.qcfV2.mushafId, 1);
+    expect(QuranMushafVariant.qcfV4Tajweed.label, 'QCF V4 Tajweed');
+    expect(QuranMushafVariant.qcfV4Tajweed.mushafId, 19);
   });
 }
