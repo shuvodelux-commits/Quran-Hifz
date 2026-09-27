@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:path/path.dart' as p;
 import 'package:quran_hifz/features/quran/data/quran_foundation_page_font_repository.dart';
-import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
+import 'package:quran_hifz/features/quran/domain/quran_mushaf_variant.dart';
 import 'package:quran_hifz/features/quran/domain/quran_page_font_repository.dart';
 
 void main() {
@@ -24,10 +24,10 @@ void main() {
   });
 
   QuranFoundationPageFontRepository repository(
-    QuranFontPreference font, {
+    QuranMushafVariant variant, {
     http.Client? client,
   }) => QuranFoundationPageFontRepository(
-    font: font,
+    variant: variant,
     client:
         client ??
         MockClient((request) async {
@@ -37,60 +37,49 @@ void main() {
     supportDirectory: () async => tempDir,
   );
 
-  File cached(QuranFontPreference font, int page) => File(
+  File cached(QuranMushafVariant variant, int page) => File(
     p.join(
       tempDir.path,
       'quran',
       'page-fonts',
-      font == QuranFontPreference.qcfV2 ? 'qcf-v2' : 'qcf-v4-tajweed',
+      variant == QuranMushafVariant.qcfV2 ? 'qcf-v2' : 'qcf-v4-tajweed',
       'p$page.woff2',
     ),
   );
 
   test('maps strict QCF page fonts to Quran Foundation URLs', () {
     expect(
-      quranFoundationPageFontUri(QuranFontPreference.qcfV2, 440).toString(),
+      quranFoundationPageFontUri(QuranMushafVariant.qcfV2, 440).toString(),
       'https://verses.quran.foundation/fonts/quran/hafs/v2/woff2/p440.woff2',
     );
     expect(
       quranFoundationPageFontUri(
-        QuranFontPreference.qcfV4Tajweed,
+        QuranMushafVariant.qcfV4Tajweed,
         440,
       ).toString(),
       'https://verses.quran.foundation/fonts/quran/hafs/v4/colrv1/woff2/p440.woff2',
     );
   });
 
-  test('rejects adaptive fonts and pages outside 1 through 604', () {
+  test('rejects pages outside 1 through 604', () {
     expect(
-      () => quranFoundationPageFontUri(QuranFontPreference.qpcHafs, 1),
-      throwsArgumentError,
-    );
-    expect(
-      () => QuranFoundationPageFontRepository(
-        font: QuranFontPreference.indoPak,
-        supportDirectory: () async => tempDir,
-      ),
-      throwsArgumentError,
-    );
-    expect(
-      () => quranFoundationPageFontUri(QuranFontPreference.qcfV2, 0),
+      () => quranFoundationPageFontUri(QuranMushafVariant.qcfV2, 0),
       throwsRangeError,
     );
     expect(
-      () => quranFoundationPageFontUri(QuranFontPreference.qcfV2, 605),
+      () => quranFoundationPageFontUri(QuranMushafVariant.qcfV2, 605),
       throwsRangeError,
     );
   });
 
   test('V2 and V4 use separate cache roots and exact URLs', () async {
-    final v2 = await repository(QuranFontPreference.qcfV2).ensurePageFont(440);
+    final v2 = await repository(QuranMushafVariant.qcfV2).ensurePageFont(440);
     final v4 = await repository(
-      QuranFontPreference.qcfV4Tajweed,
+      QuranMushafVariant.qcfV4Tajweed,
     ).ensurePageFont(440);
 
-    expect(v2.toFilePath(), cached(QuranFontPreference.qcfV2, 440).path);
-    expect(v4.toFilePath(), cached(QuranFontPreference.qcfV4Tajweed, 440).path);
+    expect(v2.toFilePath(), cached(QuranMushafVariant.qcfV2, 440).path);
+    expect(v4.toFilePath(), cached(QuranMushafVariant.qcfV4Tajweed, 440).path);
     expect(v2.toFilePath(), isNot(v4.toFilePath()));
     expect(requests.map((uri) => uri.toString()), [
       'https://verses.quran.foundation/fonts/quran/hafs/v2/woff2/p440.woff2',
@@ -101,12 +90,12 @@ void main() {
   test(
     'returns a valid cache without allowing HTTP failure to replace it',
     () async {
-      final file = cached(QuranFontPreference.qcfV2, 2);
+      final file = cached(QuranMushafVariant.qcfV2, 2);
       file.parent.createSync(recursive: true);
       await file.writeAsBytes(validWoff2);
 
       final subject = repository(
-        QuranFontPreference.qcfV2,
+        QuranMushafVariant.qcfV2,
         client: MockClient((_) async => http.Response('offline', 503)),
       );
 
@@ -118,14 +107,14 @@ void main() {
   );
 
   test('invalid WOFF2 never replaces an existing valid backup', () async {
-    final finalFile = cached(QuranFontPreference.qcfV4Tajweed, 3);
+    final finalFile = cached(QuranMushafVariant.qcfV4Tajweed, 3);
     final backup = File('${finalFile.path}.bak');
     finalFile.parent.createSync(recursive: true);
     await backup.writeAsBytes(validWoff2);
     await finalFile.writeAsBytes([1, 2, 3]);
 
     final subject = repository(
-      QuranFontPreference.qcfV4Tajweed,
+      QuranMushafVariant.qcfV4Tajweed,
       client: MockClient((_) async => http.Response.bytes([1, 2, 3], 200)),
     );
 
@@ -140,13 +129,13 @@ void main() {
   test(
     'recovers a valid backup left by an interrupted atomic replacement',
     () async {
-      final finalFile = cached(QuranFontPreference.qcfV2, 4);
+      final finalFile = cached(QuranMushafVariant.qcfV2, 4);
       final backup = File('${finalFile.path}.bak');
       finalFile.parent.createSync(recursive: true);
       await backup.writeAsBytes(validWoff2);
 
       final subject = repository(
-        QuranFontPreference.qcfV2,
+        QuranMushafVariant.qcfV2,
         client: MockClient((_) async => throw const SocketException('offline')),
       );
 
@@ -162,7 +151,7 @@ void main() {
     'offline uncached page throws typed error and leaves no part file',
     () async {
       final subject = repository(
-        QuranFontPreference.qcfV2,
+        QuranMushafVariant.qcfV2,
         client: MockClient((_) async => throw const SocketException('offline')),
       );
 
@@ -171,7 +160,7 @@ void main() {
         throwsA(isA<QuranPageFontUnavailableException>()),
       );
 
-      final file = cached(QuranFontPreference.qcfV2, 5);
+      final file = cached(QuranMushafVariant.qcfV2, 5);
       expect(file.existsSync(), isFalse);
       expect(File('${file.path}.part').existsSync(), isFalse);
     },
@@ -179,7 +168,7 @@ void main() {
 
   test('HTTP failure is recognizable and leaves no corrupt cache', () async {
     final subject = repository(
-      QuranFontPreference.qcfV4Tajweed,
+      QuranMushafVariant.qcfV4Tajweed,
       client: MockClient((request) async {
         requests.add(request.url);
         return http.Response('unavailable', 503);
@@ -191,10 +180,10 @@ void main() {
       throwsA(isA<QuranPageFontUnavailableException>()),
     );
 
-    expect(cached(QuranFontPreference.qcfV4Tajweed, 6).existsSync(), isFalse);
+    expect(cached(QuranMushafVariant.qcfV4Tajweed, 6).existsSync(), isFalse);
     expect(
       File(
-        '${cached(QuranFontPreference.qcfV4Tajweed, 6).path}.part',
+        '${cached(QuranMushafVariant.qcfV4Tajweed, 6).path}.part',
       ).existsSync(),
       isFalse,
     );
@@ -203,7 +192,7 @@ void main() {
   test(
     'deduplicates same-page downloads and prefetches valid neighbors',
     () async {
-      final subject = repository(QuranFontPreference.qcfV2);
+      final subject = repository(QuranMushafVariant.qcfV2);
 
       final results = await Future.wait([
         subject.ensurePageFont(20),
