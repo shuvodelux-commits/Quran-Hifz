@@ -2,6 +2,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/core/database/user_database.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
+import 'package:quran_hifz/features/quran/domain/quran_mushaf_variant.dart';
 import 'package:quran_hifz/features/settings/data/user_database_app_preferences_repository.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 
@@ -30,6 +31,10 @@ void main() {
         language: AppLanguage.english,
         asrSchool: AsrSchool.standard,
         prayerCityId: 'dhaka',
+        hifzMushafVariant: QuranMushafVariant.qcfV2,
+        hifzFontSize: 46,
+        hifzLineHeight: 1.75,
+        hifzShowTajweedColors: false,
       ),
     );
 
@@ -52,6 +57,10 @@ void main() {
     expect(restored.language, AppLanguage.english);
     expect(restored.asrSchool, AsrSchool.standard);
     expect(restored.prayerCityId, 'dhaka');
+    expect(restored.hifzMushafVariant, QuranMushafVariant.qcfV2);
+    expect(restored.hifzFontSize, 46);
+    expect(restored.hifzLineHeight, 1.75);
+    expect(restored.hifzShowTajweedColors, isFalse);
   });
 
   test('unknown Quran font falls back safely', () async {
@@ -122,4 +131,49 @@ void main() {
 
     expect(restored.prayerCityId, isNull);
   });
+
+  test('legacy global QCF font normalizes without overriding Hifz skin', () async {
+    final database = UserDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final repository = UserDatabaseAppPreferencesRepository(database);
+
+    await database.saveSetting(
+      UserDatabaseAppPreferencesRepository.quranFontKey,
+      'qcfV2',
+    );
+    await database.saveSetting(
+      UserDatabaseAppPreferencesRepository.hifzMushafVariantKey,
+      QuranMushafVariant.qcfV4Tajweed.name,
+    );
+
+    final restored = await repository.load();
+    expect(restored.quranFont, QuranFontPreference.qpcHafs);
+    expect(restored.hifzMushafVariant, QuranMushafVariant.qcfV4Tajweed);
+  });
+
+  test('malformed Hifz appearance falls back to safe defaults', () async {
+    final database = UserDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final repository = UserDatabaseAppPreferencesRepository(database);
+
+    await database.saveSetting(
+      UserDatabaseAppPreferencesRepository.hifzMushafVariantKey,
+      'not-a-mushaf',
+    );
+    await database.saveSetting(
+      UserDatabaseAppPreferencesRepository.hifzFontSizeKey,
+      '100',
+    );
+    await database.saveSetting(
+      UserDatabaseAppPreferencesRepository.hifzLineHeightKey,
+      '0.2',
+    );
+
+    final restored = await repository.load();
+    const defaults = AppPreferences.defaults();
+    expect(restored.hifzMushafVariant, defaults.hifzMushafVariant);
+    expect(restored.hifzFontSize, defaults.hifzFontSize);
+    expect(restored.hifzLineHeight, defaults.hifzLineHeight);
+  });
+
 }
