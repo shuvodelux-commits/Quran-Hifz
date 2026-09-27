@@ -15,6 +15,34 @@ const _surah = QuranSurahSummary(
 );
 
 void main() {
+  testWidgets('setup sheet remains usable on a narrow phone viewport', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: HifzSetupSheet(
+            surah: _surah,
+            initialStartAyah: 1,
+            initialEndAyah: 5,
+            initialPreset: HifzPresets.newMemorization,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('hifz-start-ayah')), findsOneWidget);
+    expect(find.byKey(const ValueKey('hifz-end-ayah')), findsOneWidget);
+    expect(find.byKey(const ValueKey('hifz-setup-start')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('setup returns the selected ayah range and repetition preset', (
     tester,
   ) async {
