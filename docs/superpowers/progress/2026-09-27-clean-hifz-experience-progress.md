@@ -23,3 +23,6 @@ Task 1: complete (commits baae8dc..0fd2983; GitHub Actions run 36290028209 reach
 
 Task 2: Ruling: Generate and commit Drift code in GitHub Actions because this GitHub-only harness has no local Dart/Flutter executable — build_runner remains the canonical generator — cost if wrong: one bot-generated commit may need cleanup.
 Task 2: complete (RED run 36290789457 failed on missing hifz_progress_entries as expected; GREEN run 36291443841 Hifz focused regression passed after schema v13, repository, and migration restoration).
+
+Task 3: Ruling: `lib/features/quran/presentation/mushaf/quran_strict_reader_body.dart` is also modified as a dependent generic Mushaf adapter because removing QCF values from `QuranFontPreference` otherwise leaves the reusable QCF infrastructure uncompilable — this preserves the spec boundary that only Hifz chooses QCF skins — cost if wrong: one extra support-file refactor.
+Task 3: complete (RED run 36291717034 failed on the missing independent Hifz/QCF APIs as expected; GREEN run 36297925954 reached Analyze=success, Hifz focused regression=success, full Test=success at head e534784; Android build remains a Task 9 gate).
