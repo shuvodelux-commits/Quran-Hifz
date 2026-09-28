@@ -183,11 +183,13 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              appText(value.language, 'পড়ার সেটিংস', 'Reading settings'),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
+            _SettingsSectionHeader(
+              icon: Icons.menu_book_outlined,
+              title: appText(value.language, 'কুরআন পড়া', 'Quran Reading'),
+              subtitle: appText(
+                value.language,
+                'ফন্ট, তাজবিদ ও ট্যাপ আচরণ',
+                'Font, Tajweed and tap behavior',
               ),
             ),
             const SizedBox(height: 6),
