@@ -408,14 +408,35 @@ class SettingsPage extends ConsumerWidget {
                   subtitle: Text(
                     appText(
                       value.language,
-                      'অনুবাদ চালু থাকলে আরবি শব্দ ও বাংলা অর্থ একসঙ্গে হাইলাইট হবে।',
-                      'The spoken Arabic word and its Bangla meaning are highlighted when translation is on.',
+                      'আয়াতের অডিও চলার সময় উচ্চারিত আরবি শব্দটি হাইলাইট হবে।',
+                      'Highlights the spoken Arabic word while ayah audio plays.',
                     ),
                   ),
                   value: value.highlightActiveWord,
                   onChanged: (enabled) => ref
                       .read(appPreferencesControllerProvider.notifier)
                       .setHighlightActiveWord(enabled),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    appText(
+                      value.language,
+                      'প্লে করার সময় শব্দের বাংলা অর্থ দেখান',
+                      'Show Bangla word meaning during playback',
+                    ),
+                  ),
+                  subtitle: Text(
+                    appText(
+                      value.language,
+                      'বর্তমান শব্দের অর্থ ছোট বাবলে দেখাবে; সম্পূর্ণ আয়াতের অনুবাদ অপরিবর্তিত থাকবে।',
+                      'Shows the current word meaning in a small bubble; the full ayah translation stays unchanged.',
+                    ),
+                  ),
+                  value: value.showPlaybackBanglaWordMeaning,
+                  onChanged: (enabled) => ref
+                      .read(appPreferencesControllerProvider.notifier)
+                      .setShowPlaybackBanglaWordMeaning(enabled),
                 ),
               ],
             ),
