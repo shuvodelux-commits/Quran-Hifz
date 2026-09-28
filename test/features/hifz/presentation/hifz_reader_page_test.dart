@@ -116,6 +116,47 @@ void main() {
   });
 
 
+
+  testWidgets('Continuous mode loads and follows the playback page', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_readerApp());
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HifzReaderPage)),
+    );
+    await container
+        .read(appPreferencesControllerProvider.notifier)
+        .setHifzReaderMode(HifzReaderMode.continuous);
+    await tester.pumpAndSettle();
+
+    final audio = container.read(quranAudioControllerProvider.notifier)
+        as _FixtureAudioController;
+    audio.setPlayback(
+      const QuranAudioState(
+        mode: QuranAudioMode.ayah,
+        status: QuranAudioStatus.playing,
+        speed: 1,
+        repeatIndex: 1,
+        repeatTotal: 1,
+        ayahKey: '1:2',
+        activeWordPosition: 1,
+      ),
+    );
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    final continuous = tester.widget<HifzContinuousReader>(
+      find.byType(HifzContinuousReader),
+    );
+    expect(continuous.state.windows, contains(2));
+    expect(continuous.playbackPage, 2);
+    expect(continuous.activeAyahKey, '1:2');
+    expect(continuous.activeWordPosition, 1);
+    expect(continuous.activeWordBanglaMeaning, 'সকল প্রশংসা');
+  });
+
   testWidgets('Page mode follows ayah playback onto the target Mushaf page', (
     tester,
   ) async {
