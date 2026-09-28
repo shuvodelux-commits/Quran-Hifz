@@ -27,11 +27,10 @@ jobs:
 
       - name: Targeted tests
         run: |
-          set +e
-          flutter test test/features/quran/presentation/quran_reader_page_test.dart --plain-name "ayah playback shows active Bangla word meaning as a bubble and keeps translation"
-          reader_status=$?
-          flutter test test/features/settings/presentation/settings_page_test.dart --plain-name "playback Bangla word meaning has its own toggle"
-          settings_status=$?
-          if [ "$reader_status" -ne 0 ] || [ "$settings_status" -ne 0 ]; then
-            exit 1
-          fi
+          flutter test --fail-fast test/features/quran/presentation/quran_reader_page_test.dart
+          flutter test --fail-fast test/features/settings/presentation/settings_page_test.dart
+          flutter test --fail-fast test/features/settings/application/app_preferences_controller_test.dart
+          flutter test --fail-fast test/features/settings/data/user_database_app_preferences_repository_test.dart
+
+      - name: Analyze
+        run: flutter analyze
