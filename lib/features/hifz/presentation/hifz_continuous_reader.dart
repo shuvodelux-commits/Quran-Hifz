@@ -82,7 +82,14 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader>
     super.initState();
     _autoScrollTicker = createTicker(_onAutoScrollTick);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _syncAutoScrollTicker();
+      if (!mounted) return;
+      if (widget.audioPlaying &&
+          widget.autoScrollEnabled &&
+          !_audioDisableRequested) {
+        _audioDisableRequested = true;
+        widget.onDisableAutoScroll?.call();
+      }
+      _syncAutoScrollTicker();
     });
   }
 
