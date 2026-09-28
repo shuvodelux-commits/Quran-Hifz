@@ -23,5 +23,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Task 2 renderer protocol tests
-        run: flutter test test/features/quran/presentation/mushaf/mushaf_renderer_message_test.dart test/features/quran/presentation/mushaf/mushaf_webview_driver_test.dart
+      - name: Task 3 renderer readiness tests
+        run: |
+          flutter test test/features/quran/presentation/mushaf/mushaf_webview_driver_test.dart \
+            test/features/quran/presentation/quran_strict_mushaf_surface_test.dart
