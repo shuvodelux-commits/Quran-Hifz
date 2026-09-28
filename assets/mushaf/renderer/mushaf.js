@@ -432,6 +432,9 @@
     });
   }
   function setActiveAyah(ayahKey) {
+    root.querySelectorAll('.word.active-word')
+      .forEach((element) => element.classList.remove('active-word'));
+    clearMeaningBubble();
     root.querySelectorAll('.word, .ayah-end').forEach((element) => {
       element.classList.toggle(
         'active-ayah',
