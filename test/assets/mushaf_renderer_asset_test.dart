@@ -87,6 +87,7 @@ void main() {
     expect(css, contains('overflow-y: hidden'));
     expect(js, contains('continuousLayout'));
     expect(js, contains('postPageMetrics'));
+    expect(js, contains('if (state.continuousLayout) return;'));
   });
 
   test('renderer publishes the complete Flutter command surface', () {
