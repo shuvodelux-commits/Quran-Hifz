@@ -217,7 +217,7 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader>
     if (!mounted) return;
     if (_shouldAutoScroll) {
       if (!_autoScrollTicker.isActive) {
-        _lastAutoScrollTick = null;
+        _lastAutoScrollTick = Duration.zero;
         _autoScrollTicker.start();
       }
       return;
