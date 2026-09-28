@@ -68,15 +68,18 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     final isSentencePlaying = ref.watch(
       isAyahPlaybackActiveProvider(widget.ayah.key),
     );
-    final highlightTranslation = ref.watch(highlightActiveWordProvider);
+    final showPlaybackBanglaWordMeaning = ref.watch(
+      showPlaybackBanglaWordMeaningProvider,
+    );
     final translationVisible = widget.showTranslation;
     final activeMeaning =
-        isSentencePlaying && highlightTranslation && translationVisible
+        isSentencePlaying && showPlaybackBanglaWordMeaning
         ? widget.ayah.words
               .where((word) => word.position == activeWordPosition)
               .map((word) => word.banglaMeaning?.trim())
               .firstOrNull
         : null;
+    final hasActiveMeaning = activeMeaning?.isNotEmpty == true;
     final isFatihahBismillah =
         widget.ayah.surahNumber == 1 &&
         widget.ayah.ayahNumber == 1 &&
@@ -163,34 +166,15 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                   ],
                 ),
               ),
-            if (translationVisible && widget.ayah.translation != null) ...[
+            if (hasActiveMeaning) ...[
               const SizedBox(height: 16),
-              if (activeMeaning != null && activeMeaning.isNotEmpty) ...[
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    key: const ValueKey('active-word-meaning'),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: QuranReadingColors.activeWordFor(
-                        context,
-                      ).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      activeMeaning,
-                      style: TextStyle(
-                        color: QuranReadingColors.activeWordFor(context),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-              ],
+              Align(
+                alignment: Alignment.centerLeft,
+                child: _PlaybackWordMeaningBubble(meaning: activeMeaning!),
+              ),
+            ],
+            if (translationVisible && widget.ayah.translation != null) ...[
+              SizedBox(height: hasActiveMeaning ? 6 : 16),
               Text(
                 widget.ayah.translation!,
                 style: theme.textTheme.bodyLarge?.copyWith(
@@ -303,6 +287,48 @@ class _AyahCardState extends ConsumerState<AyahCard> {
         ),
         word: word,
         controller: ref.read(studyControllerProvider),
+      ),
+    );
+  }
+}
+
+class _PlaybackWordMeaningBubble extends StatelessWidget {
+  const _PlaybackWordMeaningBubble({required this.meaning});
+
+  final String meaning;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final accent = QuranReadingColors.activeWordFor(context);
+
+    return Semantics(
+      liveRegion: true,
+      label: 'Current word meaning: $meaning',
+      child: Container(
+        key: const ValueKey('playback-word-meaning-bubble'),
+        constraints: const BoxConstraints(maxWidth: 280),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: scheme.primaryContainer.withValues(alpha: 0.72),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: accent.withValues(alpha: 0.24)),
+          boxShadow: [
+            BoxShadow(
+              color: scheme.shadow.withValues(alpha: 0.12),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Text(
+          meaning,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: scheme.onSurface,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
