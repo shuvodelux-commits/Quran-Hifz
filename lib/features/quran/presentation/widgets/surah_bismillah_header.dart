@@ -20,7 +20,7 @@ class SurahBismillahHeader extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final arabicFontSize = ref.watch(arabicFontSizeProvider);
     final showTajweedColors = ref.watch(effectiveQuranTajweedColorsProvider);
-    final glyphSize = (arabicFontSize * 1.55).clamp(48.0, 78.0).toDouble();
+    final glyphSize = (arabicFontSize * 1.25).clamp(34.0, 44.0).toDouble();
 
     return Padding(
       key: ValueKey('surah-bismillah-$surahNumber'),
