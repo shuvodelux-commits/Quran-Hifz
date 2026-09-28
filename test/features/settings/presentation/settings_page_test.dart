@@ -41,6 +41,10 @@ void main() {
       findsNothing,
     );
 
+    await tester.tap(find.text('Sea Green'));
+    await tester.pumpAndSettle();
+    expect(preferences.value.theme, AppThemePreference.green);
+
     await tester.scrollUntilVisible(
       find.text('Quran Reading'),
       250,
