@@ -11,9 +11,11 @@ permissions:
 jobs:
   flutter:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -23,7 +25,18 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Task 3 renderer readiness tests
+
+      - name: Hifz reader regressions
         run: |
-          flutter test test/features/quran/presentation/mushaf/mushaf_webview_driver_test.dart \
-            test/features/quran/presentation/quran_strict_mushaf_surface_test.dart
+          flutter test --fail-fast             test/features/hifz             test/features/quran/presentation/mushaf             test/features/quran/presentation/quran_strict_mushaf_surface_test.dart             test/assets/hifz_mushaf_responsive_css_test.dart             test/assets/mushaf_renderer_asset_test.dart             test/features/settings/domain/app_preferences_test.dart             test/features/settings/application/app_preferences_controller_test.dart             test/features/settings/data/user_database_app_preferences_repository_test.dart
+
+      - name: Normal Quran reader regression
+        run: flutter test test/features/quran/presentation/quran_reader_page_test.dart
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Diff check
+        run: |
+          git fetch origin main
+          git diff --check origin/main...HEAD
