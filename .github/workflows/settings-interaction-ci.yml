@@ -38,4 +38,6 @@ jobs:
         run: flutter analyze
 
       - name: Diff check
-        run: git diff --check origin/main...HEAD
+        run: |
+          git fetch origin main
+          git diff --check origin/main...HEAD
