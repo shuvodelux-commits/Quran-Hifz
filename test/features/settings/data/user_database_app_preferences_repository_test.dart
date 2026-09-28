@@ -22,6 +22,7 @@ void main() {
         banglaFontSize: 20,
         tapToShowTranslation: false,
         tapToShowBanglaWordMeaning: false,
+        showPlaybackBanglaWordMeaning: false,
         showTajweedColors: false,
         defaultRepeatCount: 5,
         defaultPlaybackSpeed: 0.75,
@@ -48,6 +49,7 @@ void main() {
     expect(restored.banglaFontSize, 20);
     expect(restored.tapToShowTranslation, isFalse);
     expect(restored.tapToShowBanglaWordMeaning, isFalse);
+    expect(restored.showPlaybackBanglaWordMeaning, isFalse);
     expect(restored.showTajweedColors, isFalse);
     expect(restored.defaultRepeatCount, 5);
     expect(restored.defaultPlaybackSpeed, 0.75);
