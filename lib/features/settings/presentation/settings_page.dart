@@ -436,56 +436,34 @@ class SettingsPage extends ConsumerWidget {
             const SizedBox(height: 6),
             _SettingsCard(
               children: [
-                DropdownButtonFormField<int>(
-                  initialValue: value.defaultRepeatCount,
-                  decoration: InputDecoration(
-                    labelText: appText(
-                      value.language,
-                      'পুনরাবৃত্তির সংখ্যা',
-                      'Default repeat',
-                    ),
+                _PlaybackChoiceGroup<int>(
+                  label: appText(
+                    value.language,
+                    'পুনরাবৃত্তির সংখ্যা',
+                    'Default repeat',
                   ),
-                  items: AppPreferences.supportedRepeatCounts
-                      .map(
-                        (count) => DropdownMenuItem(
-                          value: count,
-                          child: Text('$count×'),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (count) {
-                    if (count != null) {
-                      ref
-                          .read(appPreferencesControllerProvider.notifier)
-                          .setDefaultRepeatCount(count);
-                    }
-                  },
+                  values: AppPreferences.supportedRepeatCounts,
+                  selected: value.defaultRepeatCount,
+                  keyFor: (count) => ValueKey('repeat-choice-$count'),
+                  labelFor: (count) => '$count×',
+                  onSelected: (count) => ref
+                      .read(appPreferencesControllerProvider.notifier)
+                      .setDefaultRepeatCount(count),
                 ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<double>(
-                  initialValue: value.defaultPlaybackSpeed,
-                  decoration: InputDecoration(
-                    labelText: appText(
-                      value.language,
-                      'অডিওর গতি',
-                      'Default speed',
-                    ),
+                const SizedBox(height: 14),
+                _PlaybackChoiceGroup<double>(
+                  label: appText(
+                    value.language,
+                    'অডিওর গতি',
+                    'Playback speed',
                   ),
-                  items: AppPreferences.supportedPlaybackSpeeds
-                      .map(
-                        (speed) => DropdownMenuItem(
-                          value: speed,
-                          child: Text('${speed}×'),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (speed) {
-                    if (speed != null) {
-                      ref
-                          .read(appPreferencesControllerProvider.notifier)
-                          .setDefaultPlaybackSpeed(speed);
-                    }
-                  },
+                  values: AppPreferences.supportedPlaybackSpeeds,
+                  selected: value.defaultPlaybackSpeed,
+                  keyFor: (speed) => ValueKey('speed-choice-$speed'),
+                  labelFor: (speed) => '${speed}×',
+                  onSelected: (speed) => ref
+                      .read(appPreferencesControllerProvider.notifier)
+                      .setDefaultPlaybackSpeed(speed),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -738,6 +716,55 @@ Color _themeSwatch(AppThemePreference theme) => switch (theme) {
   AppThemePreference.dark => const Color(0xFF55BBC2),
   AppThemePreference.women => const Color(0xFFA75E7B),
 };
+
+class _PlaybackChoiceGroup<T> extends StatelessWidget {
+  const _PlaybackChoiceGroup({
+    required this.label,
+    required this.values,
+    required this.selected,
+    required this.keyFor,
+    required this.labelFor,
+    required this.onSelected,
+  });
+
+  final String label;
+  final List<T> values;
+  final T selected;
+  final Key Function(T value) keyFor;
+  final String Function(T value) labelFor;
+  final ValueChanged<T> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final item in values)
+              ChoiceChip(
+                key: keyFor(item),
+                label: Text(labelFor(item)),
+                selected: item == selected,
+                showCheckmark: false,
+                onSelected: (_) => onSelected(item),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
 
 class _SettingsCard extends StatelessWidget {
   const _SettingsCard({required this.children});

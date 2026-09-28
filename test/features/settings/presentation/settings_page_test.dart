@@ -67,7 +67,49 @@ void main() {
     expect(find.text('Audio & Recitation'), findsOneWidget);
   });
 
-  testWidgets('playback dropdowns expose exactly the supported values', (
+  testWidgets('playback choices use compact chips and persist selections', (
+    tester,
+  ) async {
+    final preferences = _MemoryPreferencesRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appPreferencesRepositoryProvider.overrideWithValue(preferences),
+          indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
+          tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
+        ],
+        child: const MaterialApp(home: SettingsPage(currentSurahNumber: 1)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('অডিও ও তিলাওয়াত'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DropdownButtonFormField<int>), findsNothing);
+    expect(find.byType(DropdownButtonFormField<double>), findsNothing);
+
+    expect(find.byKey(const ValueKey('repeat-choice-1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('repeat-choice-20')), findsOneWidget);
+    expect(find.byKey(const ValueKey('speed-choice-0.5')), findsOneWidget);
+    expect(find.byKey(const ValueKey('speed-choice-1.25')), findsOneWidget);
+
+    await tester.ensureVisible(find.byKey(const ValueKey('repeat-choice-5')));
+    await tester.tap(find.byKey(const ValueKey('repeat-choice-5')));
+    await tester.pumpAndSettle();
+    expect(preferences.value.defaultRepeatCount, 5);
+
+    await tester.ensureVisible(find.byKey(const ValueKey('speed-choice-1.25')));
+    await tester.tap(find.byKey(const ValueKey('speed-choice-1.25')));
+    await tester.pumpAndSettle();
+    expect(preferences.value.defaultPlaybackSpeed, 1.25);
+  });
+
+  testWidgets('playback chips expose exactly the supported values', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -84,7 +126,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('তাজবিদের রং'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('অডিও ও তিলাওয়াত'),
       300,
@@ -92,30 +133,21 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final repeatDropdown = find.byType(DropdownButtonFormField<int>);
-    expect(repeatDropdown, findsOneWidget);
-    await tester.ensureVisible(repeatDropdown);
-    await tester.tap(repeatDropdown);
-    await tester.pumpAndSettle();
-
     for (final count in AppPreferences.supportedRepeatCounts) {
-      expect(find.text('$count×'), findsWidgets);
+      expect(
+        find.byKey(ValueKey('repeat-choice-$count')),
+        findsOneWidget,
+      );
     }
-    expect(find.text('4×'), findsNothing);
-
-    await tester.tap(find.text('5×').last);
-    await tester.pumpAndSettle();
-
-    final speedDropdown = find.byType(DropdownButtonFormField<double>);
-    expect(speedDropdown, findsOneWidget);
-    await tester.ensureVisible(speedDropdown);
-    await tester.tap(speedDropdown);
-    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('repeat-choice-4')), findsNothing);
 
     for (final speed in AppPreferences.supportedPlaybackSpeeds) {
-      expect(find.text('${speed}×'), findsWidgets);
+      expect(
+        find.byKey(ValueKey('speed-choice-$speed')),
+        findsOneWidget,
+      );
     }
-    expect(find.text('2.0×'), findsNothing);
+    expect(find.byKey(const ValueKey('speed-choice-2.0')), findsNothing);
   });
 
   testWidgets('reading settings expose a Bangla font-size control', (
@@ -163,7 +195,12 @@ void main() {
       await tester.pumpAndSettle();
 
       final preview = find.text(BismillahText.indoPak);
-      await tester.ensureVisible(preview);
+      await tester.scrollUntilVisible(
+        preview,
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       final previewStyle = DefaultTextStyle.of(tester.element(preview)).style;
       expect(previewStyle.fontFamily, 'IndoPak Nastaleeq');
       expect(previewStyle.fontWeight, FontWeight.w400);
@@ -196,6 +233,12 @@ void main() {
     final fontDropdown = find.byType(
       DropdownButtonFormField<QuranFontPreference>,
     );
+    await tester.scrollUntilVisible(
+      fontDropdown,
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     expect(fontDropdown, findsOneWidget);
     await tester.tap(fontDropdown);
     await tester.pumpAndSettle();
@@ -226,12 +269,24 @@ void main() {
     final fontDropdown = find.byType(
       DropdownButtonFormField<QuranFontPreference>,
     );
+    await tester.scrollUntilVisible(
+      fontDropdown,
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(fontDropdown);
     await tester.pumpAndSettle();
     await tester.tap(find.text('QPC Hafs / Uthmani').last);
     await tester.pumpAndSettle();
 
     final uthmaniPreview = find.text(BismillahText.uthmani);
+    await tester.scrollUntilVisible(
+      uthmaniPreview,
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     final uthmaniContainer = ProviderScope.containerOf(
       tester.element(uthmaniPreview),
     );
@@ -244,12 +299,24 @@ void main() {
       'QPC Hafs',
     );
 
+    await tester.scrollUntilVisible(
+      fontDropdown,
+      -250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(fontDropdown);
     await tester.pumpAndSettle();
     await tester.tap(find.text('IndoPak Nastaleeq').last);
     await tester.pumpAndSettle();
 
     final indoPakPreview = find.text(BismillahText.indoPak);
+    await tester.scrollUntilVisible(
+      indoPakPreview,
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     final indoPakContainer = ProviderScope.containerOf(
       tester.element(indoPakPreview),
     );
