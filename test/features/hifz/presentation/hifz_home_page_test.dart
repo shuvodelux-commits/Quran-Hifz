@@ -156,6 +156,7 @@ void main() {
     expect(find.byType(HifzReaderPage), findsOneWidget);
     final reader = tester.widget<HifzReaderPage>(find.byType(HifzReaderPage));
     expect(reader.initialPage, 7);
+    expect(reader.planId, 99);
     expect(reader.config.start, const AyahRef(surahNumber: 1, ayahNumber: 1));
     expect(reader.config.end, const AyahRef(surahNumber: 1, ayahNumber: 5));
 
