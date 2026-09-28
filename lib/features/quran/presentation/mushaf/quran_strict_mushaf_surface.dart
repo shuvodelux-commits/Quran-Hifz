@@ -53,6 +53,8 @@ class QuranStrictMushafSurface extends StatefulWidget {
     required this.onAyahTap,
     this.activeAyahKey,
     this.activeWordPosition,
+    this.activeWordBanglaMeaning,
+    this.continuousLayout = false,
     this.selectedStartAyahKey,
     this.selectedEndAyahKey,
     this.fallbackWindow,
@@ -76,6 +78,8 @@ class QuranStrictMushafSurface extends StatefulWidget {
   final Uri pageFontUri;
   final String? activeAyahKey;
   final int? activeWordPosition;
+  final String? activeWordBanglaMeaning;
+  final bool continuousLayout;
   final String? selectedStartAyahKey;
   final String? selectedEndAyahKey;
   final QuranPageWindow? fallbackWindow;
@@ -121,7 +125,8 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pageFontUri != widget.pageFontUri ||
         oldWidget.generation != widget.generation ||
-        oldWidget.page.variant != widget.page.variant) {
+        oldWidget.page.variant != widget.page.variant ||
+        oldWidget.continuousLayout != widget.continuousLayout) {
       _resetAndReload();
       return;
     }
@@ -139,11 +144,13 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
           fontSize: widget.fontSize,
           lineHeight: widget.lineHeight,
           showTajweedColors: widget.showTajweedColors,
+          continuousLayout: widget.continuousLayout,
         ),
       );
     }
     if (oldWidget.activeAyahKey != widget.activeAyahKey ||
         oldWidget.activeWordPosition != widget.activeWordPosition ||
+        oldWidget.activeWordBanglaMeaning != widget.activeWordBanglaMeaning ||
         oldWidget.selectedStartAyahKey != widget.selectedStartAyahKey ||
         oldWidget.selectedEndAyahKey != widget.selectedEndAyahKey) {
       _syncHighlights(driver);
@@ -230,7 +237,11 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
     await driver.setActiveAyah(ayahKey);
     final wordPosition = widget.activeWordPosition;
     if (wordPosition != null) {
-      await driver.setActiveWord(ayahKey, wordPosition);
+      await driver.setActiveWord(
+        ayahKey,
+        wordPosition,
+        banglaMeaning: widget.activeWordBanglaMeaning,
+      );
     }
   }
 
