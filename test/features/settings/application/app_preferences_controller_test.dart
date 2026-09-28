@@ -47,6 +47,23 @@ void main() {
     expect(state.arabicLineHeight, 1.2);
   });
 
+  test('playback Bangla meaning preference updates independently', () async {
+    final repository = _MemoryRepository();
+    final container = containerFor(repository);
+    await container.read(appPreferencesControllerProvider.future);
+    final controller = container.read(
+      appPreferencesControllerProvider.notifier,
+    );
+
+    await controller.setShowPlaybackBanglaWordMeaning(false);
+
+    final state = container.read(appPreferencesControllerProvider).value!;
+    expect(state.showPlaybackBanglaWordMeaning, isFalse);
+    expect(state.highlightActiveWord, isTrue);
+    expect(state.showTranslation, isTrue);
+    expect(repository.value.showPlaybackBanglaWordMeaning, isFalse);
+  });
+
   test('changing repeat count preserves unrelated preferences', () async {
     final repository = _MemoryRepository();
     final container = containerFor(repository);
