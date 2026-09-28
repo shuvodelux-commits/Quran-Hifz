@@ -99,6 +99,66 @@ void main() {
   });
 
 
+
+  testWidgets('surface keeps a loading indicator until current page is ready', (
+    tester,
+  ) async {
+    ValueChanged<MushafRendererEvent>? eventSink;
+    ValueChanged<MushafWebViewDriver>? driverReady;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: QuranStrictMushafSurface(
+          page: const QcfMushafPage(
+            page: 2,
+            variant: QuranMushafVariant.qcfV4Tajweed,
+            lines: [],
+          ),
+          palette: QuranMushafPalette.light,
+          generation: 11,
+          fontSize: 32,
+          lineHeight: 1.35,
+          showTajweedColors: true,
+          pageFontUri: Uri.parse('asset:///page.woff2'),
+          fontLoader: (_) async => const QuranStrictMushafFonts(
+            pageFontBytes: [1],
+            surahFontBytes: [2],
+            bismillahFontBytes: [3],
+            endMarkerFontBytes: [4],
+          ),
+          webViewBuilder: (key, onEvent, onDriverReady, onDiagnostic) {
+            eventSink = onEvent;
+            driverReady = onDriverReady;
+            return SizedBox(key: key);
+          },
+          onRetry: () {},
+          onWordTap: (_, __) {},
+          onWordLongPress: (_, __) {},
+          onAyahTap: (_) {},
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final driver = _RecordingMushafDriver();
+    driverReady!(driver);
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    eventSink!(
+      const MushafPageReadyEvent(page: 2, generation: 10),
+    );
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    eventSink!(
+      const MushafPageReadyEvent(page: 2, generation: 11),
+    );
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
   testWidgets('surface forwards continuous layout in the initial render payload', (
     tester,
   ) async {
