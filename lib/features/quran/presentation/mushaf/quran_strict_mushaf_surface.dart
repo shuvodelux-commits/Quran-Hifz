@@ -144,7 +144,6 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
           fontSize: widget.fontSize,
           lineHeight: widget.lineHeight,
           showTajweedColors: widget.showTajweedColors,
-          continuousLayout: widget.continuousLayout,
         ),
       );
     }
@@ -215,6 +214,7 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
           fontSize: widget.fontSize,
           lineHeight: widget.lineHeight,
           showTajweedColors: widget.showTajweedColors,
+          continuousLayout: widget.continuousLayout,
         ),
       );
       await _syncHighlights(driver);
