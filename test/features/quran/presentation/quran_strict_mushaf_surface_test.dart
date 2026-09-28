@@ -98,6 +98,57 @@ void main() {
     expect(metricEvents.last.contentHeight, 820);
   });
 
+
+  testWidgets('surface forwards continuous layout in the initial render payload', (
+    tester,
+  ) async {
+    ValueChanged<MushafWebViewDriver>? driverReady;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: QuranStrictMushafSurface(
+          page: const QcfMushafPage(
+            page: 2,
+            variant: QuranMushafVariant.qcfV4Tajweed,
+            lines: [],
+          ),
+          palette: QuranMushafPalette.light,
+          generation: 9,
+          fontSize: 48,
+          lineHeight: 1.8,
+          showTajweedColors: true,
+          continuousLayout: true,
+          pageFontUri: Uri.parse('asset:///page.woff2'),
+          fontLoader: (_) async => const QuranStrictMushafFonts(
+            pageFontBytes: [1],
+            surahFontBytes: [2],
+            bismillahFontBytes: [3],
+            endMarkerFontBytes: [4],
+          ),
+          webViewBuilder: (key, onEvent, onDriverReady, onDiagnostic) {
+            driverReady = onDriverReady;
+            return SizedBox(key: key);
+          },
+          onRetry: () {},
+          onWordTap: (_, __) {},
+          onWordLongPress: (_, __) {},
+          onAyahTap: (_) {},
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final driver = _RecordingMushafDriver();
+    driverReady!(driver);
+    await tester.pump();
+
+    expect(driver.payloads, hasLength(1));
+    expect(driver.payloads.single.continuousLayout, isTrue);
+    expect(driver.payloads.single.fontSize, 48);
+    expect(driver.payloads.single.lineHeight, 1.8);
+  });
+
   testWidgets(
     'font failure falls back to readable Unicode page with identity and retry',
     (tester) async {
@@ -181,6 +232,7 @@ QuranPageWindow _page440() => QuranPageWindow(
 
 class _RecordingMushafDriver implements MushafWebViewDriver {
   final renderedGenerations = <int>[];
+  final payloads = <MushafRenderPayload>[];
 
   @override
   Future<void> loadRenderer() async {}
@@ -188,6 +240,7 @@ class _RecordingMushafDriver implements MushafWebViewDriver {
   @override
   Future<void> renderPage(MushafRenderPayload payload) async {
     renderedGenerations.add(payload.generation);
+    payloads.add(payload);
   }
 
   @override
