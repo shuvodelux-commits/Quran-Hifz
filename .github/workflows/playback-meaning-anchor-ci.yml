@@ -1,0 +1,23 @@
+name: Playback Meaning Anchor CI
+
+on:
+  push:
+    branches:
+      - fix/anchor-playback-word-meaning
+
+permissions:
+  contents: read
+
+jobs:
+  anchor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: RED target
+        run: flutter test test/features/quran/presentation/quran_reader_page_test.dart --plain-name "ayah playback shows active Bangla word meaning as a bubble and keeps translation"
