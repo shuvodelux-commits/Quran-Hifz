@@ -19,6 +19,7 @@ import '../../study/domain/bookmark.dart';
 import '../../study/presentation/word_details_sheet.dart';
 import '../application/hifz_session_controller.dart';
 import '../application/hifz_start_defaults.dart';
+import '../domain/hifz_preset.dart';
 import '../domain/hifz_session.dart';
 import 'hifz_appearance_sheet.dart';
 import 'hifz_controls_bar.dart';
