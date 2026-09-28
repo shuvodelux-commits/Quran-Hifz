@@ -77,6 +77,8 @@ void main() {
     );
     await tester.tap(find.byKey(const ValueKey('hifz-pattern-save')));
     await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('hifz-repeat-pattern')));
     await tester.pumpAndSettle();
