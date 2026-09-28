@@ -19,6 +19,22 @@ void main() {
     expect(glyph.style?.fontFamily, 'QPC V4 Tajweed P1');
   });
 
+  testWidgets('keeps Bismillah at a compact responsive UI size', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app(2));
+    await tester.pumpAndSettle();
+
+    var glyph = tester.widget<Text>(find.text('ﱁﱂﱃﱄ'));
+    expect(glyph.style?.fontSize, 34);
+
+    await tester.pumpWidget(_app(2, arabicFontSize: 56));
+    await tester.pumpAndSettle();
+
+    glyph = tester.widget<Text>(find.text('ﱁﱂﱃﱄ'));
+    expect(glyph.style?.fontSize, 44);
+  });
+
   testWidgets('renders Bismillah inside a clean rounded surface card', (
     tester,
   ) async {
@@ -119,12 +135,15 @@ Widget _app(
   bool? showTajweedColors,
   bool tajweedAvailable = false,
   QuranFontPreference? quranFont,
+  double? arabicFontSize,
 }) => ProviderScope(
   overrides: [
     appPreferencesRepositoryProvider.overrideWithValue(
       _MemoryPreferencesRepository()
         ..value = const AppPreferences.defaults().copyWith(
           quranFont: quranFont ?? QuranFontPreference.qpcHafs,
+          arabicFontSize:
+              arabicFontSize ?? const AppPreferences.defaults().arabicFontSize,
           showTajweedColors:
               showTajweedColors ??
               const AppPreferences.defaults().showTajweedColors,
