@@ -1,7 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/core/database/user_database.dart';
-import 'package:quran_hifz/features/hifz/domain/hifz_reader_mode.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_variant.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_reader_mode.dart';
@@ -71,9 +70,6 @@ void main() {
     expect(restored.hifzReaderMode, HifzReaderMode.continuous);
     expect(restored.hifzContinuousAutoScrollEnabled, isTrue);
     expect(restored.hifzAutoScrollSpeed, 0.173);
-    expect(restored.hifzReaderMode, HifzReaderMode.continuous);
-    expect(restored.hifzContinuousAutoScrollEnabled, isTrue);
-    expect(restored.hifzAutoScrollSpeed, 0.173);
   });
 
   test('unknown Quran font falls back safely', () async {
@@ -132,42 +128,6 @@ void main() {
     expect(restored.defaultRepeatCount, defaults.defaultRepeatCount);
     expect(restored.defaultPlaybackSpeed, defaults.defaultPlaybackSpeed);
     expect(restored.repeatPause, defaults.repeatPause);
-  });
-
-
-  test('missing Hifz reader behavior keys use safe defaults', () async {
-    final database = UserDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(database.close);
-    final repository = UserDatabaseAppPreferencesRepository(database);
-
-    final restored = await repository.load();
-    expect(restored.hifzReaderMode, HifzReaderMode.page);
-    expect(restored.hifzContinuousAutoScrollEnabled, isFalse);
-    expect(restored.hifzAutoScrollSpeed, 0.35);
-  });
-
-  test('malformed Hifz reader behavior falls back safely', () async {
-    final database = UserDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(database.close);
-    final repository = UserDatabaseAppPreferencesRepository(database);
-
-    await database.saveSetting(
-      UserDatabaseAppPreferencesRepository.hifzReaderModeKey,
-      'not-a-mode',
-    );
-    await database.saveSetting(
-      UserDatabaseAppPreferencesRepository.hifzContinuousAutoScrollKey,
-      'not-bool',
-    );
-    await database.saveSetting(
-      UserDatabaseAppPreferencesRepository.hifzAutoScrollSpeedKey,
-      '2.5',
-    );
-
-    final restored = await repository.load();
-    expect(restored.hifzReaderMode, HifzReaderMode.page);
-    expect(restored.hifzContinuousAutoScrollEnabled, isFalse);
-    expect(restored.hifzAutoScrollSpeed, 0.35);
   });
 
   test('null prayer city round trips as no manual city', () async {
