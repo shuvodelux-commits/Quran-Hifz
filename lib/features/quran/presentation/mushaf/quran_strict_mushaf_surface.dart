@@ -58,6 +58,8 @@ class QuranStrictMushafSurface extends StatefulWidget {
     this.fallbackWindow,
     this.fontLoader,
     this.webViewBuilder,
+    this.onPageMetrics,
+    this.onPlaybackTarget,
     this.onDiagnostic,
     this.onTap,
     this.secondaryActionLabel,
@@ -83,6 +85,8 @@ class QuranStrictMushafSurface extends StatefulWidget {
   final ValueChanged<String> onAyahTap;
   final QuranStrictMushafFontLoader? fontLoader;
   final QuranStrictMushafWebViewBuilder? webViewBuilder;
+  final ValueChanged<MushafPageMetricsEvent>? onPageMetrics;
+  final ValueChanged<MushafPlaybackTargetEvent>? onPlaybackTarget;
   final MushafRendererDiagnostic? onDiagnostic;
   final VoidCallback? onTap;
   final String? secondaryActionLabel;
@@ -244,6 +248,16 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
             event.page == widget.page.page &&
             event.generation == widget.generation) {
           _syncHighlights(driver);
+        }
+      case MushafPageMetricsEvent():
+        if (event.page == widget.page.page &&
+            event.generation == widget.generation) {
+          widget.onPageMetrics?.call(event);
+        }
+      case MushafPlaybackTargetEvent():
+        if (event.page == widget.page.page &&
+            event.generation == widget.generation) {
+          widget.onPlaybackTarget?.call(event);
         }
       case MushafRendererErrorEvent():
         _recoverRenderer();
