@@ -304,17 +304,17 @@ class _PlaybackWordMeaningAnchor extends StatelessWidget {
         child,
         if (text != null && text.isNotEmpty)
           Positioned(
-            top: 0,
+            top: -8,
             left: 0,
             right: 0,
-            child: FractionalTranslation(
-              translation: const Offset(0, -1.18),
-              child: OverflowBox(
-                minWidth: 0,
-                maxWidth: 220,
-                alignment: Alignment.bottomCenter,
-                child: _PlaybackWordMeaningBubble(meaning: text),
-              ),
+            height: 1,
+            child: OverflowBox(
+              minWidth: 0,
+              maxWidth: 220,
+              minHeight: 0,
+              maxHeight: 80,
+              alignment: Alignment.bottomCenter,
+              child: _PlaybackWordMeaningBubble(meaning: text),
             ),
           ),
       ],
