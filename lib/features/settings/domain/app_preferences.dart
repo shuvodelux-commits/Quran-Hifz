@@ -46,6 +46,7 @@ class AppPreferences {
     required this.repeatPause,
     required this.autoNextAyah,
     required this.highlightActiveWord,
+    this.showPlaybackBanglaWordMeaning = true,
     required this.language,
     required this.asrSchool,
     this.prayerCityId,
@@ -73,6 +74,7 @@ class AppPreferences {
       repeatPause = Duration.zero,
       autoNextAyah = true,
       highlightActiveWord = true,
+      showPlaybackBanglaWordMeaning = true,
       language = AppLanguage.bangla,
       asrSchool = AsrSchool.hanafi,
       prayerCityId = null;
@@ -98,6 +100,7 @@ class AppPreferences {
   final Duration repeatPause;
   final bool autoNextAyah;
   final bool highlightActiveWord;
+  final bool showPlaybackBanglaWordMeaning;
   final AppLanguage language;
   final AsrSchool asrSchool;
   final String? prayerCityId;
@@ -124,6 +127,7 @@ class AppPreferences {
     Duration? repeatPause,
     bool? autoNextAyah,
     bool? highlightActiveWord,
+    bool? showPlaybackBanglaWordMeaning,
     AppLanguage? language,
     AsrSchool? asrSchool,
     String? prayerCityId,
@@ -161,6 +165,8 @@ class AppPreferences {
       repeatPause: repeatPause ?? this.repeatPause,
       autoNextAyah: autoNextAyah ?? this.autoNextAyah,
       highlightActiveWord: highlightActiveWord ?? this.highlightActiveWord,
+      showPlaybackBanglaWordMeaning:
+          showPlaybackBanglaWordMeaning ?? this.showPlaybackBanglaWordMeaning,
       language: language ?? this.language,
       asrSchool: asrSchool ?? this.asrSchool,
       prayerCityId: clearPrayerCity ? null : prayerCityId ?? this.prayerCityId,
