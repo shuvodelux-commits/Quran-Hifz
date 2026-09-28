@@ -24,7 +24,11 @@ abstract interface class MushafWebViewDriver {
     required bool showTajweedColors,
   });
 
-  Future<void> setActiveWord(String ayahKey, int wordPosition);
+  Future<void> setActiveWord(
+    String ayahKey,
+    int wordPosition, {
+    String? banglaMeaning,
+  });
 
   Future<void> setActiveAyah(String ayahKey);
 
@@ -153,8 +157,15 @@ class ControllerMushafWebViewDriver implements MushafWebViewDriver {
   }
 
   @override
-  Future<void> setActiveWord(String ayahKey, int wordPosition) {
-    return _runEncoded('setActiveWord', <Object?>[ayahKey, wordPosition]);
+  Future<void> setActiveWord(
+    String ayahKey,
+    int wordPosition, {
+    String? banglaMeaning,
+  }) {
+    return _runEncoded(
+      'setActiveWord',
+      <Object?>[ayahKey, wordPosition, banglaMeaning],
+    );
   }
 
   @override
