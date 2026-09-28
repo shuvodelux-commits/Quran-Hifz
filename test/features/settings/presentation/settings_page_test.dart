@@ -106,6 +106,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+    expect(preferences.value.showPlaybackBanglaWordMeaning, isFalse);
   });
 
   testWidgets('playback choices use compact chips and persist selections', (
