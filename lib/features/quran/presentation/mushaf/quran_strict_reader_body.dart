@@ -20,6 +20,7 @@ class QuranStrictReaderBody extends ConsumerStatefulWidget {
     required this.showTajweedColors,
     required this.activeAyahKey,
     required this.activeWordPosition,
+    this.activeWordBanglaMeaning,
     required this.onPageChanged,
     required this.onWordTap,
     required this.onWordLongPress,
@@ -36,6 +37,7 @@ class QuranStrictReaderBody extends ConsumerStatefulWidget {
   final bool showTajweedColors;
   final String? activeAyahKey;
   final int? activeWordPosition;
+  final String? activeWordBanglaMeaning;
   final ValueChanged<int> onPageChanged;
   final void Function(String ayahKey, int wordPosition) onWordTap;
   final void Function(String ayahKey, int wordPosition) onWordLongPress;
@@ -132,6 +134,7 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
                 : (_) async => throw data.fontError!,
             activeAyahKey: widget.activeAyahKey,
             activeWordPosition: widget.activeWordPosition,
+            activeWordBanglaMeaning: widget.activeWordBanglaMeaning,
             selectedStartAyahKey: widget.selectedStartAyahKey,
             selectedEndAyahKey: widget.selectedEndAyahKey,
             onRetry: () => _retry(page),
@@ -155,6 +158,7 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
             fontLoader: (_) async => throw snapshot.error!,
             activeAyahKey: widget.activeAyahKey,
             activeWordPosition: widget.activeWordPosition,
+            activeWordBanglaMeaning: widget.activeWordBanglaMeaning,
             selectedStartAyahKey: widget.selectedStartAyahKey,
             selectedEndAyahKey: widget.selectedEndAyahKey,
             onRetry: () => _retry(page),
