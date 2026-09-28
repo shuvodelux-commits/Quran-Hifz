@@ -87,13 +87,28 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('hifz-ayah-choice-5')));
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byKey(const ValueKey('hifz-setup-edit-pattern')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('hifz-pattern-ayah-3')));
+    await tester.tap(find.byKey(const ValueKey('hifz-pattern-combined-2')));
+    await tester.tap(find.byKey(const ValueKey('hifz-pattern-final-1')));
+    await tester.tap(find.byKey(const ValueKey('hifz-pattern-pause-500')));
+    await tester.tap(find.byKey(const ValueKey('hifz-pattern-save')));
+    await tester.pumpAndSettle();
+
     await tester.tap(find.byKey(const ValueKey('hifz-setup-start')));
     await tester.pumpAndSettle();
 
     expect(result, isNotNull);
     expect(result!.startAyah, 3);
     expect(result!.endAyah, 5);
-    expect(result!.preset.ayahRepeatCount, 5);
+    expect(result!.preset.ayahRepeatCount, 3);
+    expect(result!.preset.combinedRepeatCount, 2);
+    expect(result!.preset.finalRangeRepeatCount, 1);
+    expect(
+      result!.preset.pauseBetweenRepeats,
+      const Duration(milliseconds: 500),
+    );
   });
 
   testWidgets('setup keeps end ayah at or after the selected start', (
