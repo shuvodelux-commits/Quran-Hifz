@@ -41,13 +41,17 @@ class SettingsPage extends ConsumerWidget {
         data: (value) => ListView(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
           children: [
-            Text(
-              value.language == AppLanguage.bangla
-                  ? 'প্রাথমিক সেটিংস'
-                  : 'General settings',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
+            _SettingsSectionHeader(
+              icon: Icons.palette_outlined,
+              title: appText(
+                value.language,
+                'অ্যাপের রূপ ও ভাষা',
+                'Appearance & Language',
+              ),
+              subtitle: appText(
+                value.language,
+                'ভাষা ও UI রং বেছে নিন',
+                'Choose app language and UI color',
               ),
             ),
             const SizedBox(height: 6),
@@ -78,46 +82,40 @@ class SettingsPage extends ConsumerWidget {
                     }
                   },
                 ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<AppThemePreference>(
-                  initialValue: value.theme,
-                  decoration: InputDecoration(
-                    labelText: value.language == AppLanguage.bangla
-                        ? 'থিম'
-                        : 'Theme',
+                const SizedBox(height: 14),
+                Text(
+                  appText(value.language, 'UI রং', 'UI color'),
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
-                  items: [
-                    for (final theme in AppThemePreference.values)
-                      DropdownMenuItem(
-                        value: theme,
-                        child: Text(switch (theme) {
-                          AppThemePreference.light =>
-                            value.language == AppLanguage.bangla
-                                ? 'হালকা নীল'
-                                : 'Light blue',
-                          AppThemePreference.green =>
-                            value.language == AppLanguage.bangla
-                                ? 'সবুজ'
-                                : 'Green',
-                          AppThemePreference.dark =>
-                            value.language == AppLanguage.bangla
-                                ? 'ডার্ক'
-                                : 'Dark',
-                          AppThemePreference.women =>
-                            value.language == AppLanguage.bangla
-                                ? 'গোলাপি'
-                                : 'Pink',
-                        }),
-                      ),
-                  ],
-                  onChanged: (theme) {
-                    if (theme != null)
-                      ref
-                          .read(appPreferencesControllerProvider.notifier)
-                          .setTheme(theme);
-                  },
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
+                _ThemePicker(
+                  language: value.language,
+                  selected: value.theme,
+                  onSelected: (theme) => ref
+                      .read(appPreferencesControllerProvider.notifier)
+                      .setTheme(theme),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _SettingsSectionHeader(
+              icon: Icons.mosque_outlined,
+              title: appText(
+                value.language,
+                'সালাত ও অবস্থান',
+                'Prayer & Location',
+              ),
+              subtitle: appText(
+                value.language,
+                'আসরের গণনা ও নামাজের অবস্থান',
+                'Asr calculation and prayer location',
+              ),
+            ),
+            const SizedBox(height: 6),
+            _SettingsCard(
+              children: [
                 DropdownButtonFormField<AsrSchool>(
                   initialValue: value.asrSchool,
                   decoration: InputDecoration(
@@ -145,10 +143,11 @@ class SettingsPage extends ConsumerWidget {
                     ),
                   ],
                   onChanged: (school) {
-                    if (school != null)
+                    if (school != null) {
                       ref
                           .read(appPreferencesControllerProvider.notifier)
                           .setAsrSchool(school);
+                    }
                   },
                 ),
                 const SizedBox(height: 6),
