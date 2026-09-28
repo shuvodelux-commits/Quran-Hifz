@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../domain/hifz_preset.dart';
 
+String hifzPatternSummary(HifzPreset preset) {
+  final finalPart = preset.finalRangeRepeatCount == 0
+      ? ''
+      : ' → Full range ×${preset.finalRangeRepeatCount}';
+  return 'Each ayah ×${preset.ayahRepeatCount} → '
+      'Combined ×${preset.combinedRepeatCount}$finalPart';
+}
+
 class HifzPatternEditorSheet extends StatefulWidget {
   const HifzPatternEditorSheet({
     required this.initialPreset,
@@ -142,13 +150,7 @@ class _HifzPatternEditorSheetState extends State<HifzPatternEditorSheet> {
     );
   }
 
-  String get _summary {
-    final finalPart = _finalRangeRepeatCount == 0
-        ? ''
-        : ' → Full range ×$_finalRangeRepeatCount';
-    return 'Each ayah ×$_ayahRepeatCount → Combined ×$_combinedRepeatCount'
-        '$finalPart';
-  }
+  String get _summary => hifzPatternSummary(_preset);
 
   static String _pauseLabel(Duration value) {
     if (value == Duration.zero) return 'No pause';
