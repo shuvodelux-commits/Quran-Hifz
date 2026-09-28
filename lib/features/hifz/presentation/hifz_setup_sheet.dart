@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../quran/domain/quran_surah.dart';
 import '../domain/hifz_preset.dart';
+import 'hifz_pattern_editor_sheet.dart';
 
 class HifzSetupResult {
   const HifzSetupResult({
@@ -36,7 +37,7 @@ class HifzSetupSheet extends StatefulWidget {
 class _HifzSetupSheetState extends State<HifzSetupSheet> {
   late int _startAyah;
   late int _endAyah;
-  late int _ayahRepeatCount;
+  late HifzPreset _preset;
 
   @override
   void initState() {
@@ -46,15 +47,8 @@ class _HifzSetupSheetState extends State<HifzSetupSheet> {
       _startAyah,
       widget.surah.ayahCount,
     );
-    _ayahRepeatCount = widget.initialPreset.ayahRepeatCount;
+    _preset = widget.initialPreset;
   }
-
-  HifzPreset get _preset => HifzPresets.progressive(
-    ayahRepeatCount: _ayahRepeatCount,
-    combinedRepeatCount: widget.initialPreset.combinedRepeatCount,
-    finalRangeRepeatCount: widget.initialPreset.finalRangeRepeatCount,
-    pauseBetweenRepeats: widget.initialPreset.pauseBetweenRepeats,
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -103,29 +97,54 @@ class _HifzSetupSheetState extends State<HifzSetupSheet> {
             ),
             const SizedBox(height: 18),
             Text(
-              'Repetition',
+              'Repeat pattern',
               style: Theme.of(context).textTheme.labelLarge,
             ),
             const SizedBox(height: 8),
-            DropdownButtonFormField<int>(
-              key: const ValueKey('hifz-repeat-count'),
-              initialValue: _ayahRepeatCount,
-              decoration: const InputDecoration(
-                labelText: 'Each new ayah',
-                border: OutlineInputBorder(),
-                isDense: true,
-              ),
-              items: const [1, 2, 3, 5, 10, 20]
-                  .map(
-                    (value) => DropdownMenuItem<int>(
-                      value: value,
-                      child: Text(value.toString() + '×'),
+            InkWell(
+              key: const ValueKey('hifz-setup-edit-pattern'),
+              borderRadius: BorderRadius.circular(12),
+              onTap: _editPattern,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: colors.outlineVariant),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.repeat_rounded),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            hifzPatternSummary(_preset),
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _preset.pauseBetweenRepeats == Duration.zero
+                                ? 'No pause between repeats'
+                                : 'Pause ' +
+                                    _pauseText(_preset.pauseBetweenRepeats) +
+                                    ' between repeats',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  )
-                  .toList(growable: false),
-              onChanged: (value) {
-                if (value != null) setState(() => _ayahRepeatCount = value);
-              },
+                    const SizedBox(width: 6),
+                    const Icon(Icons.chevron_right_rounded),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 14),
             Text(
@@ -156,6 +175,22 @@ class _HifzSetupSheetState extends State<HifzSetupSheet> {
         ),
       ),
     );
+  }
+
+  Future<void> _editPattern() async {
+    final selected = await showModalBottomSheet<HifzPreset>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => HifzPatternEditorSheet(initialPreset: _preset),
+    );
+    if (!mounted || selected == null) return;
+    setState(() => _preset = selected);
+  }
+
+  String _pauseText(Duration value) {
+    if (value.inMilliseconds == 500) return '0.5 s';
+    return '${value.inSeconds} s';
   }
 
   Future<void> _chooseStart() async {
