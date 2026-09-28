@@ -82,6 +82,7 @@ void main() {
     expect(js, contains('postPlaybackTarget'));
     expect(js, contains("querySelectorAll('.word.active-word')"));
     expect(js, contains('clearMeaningBubble();'));
+    expect(js, contains('activeWord.dataset.ayahKey === ayahKey'));
   });
 
   test('continuous layout disables nested scrolling without changing page styles', () {
