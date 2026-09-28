@@ -11,8 +11,16 @@ abstract final class QuranReadingColors {
   /// emphasis. The surrounding ayah remains unchanged.
   static const activeWord = Color(0xFF087EAB);
 
-  static Color activeWordFor(BuildContext context) =>
-      Theme.of(context).extension<AppPalette>()?.readerAccent ?? activeWord;
+  static Color activeWordFor(BuildContext context) {
+    final accent = Theme.of(context).extension<AppPalette>()?.readerAccent;
+    if (accent == null) return activeWord;
+
+    final hsv = HSVColor.fromColor(accent);
+    return hsv
+        .withSaturation((hsv.saturation + 0.18).clamp(0.0, 1.0))
+        .withValue((hsv.value + 0.18).clamp(0.0, 1.0))
+        .toColor();
+  }
 
   /// Classic Tajweed palette for the Quran Foundation embedded rule classes.
   /// Dark mode uses brighter equivalents while preserving rule distinctions.
