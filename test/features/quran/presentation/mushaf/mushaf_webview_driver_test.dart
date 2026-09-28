@@ -27,6 +27,17 @@ void main() {
     driver = ControllerMushafWebViewDriver(controller);
   });
 
+
+  test('renderer readiness waits for page-finished and fires once', () {
+    final gate = MushafWebViewLoadGate();
+
+    expect(gate.onPageFinished(), isFalse);
+
+    gate.markRendererLoadRequested();
+    expect(gate.onPageFinished(), isTrue);
+    expect(gate.onPageFinished(), isFalse);
+  });
+
   test('loadRenderer loads only the bundled renderer asset', () async {
     await driver.loadRenderer();
 
