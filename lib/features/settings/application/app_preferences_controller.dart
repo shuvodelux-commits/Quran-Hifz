@@ -153,6 +153,10 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
   Future<void> setHighlightActiveWord(bool value) =>
       _update((current) => current.copyWith(highlightActiveWord: value));
 
+  Future<void> setShowPlaybackBanglaWordMeaning(bool value) => _update(
+    (current) => current.copyWith(showPlaybackBanglaWordMeaning: value),
+  );
+
   Future<void> _update(AppPreferences Function(AppPreferences current) mutate) {
     final update = _pendingUpdate.then((_) => _performUpdate(mutate));
     _pendingUpdate = update.catchError((_) {});
@@ -299,6 +303,14 @@ final highlightActiveWordProvider = Provider<bool>((ref) {
           .value
           ?.highlightActiveWord ??
       const AppPreferences.defaults().highlightActiveWord;
+});
+
+final showPlaybackBanglaWordMeaningProvider = Provider<bool>((ref) {
+  return ref
+          .watch(appPreferencesControllerProvider)
+          .value
+          ?.showPlaybackBanglaWordMeaning ??
+      const AppPreferences.defaults().showPlaybackBanglaWordMeaning;
 });
 
 final showTajweedColorsProvider = Provider<bool>((ref) {
