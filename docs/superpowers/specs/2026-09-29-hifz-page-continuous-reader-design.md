@@ -294,11 +294,12 @@ This follows the product rule: Continuous auto-scroll works only when the user t
 
 When the user manually drags the Continuous reader while auto-scroll is active:
 
-- auto-scroll stops;
-- the enabled state becomes Off;
-- it does not fight the user's manual navigation.
+- the user's drag takes temporary control of the scroll position;
+- the enabled state stays On;
+- auto-scroll resumes from the user's new position after the drag/scroll gesture ends;
+- the implementation must avoid fighting the user's gesture while it is active.
 
-Reaching the bottom also turns the runtime auto-scroll state Off.
+Reaching the bottom pauses movement while preserving the enabled preference. If the user later moves upward manually, auto-scroll may continue from that new position without requiring the switch to be toggled again.
 
 ### 9.3 Motion
 
@@ -306,7 +307,7 @@ Use frame/ticker-based scrolling rather than a single long `animateTo` call so t
 
 - speed changes take effect immediately;
 - audio start can stop scrolling immediately;
-- user drag can stop scrolling immediately;
+- user drag can temporarily suspend frame-driven movement immediately;
 - newly measured page heights can extend the scroll range safely.
 
 ## 10. Hifz Preferences
@@ -436,8 +437,9 @@ Tests must prove:
 - audio start turns auto-scroll Off immediately;
 - playback follow still works after auto-scroll stops;
 - playback end does not auto-resume silent auto-scroll;
-- manual user drag turns auto-scroll Off;
-- reaching the end turns it Off;
+- manual user drag temporarily suspends movement but keeps auto-scroll enabled;
+- auto-scroll resumes from the new position after the drag ends;
+- reaching the end stops movement without clearing the enabled preference;
 - changing speed while running changes movement rate without restarting the reader.
 
 ### Regression verification
@@ -488,4 +490,4 @@ This work does not:
 
 ## 17. Completion Definition
 
-The work is complete only when the Hifz reader can be used in both Page and Continuous modes with the existing Mushaf appearance intact, the blank-page regression is fixed at its root cause, large typography remains readable, playback highlighting/follow and Bangla word meaning work correctly, and Continuous silent-reading auto-scroll is independently user-controlled with precise speed adjustment and always stops when audio or manual scrolling begins.
+The work is complete only when the Hifz reader can be used in both Page and Continuous modes with the existing Mushaf appearance intact, the blank-page regression is fixed at its root cause, large typography remains readable, playback highlighting/follow and Bangla word meaning work correctly, and Continuous silent-reading auto-scroll is independently user-controlled with precise speed adjustment, always stops when audio begins, and temporarily yields to manual dragging without disabling itself.
