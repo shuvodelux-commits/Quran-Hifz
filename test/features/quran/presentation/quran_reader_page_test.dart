@@ -184,6 +184,39 @@ void main() {
     expect(find.text('Fixture meaning'), findsOneWidget);
   });
 
+  testWidgets(
+    'ayah playback shows active Bangla word meaning as a bubble and keeps translation',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ..._overrides(),
+            quranAudioControllerProvider.overrideWith(
+              _PlayingAyahController.new,
+            ),
+          ],
+          child: const MaterialApp(home: QuranReaderPage(surah: _surah)),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final bubble = find.byKey(
+        const ValueKey('playback-word-meaning-bubble'),
+      );
+      expect(bubble, findsOneWidget);
+      expect(
+        find.descendant(of: bubble, matching: find.text('Fixture meaning')),
+        findsOneWidget,
+      );
+      expect(find.text('Fixture Bangla translation 1'), findsOneWidget);
+
+      final container = tester.widget<Container>(bubble);
+      final decoration = container.decoration as BoxDecoration;
+      expect(decoration.borderRadius, BorderRadius.circular(16));
+      expect(decoration.boxShadow, isNotEmpty);
+    },
+  );
+
   testWidgets('ayah control changes to Stop while its audio is active', (
     tester,
   ) async {
@@ -536,6 +569,7 @@ class _PlayingAyahController extends QuranAudioController {
     repeatIndex: 1,
     repeatTotal: 1,
     ayahKey: '1:1',
+    activeWordPosition: 1,
   );
 
   @override
