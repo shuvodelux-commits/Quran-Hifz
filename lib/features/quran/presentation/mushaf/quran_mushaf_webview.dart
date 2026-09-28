@@ -14,6 +14,21 @@ NavigationDecision mushafNavigationDecision(String url) {
       : NavigationDecision.prevent;
 }
 
+class MushafWebViewLoadGate {
+  bool _rendererLoadRequested = false;
+  bool _readyNotified = false;
+
+  void markRendererLoadRequested() {
+    _rendererLoadRequested = true;
+  }
+
+  bool onPageFinished() {
+    if (!_rendererLoadRequested || _readyNotified) return false;
+    _readyNotified = true;
+    return true;
+  }
+}
+
 class QuranMushafWebView extends StatefulWidget {
   const QuranMushafWebView({
     required this.onEvent,
@@ -34,6 +49,7 @@ class _QuranMushafWebViewState extends State<QuranMushafWebView> {
   late final WebViewController _controller;
   late final ControllerMushafWebViewDriver _driver;
   late final MushafRendererChannel _channel;
+  final MushafWebViewLoadGate _loadGate = MushafWebViewLoadGate();
 
   @override
   void initState() {
@@ -56,14 +72,19 @@ class _QuranMushafWebViewState extends State<QuranMushafWebView> {
         NavigationDelegate(
           onNavigationRequest: (request) =>
               mushafNavigationDecision(request.url),
+          onPageFinished: (_) {
+            if (mounted && _loadGate.onPageFinished()) {
+              widget.onDriverReady(_driver);
+            }
+          },
         ),
       );
       await _controller.addJavaScriptChannel(
         'MushafBridge',
         onMessageReceived: (message) => _channel.onMessage(message.message),
       );
+      _loadGate.markRendererLoadRequested();
       await _driver.loadRenderer();
-      if (mounted) widget.onDriverReady(_driver);
     } on Object catch (error) {
       widget.onDiagnostic?.call(error);
     }
