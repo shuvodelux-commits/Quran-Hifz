@@ -217,6 +217,34 @@ void main() {
     },
   );
 
+  testWidgets(
+    'playback meaning toggle hides only the word bubble, not the ayah translation',
+    (tester) async {
+      final preferences = _MemoryPreferencesRepository()
+        ..value = const AppPreferences.defaults().copyWith(
+          showPlaybackBanglaWordMeaning: false,
+        );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ..._overrides(preferences: preferences),
+            quranAudioControllerProvider.overrideWith(
+              _PlayingAyahController.new,
+            ),
+          ],
+          child: const MaterialApp(home: QuranReaderPage(surah: _surah)),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('playback-word-meaning-bubble')),
+        findsNothing,
+      );
+      expect(find.text('Fixture Bangla translation 1'), findsOneWidget);
+    },
+  );
+
   testWidgets('ayah control changes to Stop while its audio is active', (
     tester,
   ) async {
