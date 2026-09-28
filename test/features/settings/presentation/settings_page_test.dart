@@ -109,7 +109,7 @@ void main() {
     expect(preferences.value.defaultPlaybackSpeed, 1.25);
   });
 
-  testWidgets('playback dropdowns expose exactly the supported values', (
+  testWidgets('playback chips expose exactly the supported values', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -126,7 +126,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('তাজবিদের রং'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('অডিও ও তিলাওয়াত'),
       300,
@@ -134,30 +133,21 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final repeatDropdown = find.byType(DropdownButtonFormField<int>);
-    expect(repeatDropdown, findsOneWidget);
-    await tester.ensureVisible(repeatDropdown);
-    await tester.tap(repeatDropdown);
-    await tester.pumpAndSettle();
-
     for (final count in AppPreferences.supportedRepeatCounts) {
-      expect(find.text('$count×'), findsWidgets);
+      expect(
+        find.byKey(ValueKey('repeat-choice-$count')),
+        findsOneWidget,
+      );
     }
-    expect(find.text('4×'), findsNothing);
-
-    await tester.tap(find.text('5×').last);
-    await tester.pumpAndSettle();
-
-    final speedDropdown = find.byType(DropdownButtonFormField<double>);
-    expect(speedDropdown, findsOneWidget);
-    await tester.ensureVisible(speedDropdown);
-    await tester.tap(speedDropdown);
-    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('repeat-choice-4')), findsNothing);
 
     for (final speed in AppPreferences.supportedPlaybackSpeeds) {
-      expect(find.text('${speed}×'), findsWidgets);
+      expect(
+        find.byKey(ValueKey('speed-choice-$speed')),
+        findsOneWidget,
+      );
     }
-    expect(find.text('2.0×'), findsNothing);
+    expect(find.byKey(const ValueKey('speed-choice-2.0')), findsNothing);
   });
 
   testWidgets('reading settings expose a Bangla font-size control', (
