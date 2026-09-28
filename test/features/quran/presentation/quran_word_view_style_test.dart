@@ -18,31 +18,51 @@ import 'package:quran_hifz/features/settings/domain/app_preferences_repository.d
 import 'package:quran_hifz/app/app_theme.dart';
 
 void main() {
-  testWidgets('active word highlight follows the green theme', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          appPreferencesRepositoryProvider.overrideWithValue(
-            _MemoryPreferencesRepository(),
-          ),
-        ],
-        child: MaterialApp(
-          theme: appTheme(AppThemePreference.green),
-          home: const Scaffold(
-            body: QuranWordView(
-              word: QuranWord(position: 1, arabic: 'اللَّه'),
-              isActive: true,
+  for (final preference in AppThemePreference.values) {
+    testWidgets(
+      'active word highlight is a brighter matching ${preference.name} accent',
+      (tester) async {
+        final theme = appTheme(preference);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              appPreferencesRepositoryProvider.overrideWithValue(
+                _MemoryPreferencesRepository(),
+              ),
+            ],
+            child: MaterialApp(
+              theme: theme,
+              home: const Scaffold(
+                body: QuranWordView(
+                  word: QuranWord(position: 1, arabic: 'اللَّه'),
+                  isActive: true,
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+        await tester.pumpAndSettle();
+
+        final activeColor =
+            DefaultTextStyle.of(
+              tester.element(find.text('اللَّه')),
+            ).style.color!;
+        final baseColor = theme.colorScheme.primary;
+        final activeHsv = HSVColor.fromColor(activeColor);
+        final baseHsv = HSVColor.fromColor(baseColor);
+
+        expect(activeColor, isNot(baseColor));
+        expect((activeHsv.hue - baseHsv.hue).abs(), lessThan(1));
+        expect(activeHsv.value, greaterThanOrEqualTo(baseHsv.value));
+        expect(activeHsv.saturation, greaterThanOrEqualTo(baseHsv.saturation));
+        expect(
+          activeHsv.value > baseHsv.value ||
+              activeHsv.saturation > baseHsv.saturation,
+          isTrue,
+        );
+      },
     );
-    await tester.pumpAndSettle();
-    expect(
-      DefaultTextStyle.of(tester.element(find.text('اللَّه'))).style.color,
-      appTheme(AppThemePreference.green).colorScheme.primary,
-    );
-  });
+  }
   test(
     'Quran font manifest registers every exact family alias and asset',
     () async {
