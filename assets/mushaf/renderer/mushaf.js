@@ -197,6 +197,7 @@
   }
 
   function ensurePlaybackTargetVisible(ayahKey, wordPosition = null) {
+    if (state.continuousLayout) return;
     const elements = playbackElements(ayahKey, wordPosition);
     if (elements.length === 0) return;
     const rects = elements.map((element) => element.getBoundingClientRect());
