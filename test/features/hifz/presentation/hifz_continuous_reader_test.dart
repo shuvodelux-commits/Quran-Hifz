@@ -220,6 +220,36 @@ void main() {
     expect(stoppedAt, greaterThanOrEqualTo(beforeAudio));
   });
 
+  testWidgets('enabling auto-scroll while audio is already playing is rejected', (
+    tester,
+  ) async {
+    var disableCalls = 0;
+
+    await tester.pumpWidget(
+      _continuousTestApp(
+        autoScrollEnabled: false,
+        autoScrollSpeed: 0.5,
+        audioPlaying: true,
+        onDisableAutoScroll: () => disableCalls++,
+      ),
+    );
+    await tester.pump();
+    expect(disableCalls, 0);
+
+    await tester.pumpWidget(
+      _continuousTestApp(
+        autoScrollEnabled: true,
+        autoScrollSpeed: 0.5,
+        audioPlaying: true,
+        onDisableAutoScroll: () => disableCalls++,
+      ),
+    );
+    await tester.pump();
+
+    expect(disableCalls, 1);
+  });
+
+
 }
 
 Widget _continuousTestApp({
