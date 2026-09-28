@@ -555,6 +555,190 @@ class SettingsPage extends ConsumerWidget {
   }
 }
 
+class _SettingsSectionHeader extends StatelessWidget {
+  const _SettingsSectionHeader({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: colors.primaryContainer,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          alignment: Alignment.center,
+          child: Icon(icon, size: 19, color: colors.primary),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 1),
+              Text(
+                subtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ThemePicker extends StatelessWidget {
+  const _ThemePicker({
+    required this.language,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final AppLanguage language;
+  final AppThemePreference selected;
+  final ValueChanged<AppThemePreference> onSelected;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      const gap = 8.0;
+      final width = (constraints.maxWidth - gap) / 2;
+      return Wrap(
+        spacing: gap,
+        runSpacing: gap,
+        children: [
+          for (final theme in AppThemePreference.values)
+            SizedBox(
+              width: width,
+              child: _ThemeChoice(
+                label: _themeLabel(theme, language),
+                swatch: _themeSwatch(theme),
+                selected: theme == selected,
+                onTap: () => onSelected(theme),
+              ),
+            ),
+        ],
+      );
+    },
+  );
+}
+
+class _ThemeChoice extends StatelessWidget {
+  const _ThemeChoice({
+    required this.label,
+    required this.swatch,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final Color swatch;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: Material(
+        color: selected
+            ? colors.primaryContainer.withValues(alpha: 0.45)
+            : colors.surfaceContainer,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 58),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: selected ? colors.primary : colors.outlineVariant,
+                width: selected ? 1.5 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: swatch,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: colors.onSurface.withValues(alpha: 0.12),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+                if (selected) ...[
+                  const SizedBox(width: 4),
+                  Icon(Icons.check_circle_rounded, size: 18, color: colors.primary),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _themeLabel(AppThemePreference theme, AppLanguage language) =>
+    switch (theme) {
+      AppThemePreference.light =>
+        language == AppLanguage.bangla ? 'টিল ব্লু' : 'Teal Blue',
+      AppThemePreference.green =>
+        language == AppLanguage.bangla ? 'সি গ্রিন' : 'Sea Green',
+      AppThemePreference.dark =>
+        language == AppLanguage.bangla ? 'টারকোয়েজ ডার্ক' : 'Turquoise Dark',
+      AppThemePreference.women =>
+        language == AppLanguage.bangla ? 'মভ রোজ' : 'Mauve Rose',
+    };
+
+Color _themeSwatch(AppThemePreference theme) => switch (theme) {
+  AppThemePreference.light => const Color(0xFF27687E),
+  AppThemePreference.green => const Color(0xFF397A65),
+  AppThemePreference.dark => const Color(0xFF55BBC2),
+  AppThemePreference.women => const Color(0xFFA75E7B),
+};
+
 class _SettingsCard extends StatelessWidget {
   const _SettingsCard({required this.children});
 
