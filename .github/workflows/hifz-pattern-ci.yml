@@ -25,6 +25,7 @@ jobs:
           flutter test --fail-fast test/features/hifz/presentation/hifz_pattern_editor_sheet_test.dart
           flutter test --fail-fast test/features/hifz/presentation/hifz_setup_sheet_test.dart
           flutter test --fail-fast test/features/hifz/presentation/hifz_reader_page_test.dart
+          flutter test --fail-fast test/features/hifz/presentation/hifz_home_page_test.dart
           flutter test --fail-fast test/features/quran/presentation/quran_surah_list_page_test.dart
       - name: Analyze
         run: flutter analyze
