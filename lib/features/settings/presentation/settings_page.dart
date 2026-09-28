@@ -296,7 +296,25 @@ class SettingsPage extends ConsumerWidget {
                       .read(appPreferencesControllerProvider.notifier)
                       .setTapToShowBanglaWordMeaning(enabled),
                 ),
-                const SizedBox(height: 14),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _SettingsSectionHeader(
+              icon: Icons.text_fields_rounded,
+              title: appText(
+                value.language,
+                'লেখা ও পড়ার বিন্যাস',
+                'Text & Reading Layout',
+              ),
+              subtitle: appText(
+                value.language,
+                'পড়ার আকার, ফাঁক ও লাইভ প্রিভিউ',
+                'Reading size, spacing and live preview',
+              ),
+            ),
+            const SizedBox(height: 6),
+            _SettingsCard(
+              children: [
                 _QuranTypographyPreview(
                   preferences: value,
                   tajweedAvailable: tajweedAvailable,
