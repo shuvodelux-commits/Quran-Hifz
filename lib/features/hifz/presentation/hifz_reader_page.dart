@@ -197,15 +197,6 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
       if (_audioTargetSignature(previous) != _audioTargetSignature(next)) {
         unawaited(_syncPlaybackTarget(next));
       }
-      if (!_isAudioRunning(previous) &&
-          _isAudioRunning(next) &&
-          ref.read(hifzContinuousAutoScrollEnabledProvider)) {
-        unawaited(
-          ref
-              .read(appPreferencesControllerProvider.notifier)
-              .setHifzContinuousAutoScrollEnabled(false),
-        );
-      }
     });
 
     final audioVisible =
@@ -439,12 +430,6 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
       debugPrintStack(stackTrace: stackTrace);
       if (mounted) _showMessage('Word pronunciation could not be played.');
     }
-  }
-
-  bool _isAudioRunning(QuranAudioState? audio) {
-    if (audio == null) return false;
-    return audio.status == QuranAudioStatus.loading ||
-        audio.status == QuranAudioStatus.playing;
   }
 
   String _audioTargetSignature(QuranAudioState? audio) {
