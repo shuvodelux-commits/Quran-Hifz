@@ -41,13 +41,17 @@ class SettingsPage extends ConsumerWidget {
         data: (value) => ListView(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
           children: [
-            Text(
-              value.language == AppLanguage.bangla
-                  ? 'প্রাথমিক সেটিংস'
-                  : 'General settings',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
+            _SettingsSectionHeader(
+              icon: Icons.palette_outlined,
+              title: appText(
+                value.language,
+                'অ্যাপের রূপ ও ভাষা',
+                'Appearance & Language',
+              ),
+              subtitle: appText(
+                value.language,
+                'ভাষা ও UI রং বেছে নিন',
+                'Choose app language and UI color',
               ),
             ),
             const SizedBox(height: 6),
@@ -78,46 +82,40 @@ class SettingsPage extends ConsumerWidget {
                     }
                   },
                 ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<AppThemePreference>(
-                  initialValue: value.theme,
-                  decoration: InputDecoration(
-                    labelText: value.language == AppLanguage.bangla
-                        ? 'থিম'
-                        : 'Theme',
+                const SizedBox(height: 14),
+                Text(
+                  appText(value.language, 'UI রং', 'UI color'),
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
-                  items: [
-                    for (final theme in AppThemePreference.values)
-                      DropdownMenuItem(
-                        value: theme,
-                        child: Text(switch (theme) {
-                          AppThemePreference.light =>
-                            value.language == AppLanguage.bangla
-                                ? 'হালকা নীল'
-                                : 'Light blue',
-                          AppThemePreference.green =>
-                            value.language == AppLanguage.bangla
-                                ? 'সবুজ'
-                                : 'Green',
-                          AppThemePreference.dark =>
-                            value.language == AppLanguage.bangla
-                                ? 'ডার্ক'
-                                : 'Dark',
-                          AppThemePreference.women =>
-                            value.language == AppLanguage.bangla
-                                ? 'গোলাপি'
-                                : 'Pink',
-                        }),
-                      ),
-                  ],
-                  onChanged: (theme) {
-                    if (theme != null)
-                      ref
-                          .read(appPreferencesControllerProvider.notifier)
-                          .setTheme(theme);
-                  },
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
+                _ThemePicker(
+                  language: value.language,
+                  selected: value.theme,
+                  onSelected: (theme) => ref
+                      .read(appPreferencesControllerProvider.notifier)
+                      .setTheme(theme),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _SettingsSectionHeader(
+              icon: Icons.mosque_outlined,
+              title: appText(
+                value.language,
+                'সালাত ও অবস্থান',
+                'Prayer & Location',
+              ),
+              subtitle: appText(
+                value.language,
+                'আসরের গণনা ও নামাজের অবস্থান',
+                'Asr calculation and prayer location',
+              ),
+            ),
+            const SizedBox(height: 6),
+            _SettingsCard(
+              children: [
                 DropdownButtonFormField<AsrSchool>(
                   initialValue: value.asrSchool,
                   decoration: InputDecoration(
@@ -145,10 +143,11 @@ class SettingsPage extends ConsumerWidget {
                     ),
                   ],
                   onChanged: (school) {
-                    if (school != null)
+                    if (school != null) {
                       ref
                           .read(appPreferencesControllerProvider.notifier)
                           .setAsrSchool(school);
+                    }
                   },
                 ),
                 const SizedBox(height: 6),
@@ -184,11 +183,13 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              appText(value.language, 'পড়ার সেটিংস', 'Reading settings'),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
+            _SettingsSectionHeader(
+              icon: Icons.menu_book_outlined,
+              title: appText(value.language, 'কুরআন পড়া', 'Quran Reading'),
+              subtitle: appText(
+                value.language,
+                'ফন্ট, তাজবিদ ও ট্যাপ আচরণ',
+                'Font, Tajweed and tap behavior',
               ),
             ),
             const SizedBox(height: 6),
@@ -295,7 +296,25 @@ class SettingsPage extends ConsumerWidget {
                       .read(appPreferencesControllerProvider.notifier)
                       .setTapToShowBanglaWordMeaning(enabled),
                 ),
-                const SizedBox(height: 14),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _SettingsSectionHeader(
+              icon: Icons.text_fields_rounded,
+              title: appText(
+                value.language,
+                'লেখা ও পড়ার বিন্যাস',
+                'Text & Reading Layout',
+              ),
+              subtitle: appText(
+                value.language,
+                'পড়ার আকার, ফাঁক ও লাইভ প্রিভিউ',
+                'Reading size, spacing and live preview',
+              ),
+            ),
+            const SizedBox(height: 6),
+            _SettingsCard(
+              children: [
                 _QuranTypographyPreview(
                   preferences: value,
                   tajweedAvailable: tajweedAvailable,
@@ -401,14 +420,20 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              appText(value.language, 'অডিও সেটিংস', 'Playback settings'),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
+            _SettingsSectionHeader(
+              icon: Icons.graphic_eq_rounded,
+              title: appText(
+                value.language,
+                'অডিও ও তিলাওয়াত',
+                'Audio & Recitation',
+              ),
+              subtitle: appText(
+                value.language,
+                'পুনরাবৃত্তি, গতি ও কারি',
+                'Repeat, speed and reciter',
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             _SettingsCard(
               children: [
                 DropdownButtonFormField<int>(
@@ -529,6 +554,190 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 }
+
+class _SettingsSectionHeader extends StatelessWidget {
+  const _SettingsSectionHeader({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: colors.primaryContainer,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          alignment: Alignment.center,
+          child: Icon(icon, size: 19, color: colors.primary),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 1),
+              Text(
+                subtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ThemePicker extends StatelessWidget {
+  const _ThemePicker({
+    required this.language,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final AppLanguage language;
+  final AppThemePreference selected;
+  final ValueChanged<AppThemePreference> onSelected;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      const gap = 8.0;
+      final width = (constraints.maxWidth - gap) / 2;
+      return Wrap(
+        spacing: gap,
+        runSpacing: gap,
+        children: [
+          for (final theme in AppThemePreference.values)
+            SizedBox(
+              width: width,
+              child: _ThemeChoice(
+                label: _themeLabel(theme, language),
+                swatch: _themeSwatch(theme),
+                selected: theme == selected,
+                onTap: () => onSelected(theme),
+              ),
+            ),
+        ],
+      );
+    },
+  );
+}
+
+class _ThemeChoice extends StatelessWidget {
+  const _ThemeChoice({
+    required this.label,
+    required this.swatch,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final Color swatch;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: Material(
+        color: selected
+            ? colors.primaryContainer.withValues(alpha: 0.45)
+            : colors.surfaceContainer,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 58),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: selected ? colors.primary : colors.outlineVariant,
+                width: selected ? 1.5 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: swatch,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: colors.onSurface.withValues(alpha: 0.12),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+                if (selected) ...[
+                  const SizedBox(width: 4),
+                  Icon(Icons.check_circle_rounded, size: 18, color: colors.primary),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _themeLabel(AppThemePreference theme, AppLanguage language) =>
+    switch (theme) {
+      AppThemePreference.light =>
+        language == AppLanguage.bangla ? 'টিল ব্লু' : 'Teal Blue',
+      AppThemePreference.green =>
+        language == AppLanguage.bangla ? 'সি গ্রিন' : 'Sea Green',
+      AppThemePreference.dark =>
+        language == AppLanguage.bangla ? 'টারকোয়েজ ডার্ক' : 'Turquoise Dark',
+      AppThemePreference.women =>
+        language == AppLanguage.bangla ? 'মভ রোজ' : 'Mauve Rose',
+    };
+
+Color _themeSwatch(AppThemePreference theme) => switch (theme) {
+  AppThemePreference.light => const Color(0xFF27687E),
+  AppThemePreference.green => const Color(0xFF397A65),
+  AppThemePreference.dark => const Color(0xFF55BBC2),
+  AppThemePreference.women => const Color(0xFFA75E7B),
+};
 
 class _SettingsCard extends StatelessWidget {
   const _SettingsCard({required this.children});
