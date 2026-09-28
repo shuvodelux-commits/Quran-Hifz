@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_hifz/features/hifz/application/hifz_plan_providers.dart';
+import 'package:quran_hifz/features/hifz/presentation/hifz_home_page.dart';
 import 'package:quran_hifz/features/quran/application/quran_providers.dart';
 import 'package:quran_hifz/features/quran/application/reader_controller.dart';
 import 'package:quran_hifz/features/quran/domain/quran_ayah.dart';
@@ -15,6 +17,20 @@ import 'package:quran_hifz/features/settings/domain/app_preferences_repository.d
 import 'package:quran_hifz/features/study/domain/bookmark.dart';
 
 void main() {
+  testWidgets('Quran quick actions open Hifz beside Tafsir', (tester) async {
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+
+    expect(find.text('তাফসির'), findsOneWidget);
+    expect(find.byKey(const ValueKey('quran-quick-hifz')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('quran-quick-hifz')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HifzHomePage), findsOneWidget);
+    expect(find.text('হিফজ'), findsOneWidget);
+  });
+
   testWidgets('library has Surah Juz Bookmarks tabs and fuzzy search', (
     tester,
   ) async {
@@ -135,6 +151,7 @@ Widget _app() => ProviderScope(
     appPreferencesRepositoryProvider.overrideWithValue(
       _MemoryPreferencesRepository(),
     ),
+    hifzPlansProvider.overrideWith((ref) => Stream.value(const [])),
   ],
   child: const MaterialApp(home: QuranSurahListPage()),
 );

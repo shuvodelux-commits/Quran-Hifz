@@ -59,6 +59,56 @@ void main() {
   });
 
 
+  testWidgets('repeat button edits and keeps the current Hifz pattern', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_readerApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('hifz-repeat-pattern')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('hifz-pattern-ayah-3')));
+    await tester.tap(find.byKey(const ValueKey('hifz-pattern-combined-2')));
+    await tester.tap(find.byKey(const ValueKey('hifz-pattern-final-1')));
+    await tester.tap(find.byKey(const ValueKey('hifz-pattern-pause-500')));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hifz-pattern-save')),
+    );
+    await tester.tap(find.byKey(const ValueKey('hifz-pattern-save')));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('hifz-repeat-pattern')));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<ChoiceChip>(
+        find.byKey(const ValueKey('hifz-pattern-ayah-3')),
+      ).selected,
+      isTrue,
+    );
+    expect(
+      tester.widget<ChoiceChip>(
+        find.byKey(const ValueKey('hifz-pattern-combined-2')),
+      ).selected,
+      isTrue,
+    );
+    expect(
+      tester.widget<ChoiceChip>(
+        find.byKey(const ValueKey('hifz-pattern-final-1')),
+      ).selected,
+      isTrue,
+    );
+    expect(
+      tester.widget<ChoiceChip>(
+        find.byKey(const ValueKey('hifz-pattern-pause-500')),
+      ).selected,
+      isTrue,
+    );
+  });
+
   testWidgets('word tap keeps the existing Quran pronunciation interaction', (
     tester,
   ) async {

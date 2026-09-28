@@ -40,5 +40,7 @@ abstract class HifzPlanRepository {
     required HifzPreset preset,
   });
 
+  Future<void> updatePreset(int id, HifzPreset preset);
+
   Future<void> deletePlan(int id);
 }

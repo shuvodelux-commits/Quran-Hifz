@@ -61,6 +61,21 @@ class DriftHifzPlanRepository implements HifzPlanRepository {
   }
 
   @override
+  Future<void> updatePreset(int id, HifzPreset preset) async {
+    final affected = await (_database.update(
+      _database.hifzPlans,
+    )..where((row) => row.id.equals(id))).write(
+      HifzPlansCompanion(
+        presetId: Value(preset.id),
+        updatedAt: Value(DateTime.now().toUtc()),
+      ),
+    );
+    if (affected != 1) {
+      throw StateError('Hifz plan $id was not found.');
+    }
+  }
+
+  @override
   Future<void> deletePlan(int id) async {
     await (_database.delete(
       _database.hifzPlans,

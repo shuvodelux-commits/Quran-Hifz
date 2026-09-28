@@ -17,11 +17,14 @@ import '../../settings/application/app_preferences_controller.dart';
 import '../../study/application/study_providers.dart';
 import '../../study/domain/bookmark.dart';
 import '../../study/presentation/word_details_sheet.dart';
+import '../application/hifz_plan_providers.dart';
 import '../application/hifz_session_controller.dart';
 import '../application/hifz_start_defaults.dart';
+import '../domain/hifz_preset.dart';
 import '../domain/hifz_session.dart';
 import 'hifz_appearance_sheet.dart';
 import 'hifz_controls_bar.dart';
+import 'hifz_pattern_editor_sheet.dart';
 import 'hifz_setup_sheet.dart';
 import 'hifz_surah_picker_sheet.dart';
 
@@ -30,12 +33,14 @@ class HifzReaderPage extends ConsumerStatefulWidget {
     required this.config,
     required this.initialPage,
     required this.planTitle,
+    this.planId,
     super.key,
   });
 
   final HifzSessionConfig config;
   final int initialPage;
   final String planTitle;
+  final int? planId;
 
   @override
   ConsumerState<HifzReaderPage> createState() => _HifzReaderPageState();
@@ -202,7 +207,7 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
               repeatTotal: session.stepRepeatTotal,
               hidden: _hidden,
               onPlayPause: _togglePlayback,
-              onRepeatPattern: _showRepeatPattern,
+              onRepeatPattern: () => unawaited(_showRepeatPattern()),
               onToggleHidden: () => setState(() => _hidden = !_hidden),
               onFinish: () => unawaited(
                 ref.read(hifzSessionControllerProvider.notifier).stop(),
@@ -486,39 +491,49 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
     );
   }
 
-  void _showRepeatPattern() {
-    final preset = _config.preset;
-    showModalBottomSheet<void>(
+  Future<void> _showRepeatPattern() async {
+    final selected = await showModalBottomSheet<HifzPreset>(
       context: context,
+      isScrollControlled: true,
       showDragHandle: true,
-      builder: (context) => SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Repeat pattern',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Ayah repetitions: ' + preset.ayahRepeatCount.toString(),
-              ),
-              Text(
-                'Combined repetitions: ' +
-                    preset.combinedRepeatCount.toString(),
-              ),
-              Text(
-                'Final range repetitions: ' +
-                    preset.finalRangeRepeatCount.toString(),
-              ),
-            ],
-          ),
-        ),
-      ),
+      builder: (_) => HifzPatternEditorSheet(initialPreset: _config.preset),
     );
+    if (!mounted || selected == null || selected.id == _config.preset.id) {
+      return;
+    }
+
+    final session = ref.read(hifzSessionControllerProvider);
+    if (session.status == HifzSessionStatus.running ||
+        session.status == HifzSessionStatus.paused) {
+      await ref.read(hifzSessionControllerProvider.notifier).stop();
+      if (!mounted) return;
+    }
+
+    final planId = widget.planId;
+    if (planId != null) {
+      try {
+        await ref.read(hifzPlanRepositoryProvider).updatePreset(planId, selected);
+      } on Object {
+        if (mounted) _showMessage('Could not save the repeat pattern.');
+        return;
+      }
+      if (!mounted) return;
+    }
+
+    setState(() {
+      _config = HifzSessionConfig(
+        start: _config.start,
+        end: _config.end,
+        preset: selected,
+      );
+    });
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('Repeat pattern updated. Press Play to use it.'),
+        ),
+      );
   }
 }

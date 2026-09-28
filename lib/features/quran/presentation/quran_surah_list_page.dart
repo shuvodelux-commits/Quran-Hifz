@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/localization/app_locale_text.dart';
+import '../../hifz/presentation/hifz_home_page.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/domain/app_preferences.dart';
 import '../../study/domain/bookmark_display_item.dart';
@@ -83,6 +84,7 @@ class _QuranSurahListPageState extends ConsumerState<QuranSurahListPage> {
             _QuickActions(
               language: language,
               onTafsir: () => _openTafsirSelector(items),
+              onHifz: _openHifz,
             ),
             if (_searchOpen && _tab == QuranLibraryTab.surah)
               Padding(
@@ -255,6 +257,12 @@ class _QuranSurahListPageState extends ConsumerState<QuranSurahListPage> {
     );
   }
 
+  void _openHifz() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(builder: (_) => const HifzHomePage()),
+    );
+  }
+
   Future<void> _openTafsirSelector(List<QuranSurahSummary> items) async {
     final selected = await showModalBottomSheet<int>(
       context: context,
@@ -374,19 +382,37 @@ class _JuzList extends ConsumerWidget {
 }
 
 class _QuickActions extends StatelessWidget {
-  const _QuickActions({required this.language, required this.onTafsir});
+  const _QuickActions({
+    required this.language,
+    required this.onTafsir,
+    required this.onHifz,
+  });
+
   final AppLanguage language;
   final VoidCallback onTafsir;
+  final VoidCallback onHifz;
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(12, 6, 12, 4),
     child: Align(
       alignment: Alignment.centerLeft,
-      child: OutlinedButton.icon(
-        onPressed: onTafsir,
-        icon: const Icon(Icons.article_outlined),
-        label: Text(appText(language, 'তাফসির', 'Tafsir')),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 6,
+        children: [
+          OutlinedButton.icon(
+            onPressed: onTafsir,
+            icon: const Icon(Icons.article_outlined),
+            label: Text(appText(language, 'তাফসির', 'Tafsir')),
+          ),
+          OutlinedButton.icon(
+            key: const ValueKey('quran-quick-hifz'),
+            onPressed: onHifz,
+            icon: const Icon(Icons.school_outlined),
+            label: Text(appText(language, 'হিফজ', 'Hifz')),
+          ),
+        ],
       ),
     ),
   );

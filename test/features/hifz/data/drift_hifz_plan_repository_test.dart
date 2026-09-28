@@ -37,6 +37,39 @@ void main() {
     expect(plans.first.preset.ayahRepeatCount, 5);
   });
 
+  test('updates the saved repeat pattern for an existing plan', () async {
+    final database = UserDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final repository = DriftHifzPlanRepository(database);
+
+    final id = await repository.createPlan(
+      profileKey: 'default',
+      title: 'Editable',
+      start: const AyahRef(surahNumber: 1, ayahNumber: 1),
+      end: const AyahRef(surahNumber: 1, ayahNumber: 5),
+      startPage: 1,
+      preset: HifzPresets.progressive(),
+    );
+
+    final updated = HifzPresets.progressive(
+      ayahRepeatCount: 3,
+      combinedRepeatCount: 2,
+      finalRangeRepeatCount: 1,
+      pauseBetweenRepeats: const Duration(milliseconds: 500),
+    );
+    await repository.updatePreset(id, updated);
+
+    final plans = await repository.watchPlans('default').first;
+    expect(plans.single.preset.id, updated.id);
+    expect(plans.single.preset.ayahRepeatCount, 3);
+    expect(plans.single.preset.combinedRepeatCount, 2);
+    expect(plans.single.preset.finalRangeRepeatCount, 1);
+    expect(
+      plans.single.preset.pauseBetweenRepeats,
+      const Duration(milliseconds: 500),
+    );
+  });
+
   test('deletes only the selected plan', () async {
     final database = UserDatabase.forTesting(NativeDatabase.memory());
     addTearDown(database.close);

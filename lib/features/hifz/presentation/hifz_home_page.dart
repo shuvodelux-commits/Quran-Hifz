@@ -200,7 +200,7 @@ class _HifzHomePageState extends ConsumerState<HifzHomePage> {
           setup.startAyah.toString() +
           '–' +
           setup.endAyah.toString();
-      await ref.read(hifzPlanRepositoryProvider).createPlan(
+      final planId = await ref.read(hifzPlanRepositoryProvider).createPlan(
         profileKey: defaultHifzPlanProfileKey,
         title: title,
         start: start,
@@ -219,6 +219,7 @@ class _HifzHomePageState extends ConsumerState<HifzHomePage> {
             ),
             initialPage: ayah.pageNumber,
             planTitle: title,
+            planId: planId,
           ),
         ),
       );
@@ -254,6 +255,7 @@ class _HifzHomePageState extends ConsumerState<HifzHomePage> {
           config: plan.sessionConfig,
           initialPage: plan.startPage,
           planTitle: plan.title,
+          planId: plan.id,
         ),
       ),
     );
