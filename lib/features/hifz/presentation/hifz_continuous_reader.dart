@@ -99,8 +99,7 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader>
     if (oldWidget.variant != widget.variant) {
       _pageHeights.clear();
     }
-    if (!oldWidget.audioPlaying &&
-        widget.audioPlaying &&
+    if (widget.audioPlaying &&
         widget.autoScrollEnabled &&
         !_audioDisableRequested) {
       _audioDisableRequested = true;
