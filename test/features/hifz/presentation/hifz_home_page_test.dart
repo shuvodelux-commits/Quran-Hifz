@@ -228,6 +228,9 @@ class _MemoryPlanRepository implements HifzPlanRepository {
   }
 
   @override
+  Future<void> updatePreset(int id, HifzPreset preset) async {}
+
+  @override
   Future<void> deletePlan(int id) async {}
 }
 
