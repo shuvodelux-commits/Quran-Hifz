@@ -115,6 +115,42 @@ void main() {
     expect(mushaf.activeWordBanglaMeaning, isNull);
   });
 
+
+  testWidgets('Page mode follows ayah playback onto the target Mushaf page', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_readerApp());
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HifzReaderPage)),
+    );
+    final audio = container.read(quranAudioControllerProvider.notifier)
+        as _FixtureAudioController;
+
+    audio.setPlayback(
+      const QuranAudioState(
+        mode: QuranAudioMode.ayah,
+        status: QuranAudioStatus.playing,
+        speed: 1,
+        repeatIndex: 1,
+        repeatTotal: 1,
+        ayahKey: '1:2',
+        activeWordPosition: 1,
+      ),
+    );
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    final mushaf = tester.widget<QuranStrictReaderBody>(
+      find.byType(QuranStrictReaderBody),
+    );
+    expect(mushaf.state.currentPage, 2);
+    expect(mushaf.activeAyahKey, '1:2');
+    expect(mushaf.activeWordPosition, 1);
+    expect(mushaf.activeWordBanglaMeaning, 'সকল প্রশংসা');
+  });
+
   testWidgets('repeat button edits and keeps the current Hifz pattern', (
     tester,
   ) async {
@@ -293,6 +329,10 @@ Widget _readerApp({ReaderAudioActions? readerAudioActions}) {
 }
 
 class _FixtureAudioController extends QuranAudioController {
+  void setPlayback(QuranAudioState value) {
+    state = value;
+  }
+
   @override
   QuranAudioState build() => const QuranAudioState(
     mode: QuranAudioMode.ayah,
@@ -328,26 +368,44 @@ class _FixtureQuranRepository implements QuranRepository {
     required int ayahNumber,
     required int translationResourceId,
   }) async {
-    if (surahNumber != 1 || ayahNumber != 1) return null;
-    return const QuranAyah(
-      surahNumber: 1,
-      ayahNumber: 1,
-      pageNumber: 1,
-      words: [
-        QuranWord(
-          position: 1,
-          arabic: 'بِسْمِ',
-          audioUrl: '001_001_001.mp3',
-          banglaMeaning: 'নামে',
-        ),
-        QuranWord(
-          position: 2,
-          arabic: 'ٱلرَّحْمَٰنِ',
-          audioUrl: '001_001_002.mp3',
-          banglaMeaning: 'পরম করুণাময়',
-        ),
-      ],
-    );
+    if (surahNumber != 1) return null;
+    if (ayahNumber == 1) {
+      return const QuranAyah(
+        surahNumber: 1,
+        ayahNumber: 1,
+        pageNumber: 1,
+        words: [
+          QuranWord(
+            position: 1,
+            arabic: 'بِسْمِ',
+            audioUrl: '001_001_001.mp3',
+            banglaMeaning: 'নামে',
+          ),
+          QuranWord(
+            position: 2,
+            arabic: 'ٱلرَّحْمَٰنِ',
+            audioUrl: '001_001_002.mp3',
+            banglaMeaning: 'পরম করুণাময়',
+          ),
+        ],
+      );
+    }
+    if (ayahNumber == 2) {
+      return const QuranAyah(
+        surahNumber: 1,
+        ayahNumber: 2,
+        pageNumber: 2,
+        words: [
+          QuranWord(
+            position: 1,
+            arabic: 'ٱلْحَمْدُ',
+            audioUrl: '001_002_001.mp3',
+            banglaMeaning: 'সকল প্রশংসা',
+          ),
+        ],
+      );
+    }
+    return null;
   }
 
   @override
