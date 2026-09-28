@@ -421,13 +421,6 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
   ) async {
     final target = await _resolveMushafWord(ayahKey, wordPosition);
     if (target == null) return;
-    if (mounted) {
-      setState(() {
-        final meaning = target.word.banglaMeaning?.trim();
-        _activeWordBanglaMeaning =
-            meaning == null || meaning.isEmpty ? null : meaning;
-      });
-    }
     try {
       await ref.read(readerAudioActionsProvider).playWord(
             target.ayah,
