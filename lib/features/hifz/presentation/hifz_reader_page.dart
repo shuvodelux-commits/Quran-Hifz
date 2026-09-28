@@ -17,6 +17,7 @@ import '../../settings/application/app_preferences_controller.dart';
 import '../../study/application/study_providers.dart';
 import '../../study/domain/bookmark.dart';
 import '../../study/presentation/word_details_sheet.dart';
+import '../application/hifz_plan_providers.dart';
 import '../application/hifz_session_controller.dart';
 import '../application/hifz_start_defaults.dart';
 import '../domain/hifz_preset.dart';
@@ -32,12 +33,14 @@ class HifzReaderPage extends ConsumerStatefulWidget {
     required this.config,
     required this.initialPage,
     required this.planTitle,
+    this.planId,
     super.key,
   });
 
   final HifzSessionConfig config;
   final int initialPage;
   final String planTitle;
+  final int? planId;
 
   @override
   ConsumerState<HifzReaderPage> createState() => _HifzReaderPageState();
@@ -503,6 +506,17 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
     if (session.status == HifzSessionStatus.running ||
         session.status == HifzSessionStatus.paused) {
       await ref.read(hifzSessionControllerProvider.notifier).stop();
+      if (!mounted) return;
+    }
+
+    final planId = widget.planId;
+    if (planId != null) {
+      try {
+        await ref.read(hifzPlanRepositoryProvider).updatePreset(planId, selected);
+      } on Object {
+        if (mounted) _showMessage('Could not save the repeat pattern.');
+        return;
+      }
       if (!mounted) return;
     }
 
