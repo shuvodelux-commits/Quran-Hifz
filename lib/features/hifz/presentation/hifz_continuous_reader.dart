@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../quran/application/quran_mushaf_providers.dart';
@@ -11,6 +12,7 @@ import '../../quran/domain/quran_mushaf_variant.dart';
 import '../../quran/domain/quran_page_window.dart';
 import '../../quran/presentation/mushaf/mushaf_renderer_message.dart';
 import '../../quran/presentation/mushaf/quran_strict_mushaf_surface.dart';
+import 'hifz_auto_scroll_driver.dart';
 
 class HifzContinuousReader extends ConsumerStatefulWidget {
   const HifzContinuousReader({
@@ -30,6 +32,10 @@ class HifzContinuousReader extends ConsumerStatefulWidget {
     required this.onAyahTap,
     this.activeWordBanglaMeaning,
     this.playbackPage,
+    this.autoScrollEnabled = false,
+    this.autoScrollSpeed = 0.35,
+    this.audioPlaying = false,
+    this.onDisableAutoScroll,
     super.key,
   });
 
@@ -44,6 +50,10 @@ class HifzContinuousReader extends ConsumerStatefulWidget {
   final String? selectedStartAyahKey;
   final String? selectedEndAyahKey;
   final int? playbackPage;
+  final bool autoScrollEnabled;
+  final double autoScrollSpeed;
+  final bool audioPlaying;
+  final VoidCallback? onDisableAutoScroll;
   final ValueChanged<int> onPageNeeded;
   final ValueChanged<int> onCurrentPageChanged;
   final void Function(String ayahKey, int wordPosition) onWordTap;
@@ -55,12 +65,26 @@ class HifzContinuousReader extends ConsumerStatefulWidget {
       _HifzContinuousReaderState();
 }
 
-class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader> {
+class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader>
+    with SingleTickerProviderStateMixin {
   final Map<int, double> _pageHeights = <int, double>{};
   final Map<int, GlobalKey> _pageKeys = <int, GlobalKey>{};
   ScrollController? _scrollController;
+  late final Ticker _autoScrollTicker;
+  Duration? _lastAutoScrollTick;
   double _defaultPageExtent = 1;
   bool _currentPageUpdateScheduled = false;
+  bool _userScrollActive = false;
+  bool _audioDisableRequested = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _autoScrollTicker = createTicker(_onAutoScrollTick);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncAutoScrollTicker();
+    });
+  }
 
   @override
   void didUpdateWidget(covariant HifzContinuousReader oldWidget) {
@@ -68,6 +92,18 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader> {
     if (oldWidget.variant != widget.variant) {
       _pageHeights.clear();
     }
+    if (!oldWidget.audioPlaying &&
+        widget.audioPlaying &&
+        widget.autoScrollEnabled &&
+        !_audioDisableRequested) {
+      _audioDisableRequested = true;
+      widget.onDisableAutoScroll?.call();
+    }
+    if (!widget.audioPlaying || !widget.autoScrollEnabled) {
+      _audioDisableRequested = false;
+    }
+    _syncAutoScrollTicker();
+
     if (oldWidget.playbackPage != widget.playbackPage &&
         widget.playbackPage != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -78,6 +114,7 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader> {
 
   @override
   void dispose() {
+    _autoScrollTicker.dispose();
     _scrollController?.dispose();
     super.dispose();
   }
@@ -97,6 +134,17 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader> {
 
         return NotificationListener<ScrollNotification>(
           onNotification: (notification) {
+            if (notification is ScrollStartNotification &&
+                notification.dragDetails != null) {
+              _userScrollActive = true;
+              _syncAutoScrollTicker();
+            }
+            if (notification is ScrollEndNotification) {
+              final wasUserScroll = _userScrollActive;
+              _userScrollActive = false;
+              _lastAutoScrollTick = null;
+              if (wasUserScroll) _syncAutoScrollTicker();
+            }
             if (notification is ScrollUpdateNotification ||
                 notification is ScrollEndNotification) {
               _scheduleCurrentPageUpdate();
@@ -109,7 +157,7 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader> {
             itemCount: widget.state.lastPage - widget.state.firstPage + 1,
             itemBuilder: (context, index) {
               final page = widget.state.firstPage + index;
-              final pageKey = _pageKeys.putIfAbsent(page, GlobalKey.new);
+              final pageKey = _pageKeys.putIfAbsent(page, () => GlobalKey());
               final window = widget.state.windows[page];
               if (window == null) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -153,6 +201,52 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader> {
     );
   }
 
+  bool get _shouldAutoScroll =>
+      widget.autoScrollEnabled &&
+      !widget.audioPlaying &&
+      !_userScrollActive;
+
+  void _syncAutoScrollTicker() {
+    if (!mounted) return;
+    if (_shouldAutoScroll) {
+      if (!_autoScrollTicker.isActive) {
+        _lastAutoScrollTick = null;
+        _autoScrollTicker.start();
+      }
+      return;
+    }
+    _lastAutoScrollTick = null;
+    if (_autoScrollTicker.isActive) {
+      _autoScrollTicker.stop();
+    }
+  }
+
+  void _onAutoScrollTick(Duration elapsed) {
+    if (!_shouldAutoScroll) {
+      _syncAutoScrollTicker();
+      return;
+    }
+    final previousTick = _lastAutoScrollTick;
+    _lastAutoScrollTick = elapsed;
+    if (previousTick == null) return;
+
+    final controller = _scrollController;
+    if (controller == null || !controller.hasClients) return;
+    final delta = elapsed - previousTick;
+    if (delta <= Duration.zero) return;
+
+    final position = controller.position;
+    final next = hifzAutoScrollNextOffset(
+      currentOffset: controller.offset,
+      maxScrollExtent: position.maxScrollExtent,
+      normalizedSpeed: widget.autoScrollSpeed,
+      elapsed: delta,
+    );
+    if (next > controller.offset) {
+      controller.jumpTo(next);
+    }
+  }
+
   void _handlePageMetrics(MushafPageMetricsEvent event, double minimumHeight) {
     final next = event.contentHeight < minimumHeight
         ? minimumHeight
@@ -165,7 +259,10 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader> {
       (controller?.hasClients ?? false) ? controller!.offset : 0,
     );
     final shouldCompensate =
-        previous != null && event.page < currentPage && controller!.hasClients;
+        previous != null &&
+        event.page < currentPage &&
+        controller != null &&
+        controller.hasClients;
     final delta = previous == null ? 0.0 : next - previous;
 
     setState(() => _pageHeights[event.page] = next);
@@ -207,10 +304,9 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader> {
     final pageTop = box.localToGlobal(Offset.zero).dy;
     final targetTop = pageTop + event.top;
     final targetBottom = pageTop + event.bottom;
-    final viewportTop = context.findRenderObject() is RenderBox
-        ? (context.findRenderObject()! as RenderBox)
-            .localToGlobal(Offset.zero)
-            .dy
+    final viewportObject = context.findRenderObject();
+    final viewportTop = viewportObject is RenderBox
+        ? viewportObject.localToGlobal(Offset.zero).dy
         : 0.0;
     final localTop = targetTop - viewportTop;
     final localBottom = targetBottom - viewportTop;
