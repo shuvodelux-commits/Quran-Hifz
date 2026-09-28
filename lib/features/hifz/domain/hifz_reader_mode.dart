@@ -1,0 +1,1 @@
+enum HifzReaderMode { page, continuous }
