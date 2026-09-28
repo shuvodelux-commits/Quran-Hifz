@@ -30,6 +30,8 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
   static const repeatPauseMsKey = 'repeat_pause_ms';
   static const autoNextAyahKey = 'auto_next_ayah';
   static const highlightActiveWordKey = 'highlight_active_word';
+  static const showPlaybackBanglaWordMeaningKey =
+      'show_playback_bangla_word_meaning';
   static const languageKey = 'app_language';
   static const asrSchoolKey = 'asr_school';
   static const prayerCityKey = 'prayer_city_id';
@@ -177,6 +179,10 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       ),
       autoNextAyah: _parseBool(values[10], defaults.autoNextAyah),
       highlightActiveWord: _parseBool(values[11], defaults.highlightActiveWord),
+      showPlaybackBanglaWordMeaning: _parseBool(
+        values[23],
+        defaults.showPlaybackBanglaWordMeaning,
+      ),
       language: values[12] == 'english'
           ? AppLanguage.english
           : AppLanguage.bangla,
@@ -267,6 +273,10 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       await _database.saveSetting(
         highlightActiveWordKey,
         preferences.highlightActiveWord.toString(),
+      );
+      await _database.saveSetting(
+        showPlaybackBanglaWordMeaningKey,
+        preferences.showPlaybackBanglaWordMeaning.toString(),
       );
       await _database.saveSetting(languageKey, preferences.language.name);
       await _database.saveSetting(asrSchoolKey, preferences.asrSchool.name);
