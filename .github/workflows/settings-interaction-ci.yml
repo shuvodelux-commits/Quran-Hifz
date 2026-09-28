@@ -31,6 +31,9 @@ jobs:
       - name: Settings widget tests
         run: flutter test --fail-fast test/features/settings/presentation/settings_page_test.dart
 
+      - name: Full test suite
+        run: flutter test --fail-fast
+
       - name: Analyze
         run: flutter analyze
 
