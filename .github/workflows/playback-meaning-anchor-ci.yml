@@ -19,5 +19,11 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: RED target
-        run: flutter test test/features/quran/presentation/quran_reader_page_test.dart --plain-name "ayah playback shows active Bangla word meaning as a bubble and keeps translation"
+      - name: Reader regression tests
+        run: flutter test --fail-fast test/features/quran/presentation/quran_reader_page_test.dart
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Full test suite
+        run: flutter test --fail-fast
