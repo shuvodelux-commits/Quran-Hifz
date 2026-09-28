@@ -5,20 +5,18 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-import '../domain/quran_font_preference.dart';
+import '../domain/quran_mushaf_variant.dart';
 import '../domain/quran_page_font_repository.dart';
 
 typedef QuranFontSupportDirectory = Future<Directory> Function();
 
-Uri quranFoundationPageFontUri(QuranFontPreference font, int page) {
-  _validateStrictFont(font);
+Uri quranFoundationPageFontUri(QuranMushafVariant variant, int page) {
   _validatePage(page);
-  return Uri.parse(switch (font) {
-    QuranFontPreference.qcfV2 =>
+  return Uri.parse(switch (variant) {
+    QuranMushafVariant.qcfV2 =>
       'https://verses.quran.foundation/fonts/quran/hafs/v2/woff2/p$page.woff2',
-    QuranFontPreference.qcfV4Tajweed =>
+    QuranMushafVariant.qcfV4Tajweed =>
       'https://verses.quran.foundation/fonts/quran/hafs/v4/colrv1/woff2/p$page.woff2',
-    _ => throw ArgumentError.value(font, 'font', 'Strict QCF font required'),
   });
 }
 
@@ -31,16 +29,14 @@ bool isWoff2(List<int> bytes) =>
 
 class QuranFoundationPageFontRepository implements QuranPageFontRepository {
   QuranFoundationPageFontRepository({
-    required QuranFontPreference font,
+    required QuranMushafVariant variant,
     http.Client? client,
     QuranFontSupportDirectory? supportDirectory,
-  }) : _font = font,
+  }) : _variant = variant,
        _client = client ?? http.Client(),
-       _supportDirectory = supportDirectory ?? getApplicationSupportDirectory {
-    _validateStrictFont(font);
-  }
+       _supportDirectory = supportDirectory ?? getApplicationSupportDirectory;
 
-  final QuranFontPreference _font;
+  final QuranMushafVariant _variant;
   final http.Client _client;
   final QuranFontSupportDirectory _supportDirectory;
   final Map<int, Future<Uri>> _inFlight = <int, Future<Uri>>{};
@@ -87,7 +83,7 @@ class QuranFoundationPageFontRepository implements QuranPageFontRepository {
     final partFile = File('${finalFile.path}.part');
     await _deleteIfExists(partFile);
 
-    final uri = quranFoundationPageFontUri(_font, page);
+    final uri = quranFoundationPageFontUri(_variant, page);
     late final http.Response response;
     try {
       response = await _client.get(uri);
@@ -159,7 +155,7 @@ class QuranFoundationPageFontRepository implements QuranPageFontRepository {
         support.path,
         'quran',
         'page-fonts',
-        _font == QuranFontPreference.qcfV2 ? 'qcf-v2' : 'qcf-v4-tajweed',
+        _variant == QuranMushafVariant.qcfV2 ? 'qcf-v2' : 'qcf-v4-tajweed',
         'p$page.woff2',
       ),
     );
@@ -192,13 +188,6 @@ class QuranFoundationPageFontRepository implements QuranPageFontRepository {
     if (await file.exists()) {
       await file.delete();
     }
-  }
-}
-
-void _validateStrictFont(QuranFontPreference font) {
-  if (font != QuranFontPreference.qcfV2 &&
-      font != QuranFontPreference.qcfV4Tajweed) {
-    throw ArgumentError.value(font, 'font', 'Strict QCF font required');
   }
 }
 

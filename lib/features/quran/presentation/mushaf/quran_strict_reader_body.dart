@@ -7,7 +7,6 @@ import '../../application/quran_mushaf_providers.dart';
 import '../../domain/quran_mushaf_page.dart';
 import '../../domain/quran_mushaf_palette.dart';
 import '../../application/reader_state.dart';
-import '../../domain/quran_font_preference.dart';
 import '../../domain/quran_page_window.dart';
 import 'quran_strict_mushaf_surface.dart';
 import '../../domain/quran_mushaf_variant.dart';
@@ -15,24 +14,34 @@ import '../../domain/quran_mushaf_variant.dart';
 class QuranStrictReaderBody extends ConsumerStatefulWidget {
   const QuranStrictReaderBody({
     required this.state,
-    required this.font,
+    required this.variant,
+    required this.fontSize,
+    required this.lineHeight,
+    required this.showTajweedColors,
     required this.activeAyahKey,
     required this.activeWordPosition,
     required this.onPageChanged,
     required this.onWordTap,
     required this.onWordLongPress,
     required this.onAyahTap,
+    this.selectedStartAyahKey,
+    this.selectedEndAyahKey,
     super.key,
   });
 
   final ReaderState state;
-  final QuranFontPreference font;
+  final QuranMushafVariant variant;
+  final double fontSize;
+  final double lineHeight;
+  final bool showTajweedColors;
   final String? activeAyahKey;
   final int? activeWordPosition;
   final ValueChanged<int> onPageChanged;
   final void Function(String ayahKey, int wordPosition) onWordTap;
   final void Function(String ayahKey, int wordPosition) onWordLongPress;
   final ValueChanged<String> onAyahTap;
+  final String? selectedStartAyahKey;
+  final String? selectedEndAyahKey;
 
   @override
   ConsumerState<QuranStrictReaderBody> createState() =>
@@ -55,7 +64,7 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
   @override
   void didUpdateWidget(covariant QuranStrictReaderBody oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.font != widget.font) {
+    if (oldWidget.variant != widget.variant) {
       _loads.clear();
     }
     if (oldWidget.state.currentPage != widget.state.currentPage) {
@@ -84,7 +93,7 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
   @override
   Widget build(BuildContext context) {
     return PageView.builder(
-      key: ValueKey('quran-strict-reader-${widget.font.name}'),
+      key: ValueKey('quran-strict-reader-${widget.variant.name}'),
       controller: _pageController,
       itemCount: widget.state.lastPage - widget.state.firstPage + 1,
       onPageChanged: (index) {
@@ -112,7 +121,10 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
           return QuranStrictMushafSurface(
             page: data.page,
             palette: QuranMushafPalette.light,
-            generation: Object.hash(widget.font, page) & 0x7fffffff,
+            generation: Object.hash(widget.variant, page) & 0x7fffffff,
+            fontSize: widget.fontSize,
+            lineHeight: widget.lineHeight,
+            showTajweedColors: widget.showTajweedColors,
             pageFontUri: data.fontUri,
             fallbackWindow: fallbackWindow,
             fontLoader: data.fontError == null
@@ -120,6 +132,8 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
                 : (_) async => throw data.fontError!,
             activeAyahKey: widget.activeAyahKey,
             activeWordPosition: widget.activeWordPosition,
+            selectedStartAyahKey: widget.selectedStartAyahKey,
+            selectedEndAyahKey: widget.selectedEndAyahKey,
             onRetry: () => _retry(page),
             onWordTap: widget.onWordTap,
             onWordLongPress: widget.onWordLongPress,
@@ -128,14 +142,21 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
         }
 
         if (snapshot.hasError) {
-          final variant = widget.font.mushafVariant!;
+          final variant = widget.variant;
           return QuranStrictMushafSurface(
             page: QcfMushafPage(page: page, variant: variant, lines: const []),
             palette: QuranMushafPalette.light,
-            generation: Object.hash(widget.font, page) & 0x7fffffff,
+            generation: Object.hash(widget.variant, page) & 0x7fffffff,
+            fontSize: widget.fontSize,
+            lineHeight: widget.lineHeight,
+            showTajweedColors: widget.showTajweedColors,
             pageFontUri: Uri.parse('unavailable://qcf-page/$page'),
             fallbackWindow: fallbackWindow,
             fontLoader: (_) async => throw snapshot.error!,
+            activeAyahKey: widget.activeAyahKey,
+            activeWordPosition: widget.activeWordPosition,
+            selectedStartAyahKey: widget.selectedStartAyahKey,
+            selectedEndAyahKey: widget.selectedEndAyahKey,
             onRetry: () => _retry(page),
             onWordTap: widget.onWordTap,
             onWordLongPress: widget.onWordLongPress,
@@ -149,10 +170,7 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
   }
 
   Future<_StrictPageLoad> _loadPage(int page) async {
-    final variant = widget.font.mushafVariant;
-    if (variant == null) {
-      throw StateError('Strict Quran reader requires a QCF font.');
-    }
+    final variant = widget.variant;
 
     final pageRepository = ref.read(quranMushafPageRepositoryProvider);
     if (variant == QuranMushafVariant.qcfV2 &&
@@ -165,7 +183,7 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
       page: page,
     );
     final fontRepository = ref.read(
-      quranPageFontRepositoryProvider(widget.font),
+      quranPageFontRepositoryProvider(variant),
     );
     Object? fontError;
     Uri fontUri;

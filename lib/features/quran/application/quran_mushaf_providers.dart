@@ -9,7 +9,6 @@ import 'package:path_provider/path_provider.dart';
 
 import '../data/bundled_quran_mushaf_page_repository.dart';
 import '../data/quran_foundation_page_font_repository.dart';
-import '../domain/quran_font_preference.dart';
 import '../domain/quran_mushaf_page.dart';
 import '../domain/quran_mushaf_page_repository.dart';
 import '../domain/quran_mushaf_variant.dart';
@@ -22,8 +21,8 @@ final quranMushafPageRepositoryProvider = Provider<QuranMushafPageRepository>((
 });
 
 final quranPageFontRepositoryProvider =
-    Provider.family<QuranPageFontRepository, QuranFontPreference>((ref, font) {
-      return QuranFoundationPageFontRepository(font: font);
+    Provider.family<QuranPageFontRepository, QuranMushafVariant>((ref, variant) {
+      return QuranFoundationPageFontRepository(variant: variant);
     });
 
 class _MaterializedMushafPageRepository implements QuranMushafPageRepository {

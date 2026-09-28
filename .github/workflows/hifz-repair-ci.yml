@@ -1,0 +1,71 @@
+name: Hifz Repair CI
+
+on:
+  push:
+    branches:
+      - fix/restore-hifz-skin
+    paths-ignore:
+      - "docs/superpowers/progress/**"
+
+concurrency:
+  group: hifz-repair-final-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  flutter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Hifz focused regression
+        shell: bash
+        run: |
+          targets=(
+            test/core/database/user_database_migration_test.dart
+            test/features/quran/domain/quran_font_preference_test.dart
+            test/features/quran/presentation/quran_reader_page_test.dart
+            test/features/settings
+          )
+          for optional in test/features/hifz test/features/progress test/features/revision test/assets; do
+            if [[ -e "$optional" ]]; then
+              targets+=("$optional")
+            fi
+          done
+          flutter test --fail-fast "${targets[@]}"
+
+      - name: Test
+        run: flutter test --fail-fast
+
+      - name: Diff check
+        shell: bash
+        run: |
+          git fetch origin main
+          git diff --check origin/main...HEAD
+
+      - name: Build Android debug APK
+        run: flutter build apk --debug

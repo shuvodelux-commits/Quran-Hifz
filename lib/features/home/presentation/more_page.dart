@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/localization/app_locale_text.dart';
+import '../../hifz/presentation/hifz_home_page.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/presentation/settings_page.dart';
 import '../../study/presentation/bookmarks_page.dart';
@@ -21,6 +22,16 @@ class MorePage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _MoreTile(
+            icon: Icons.psychology_alt_outlined,
+            title: appText(language, 'হিফজ', 'Hifz'),
+            subtitle: appText(
+              language,
+              'সূরা বেছে মুখস্থ ও পুনরাবৃত্তি করুন',
+              'Memorize and revise by Surah',
+            ),
+            onTap: () => _open(context, const HifzHomePage()),
+          ),
           _MoreTile(
             icon: Icons.bookmark_outline_rounded,
             title: appText(language, 'বুকমার্ক', 'Bookmarks'),

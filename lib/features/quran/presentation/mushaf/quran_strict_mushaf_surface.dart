@@ -43,6 +43,9 @@ class QuranStrictMushafSurface extends StatefulWidget {
     required this.page,
     required this.palette,
     required this.generation,
+    required this.fontSize,
+    required this.lineHeight,
+    required this.showTajweedColors,
     required this.pageFontUri,
     required this.onRetry,
     required this.onWordTap,
@@ -65,6 +68,9 @@ class QuranStrictMushafSurface extends StatefulWidget {
   final QcfMushafPage page;
   final QuranMushafPalette palette;
   final int generation;
+  final double fontSize;
+  final double lineHeight;
+  final bool showTajweedColors;
   final Uri pageFontUri;
   final String? activeAyahKey;
   final int? activeWordPosition;
@@ -119,7 +125,18 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
     final driver = _driver;
     if (driver == null) return;
     if (oldWidget.palette != widget.palette) {
-      driver.setPalette(widget.palette);
+      unawaited(driver.setPalette(widget.palette));
+    }
+    if (oldWidget.fontSize != widget.fontSize ||
+        oldWidget.lineHeight != widget.lineHeight ||
+        oldWidget.showTajweedColors != widget.showTajweedColors) {
+      unawaited(
+        driver.setTypography(
+          fontSize: widget.fontSize,
+          lineHeight: widget.lineHeight,
+          showTajweedColors: widget.showTajweedColors,
+        ),
+      );
     }
     if (oldWidget.activeAyahKey != widget.activeAyahKey ||
         oldWidget.activeWordPosition != widget.activeWordPosition ||
@@ -184,6 +201,9 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
           surahFontBytes: fonts.surahFontBytes,
           bismillahFontBytes: fonts.bismillahFontBytes,
           endMarkerFontBytes: fonts.endMarkerFontBytes,
+          fontSize: widget.fontSize,
+          lineHeight: widget.lineHeight,
+          showTajweedColors: widget.showTajweedColors,
         ),
       );
       await _syncHighlights(driver);
@@ -282,7 +302,12 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
       onRetry: _retry,
       secondaryActionLabel: widget.secondaryActionLabel,
       onSecondaryAction: widget.onSecondaryAction,
-      child: _UnicodeQuranFallback(window: window),
+      child: _UnicodeQuranFallback(
+        window: window,
+        fontSize: widget.fontSize,
+        lineHeight: widget.lineHeight,
+        showTajweedColors: widget.showTajweedColors,
+      ),
     );
   }
 
@@ -359,9 +384,17 @@ class _FallbackShell extends StatelessWidget {
 }
 
 class _UnicodeQuranFallback extends StatelessWidget {
-  const _UnicodeQuranFallback({required this.window});
+  const _UnicodeQuranFallback({
+    required this.window,
+    required this.fontSize,
+    required this.lineHeight,
+    required this.showTajweedColors,
+  });
 
   final QuranPageWindow window;
+  final double fontSize;
+  final double lineHeight;
+  final bool showTajweedColors;
 
   @override
   Widget build(BuildContext context) {
@@ -387,10 +420,10 @@ class _UnicodeQuranFallback extends StatelessWidget {
             ayah.words.map((word) => word.arabic).join(' '),
             textDirection: TextDirection.rtl,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'QPC Hafs',
-              fontSize: 30,
-              height: 1.8,
+              fontSize: fontSize,
+              height: lineHeight,
             ),
           ),
         );
@@ -408,9 +441,9 @@ class _UnicodeQuranFallback extends StatelessWidget {
                     'strict-fallback-surah-' + line.lineNumber.toString(),
                   ),
                   textDirection: TextDirection.rtl,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'QPC Hafs',
-                    fontSize: 24,
+                    fontSize: fontSize * 0.82,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -418,9 +451,12 @@ class _UnicodeQuranFallback extends StatelessWidget {
             );
           case QuranMushafLineType.bismillah:
             children.add(
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: BismillahV4Glyph(fontSize: 36, useTajweedColors: false),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: BismillahV4Glyph(
+                  fontSize: fontSize * 1.15,
+                  useTajweedColors: showTajweedColors,
+                ),
               ),
             );
           case QuranMushafLineType.ayah:
@@ -437,10 +473,10 @@ class _UnicodeQuranFallback extends StatelessWidget {
                   textAlign: line.centered
                       ? TextAlign.center
                       : TextAlign.justify,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'QPC Hafs',
-                    fontSize: 30,
-                    height: 1.7,
+                    fontSize: fontSize,
+                    height: lineHeight,
                   ),
                 ),
               ),

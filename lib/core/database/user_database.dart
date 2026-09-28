@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
+import '../time/calendar_day.dart';
+
 part 'user_database.g.dart';
 
 @DataClassName('AudioFileRecord')
@@ -76,6 +78,80 @@ class DownloadJobs extends Table {
   Set<Column<Object>> get primaryKey => {audioKey};
 }
 
+@TableIndex(
+  name: 'hifz_progress_due_idx',
+  columns: {#profileKey, #nextReviewAt},
+)
+@DataClassName('HifzProgressRow')
+class HifzProgressEntries extends Table {
+  TextColumn get profileKey => text()();
+  IntColumn get surahNumber => integer()();
+  IntColumn get ayahNumber => integer()();
+  TextColumn get status => text()();
+  IntColumn get strengthScore => integer().withDefault(const Constant(0))();
+  IntColumn get reviewCount => integer().withDefault(const Constant(0))();
+  IntColumn get mistakeCount => integer().withDefault(const Constant(0))();
+  IntColumn get revisionIntervalIndex =>
+      integer().withDefault(const Constant(-1))();
+  DateTimeColumn get startedAt => dateTime().nullable()();
+  DateTimeColumn get memorizedAt => dateTime().nullable()();
+  DateTimeColumn get lastReviewedAt => dateTime().nullable()();
+  DateTimeColumn get nextReviewAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {profileKey, surahNumber, ayahNumber};
+}
+
+@TableIndex(name: 'hifz_review_date_idx', columns: {#profileKey, #reviewedAt})
+@DataClassName('HifzReviewHistoryRow')
+class HifzReviewHistoryRows extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get profileKey => text()();
+  IntColumn get surahNumber => integer()();
+  IntColumn get ayahNumber => integer()();
+  DateTimeColumn get reviewedAt => dateTime()();
+  TextColumn get result => text()();
+  TextColumn get previousStatus => text()();
+  TextColumn get newStatus => text()();
+  IntColumn get previousIntervalIndex => integer()();
+  IntColumn get newIntervalIndex => integer()();
+  IntColumn get previousStrengthScore => integer()();
+  IntColumn get newStrengthScore => integer()();
+  DateTimeColumn get nextReviewAt => dateTime()();
+}
+
+@DataClassName('HifzSessionCheckpointRow')
+class HifzSessionCheckpoints extends Table {
+  TextColumn get profileKey => text()();
+  IntColumn get startSurah => integer()();
+  IntColumn get startAyah => integer()();
+  IntColumn get endSurah => integer()();
+  IntColumn get endAyah => integer()();
+  TextColumn get presetId => text()();
+  IntColumn get nextStepIndex => integer().withDefault(const Constant(0))();
+  TextColumn get status => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {profileKey};
+}
+
+@TableIndex(name: 'hifz_plans_profile_idx', columns: {#profileKey, #updatedAt})
+@DataClassName('HifzPlanRow')
+class HifzPlans extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get profileKey => text()();
+  TextColumn get title => text()();
+  IntColumn get startSurah => integer()();
+  IntColumn get startAyah => integer()();
+  IntColumn get endSurah => integer()();
+  IntColumn get endAyah => integer()();
+  IntColumn get startPage => integer()();
+  TextColumn get presetId => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+}
+
 @DataClassName('SyncStateRecord')
 class SyncStates extends Table {
   TextColumn get syncKey => text()();
@@ -84,6 +160,37 @@ class SyncStates extends Table {
 
   @override
   Set<Column<Object>> get primaryKey => {syncKey};
+}
+
+@TableIndex(
+  name: 'reading_page_visit_date_idx',
+  columns: {#profileKey, #readAt},
+)
+@DataClassName('ReadingPageVisitRow')
+class ReadingPageVisits extends Table {
+  TextColumn get profileKey => text()();
+  TextColumn get dayKey => text()();
+  IntColumn get pageNumber => integer()();
+  DateTimeColumn get readAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {profileKey, dayKey, pageNumber};
+}
+
+@TableIndex(name: 'daily_goal_effective_idx', columns: {#profileKey, #dayKey})
+@DataClassName('DailyGoalRow')
+class DailyGoals extends Table {
+  TextColumn get profileKey => text()();
+  TextColumn get dayKey => text()();
+  IntColumn get newHifzAyahsTarget =>
+      integer().withDefault(const Constant(0))();
+  IntColumn get revisionAyahsTarget =>
+      integer().withDefault(const Constant(0))();
+  IntColumn get readingPagesTarget =>
+      integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {profileKey, dayKey};
 }
 
 @DataClassName('StudyBookmarkRow')
@@ -190,7 +297,13 @@ class CustomDuas extends Table {
     AyahTimings,
     WordTimings,
     DownloadJobs,
+    HifzProgressEntries,
+    HifzReviewHistoryRows,
+    HifzSessionCheckpoints,
+    HifzPlans,
     SyncStates,
+    ReadingPageVisits,
+    DailyGoals,
     StudyBookmarks,
     StudyNotes,
     InstalledTafsirPackages,
@@ -214,7 +327,7 @@ class UserDatabase extends _$UserDatabase {
   UserDatabase.forTesting(QueryExecutor executor) : super(executor);
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -238,23 +351,11 @@ class UserDatabase extends _$UserDatabase {
       if (from < 10) {
         await migrator.createTable(customDuas);
       }
-      if (from < 11) {
-        for (final table in const [
-          'hifz_progress_entries',
-          'hifz_review_history_rows',
-          'hifz_session_checkpoints',
-          'hifz_plans',
-          'reading_page_visits',
-          'daily_goals',
-        ]) {
-          await customStatement('DROP TABLE IF EXISTS $table');
-        }
-        await customStatement(
-          "DELETE FROM app_settings WHERE setting_key LIKE 'hifz_%'",
-        );
-      }
       if (from < 12) {
         await migrator.createTable(installedTranslationPackages);
+      }
+      if (from < 13) {
+        await _restoreHifzSchema();
       }
     },
     beforeOpen: (_) async {
@@ -262,6 +363,66 @@ class UserDatabase extends _$UserDatabase {
       await customStatement('PRAGMA journal_mode = WAL');
     },
   );
+
+  Future<void> _restoreHifzSchema() async {
+    for (final statement in const <String>[
+      '''CREATE TABLE IF NOT EXISTS hifz_progress_entries (
+        profile_key TEXT NOT NULL, surah_number INTEGER NOT NULL,
+        ayah_number INTEGER NOT NULL, status TEXT NOT NULL,
+        strength_score INTEGER NOT NULL DEFAULT 0,
+        review_count INTEGER NOT NULL DEFAULT 0,
+        mistake_count INTEGER NOT NULL DEFAULT 0,
+        revision_interval_index INTEGER NOT NULL DEFAULT -1,
+        started_at INTEGER, memorized_at INTEGER, last_reviewed_at INTEGER,
+        next_review_at INTEGER,
+        PRIMARY KEY (profile_key, surah_number, ayah_number)
+      )''',
+      '''CREATE TABLE IF NOT EXISTS hifz_review_history_rows (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        profile_key TEXT NOT NULL, surah_number INTEGER NOT NULL,
+        ayah_number INTEGER NOT NULL, reviewed_at INTEGER NOT NULL,
+        result TEXT NOT NULL, previous_status TEXT NOT NULL,
+        new_status TEXT NOT NULL, previous_interval_index INTEGER NOT NULL,
+        new_interval_index INTEGER NOT NULL,
+        previous_strength_score INTEGER NOT NULL,
+        new_strength_score INTEGER NOT NULL, next_review_at INTEGER NOT NULL
+      )''',
+      '''CREATE TABLE IF NOT EXISTS hifz_session_checkpoints (
+        profile_key TEXT NOT NULL PRIMARY KEY,
+        start_surah INTEGER NOT NULL, start_ayah INTEGER NOT NULL,
+        end_surah INTEGER NOT NULL, end_ayah INTEGER NOT NULL,
+        preset_id TEXT NOT NULL, next_step_index INTEGER NOT NULL DEFAULT 0,
+        status TEXT NOT NULL, updated_at INTEGER NOT NULL
+      )''',
+      '''CREATE TABLE IF NOT EXISTS hifz_plans (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        profile_key TEXT NOT NULL, title TEXT NOT NULL,
+        start_surah INTEGER NOT NULL, start_ayah INTEGER NOT NULL,
+        end_surah INTEGER NOT NULL, end_ayah INTEGER NOT NULL,
+        start_page INTEGER NOT NULL, preset_id TEXT NOT NULL,
+        created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+      )''',
+      '''CREATE TABLE IF NOT EXISTS reading_page_visits (
+        profile_key TEXT NOT NULL, day_key TEXT NOT NULL,
+        page_number INTEGER NOT NULL, read_at INTEGER NOT NULL,
+        PRIMARY KEY (profile_key, day_key, page_number)
+      )''',
+      '''CREATE TABLE IF NOT EXISTS daily_goals (
+        profile_key TEXT NOT NULL, day_key TEXT NOT NULL,
+        new_hifz_ayahs_target INTEGER NOT NULL DEFAULT 0,
+        revision_ayahs_target INTEGER NOT NULL DEFAULT 0,
+        reading_pages_target INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (profile_key, day_key)
+      )''',
+      'CREATE INDEX IF NOT EXISTS hifz_progress_due_idx ON hifz_progress_entries(profile_key, next_review_at)',
+      'CREATE INDEX IF NOT EXISTS hifz_review_date_idx ON hifz_review_history_rows(profile_key, reviewed_at)',
+      'CREATE INDEX IF NOT EXISTS hifz_plans_profile_idx ON hifz_plans(profile_key, updated_at)',
+      'CREATE INDEX IF NOT EXISTS reading_page_visit_date_idx ON reading_page_visits(profile_key, read_at)',
+      'CREATE INDEX IF NOT EXISTS daily_goal_effective_idx ON daily_goals(profile_key, day_key)',
+    ]) {
+      await customStatement(statement);
+    }
+  }
 
   Future<InstalledTafsirPackageRecord?> getInstalledTafsirPackage(
     String sourceId,
@@ -369,13 +530,60 @@ class UserDatabase extends _$UserDatabase {
     required int lastPage,
     DateTime? readAt,
   }) async {
-    await into(readingProgress).insertOnConflictUpdate(
-      ReadingProgressCompanion.insert(
+    final timestamp = readAt ?? DateTime.now();
+    await transaction(() async {
+      await into(readingProgress).insertOnConflictUpdate(
+        ReadingProgressCompanion.insert(
+          profileKey: profileKey,
+          lastSurah: lastSurah,
+          lastAyah: lastAyah,
+          lastPage: lastPage,
+          lastReadAt: Value(timestamp),
+        ),
+      );
+      await recordReadingPageVisit(
         profileKey: profileKey,
-        lastSurah: lastSurah,
-        lastAyah: lastAyah,
-        lastPage: lastPage,
-        lastReadAt: Value(readAt ?? DateTime.now()),
+        pageNumber: lastPage,
+        readAt: timestamp,
+      );
+    });
+  }
+
+  Future<void> recordReadingPageVisit({
+    required String profileKey,
+    required int pageNumber,
+    required DateTime readAt,
+  }) async {
+    await into(readingPageVisits).insertOnConflictUpdate(
+      ReadingPageVisitsCompanion.insert(
+        profileKey: profileKey,
+        dayKey: calendarDayKey(readAt),
+        pageNumber: pageNumber,
+        readAt: readAt,
+      ),
+    );
+  }
+
+  Future<void> saveDailyGoal({
+    required String profileKey,
+    required DateTime day,
+    required int newHifzAyahsTarget,
+    required int revisionAyahsTarget,
+    required int readingPagesTarget,
+  }) async {
+    if (newHifzAyahsTarget < 0 ||
+        revisionAyahsTarget < 0 ||
+        readingPagesTarget < 0) {
+      throw ArgumentError('Daily Quran goals must not be negative.');
+    }
+
+    await into(dailyGoals).insertOnConflictUpdate(
+      DailyGoalsCompanion.insert(
+        profileKey: profileKey,
+        dayKey: calendarDayKey(day),
+        newHifzAyahsTarget: Value(newHifzAyahsTarget),
+        revisionAyahsTarget: Value(revisionAyahsTarget),
+        readingPagesTarget: Value(readingPagesTarget),
       ),
     );
   }

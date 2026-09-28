@@ -10,6 +10,9 @@
     page: null,
     generation: 0,
     palette: 'light',
+    fontSize: 32,
+    lineHeight: 1.35,
+    showTajweedColors: true,
     rangeStart: null,
     rangeEnd: null,
   };
@@ -245,6 +248,11 @@
       state.page = page;
       state.generation = generation;
       setPalette(payload.palette || state.palette);
+      setTypography(
+        payload.fontSize ?? state.fontSize,
+        payload.lineHeight ?? state.lineHeight,
+        payload.showTajweedColors ?? state.showTajweedColors,
+      );
 
       const pageElement = document.createElement('section');
       pageElement.className = 'mushaf-page';
@@ -270,6 +278,24 @@
     state.palette = normalized;
     document.body.dataset.palette = normalized;
     document.documentElement.style.setProperty('--qpc-palette', palette);
+  }
+
+  function setTypography(fontSize, lineHeight, showTajweedColors) {
+    const size = Number(fontSize);
+    const height = Number(lineHeight);
+    if (!Number.isFinite(size) || size < 20 || size > 56) {
+      throw new Error('Hifz font size must be in 20..56');
+    }
+    if (!Number.isFinite(height) || height < 1.2 || height > 2.4) {
+      throw new Error('Hifz line height must be in 1.2..2.4');
+    }
+    state.fontSize = size;
+    state.lineHeight = height;
+    state.showTajweedColors = Boolean(showTajweedColors);
+    document.documentElement.style.setProperty('--hifz-font-size', size + 'px');
+    document.documentElement.style.setProperty('--hifz-line-height', String(height));
+    document.body.dataset.tajweedColors =
+      state.showTajweedColors ? 'on' : 'off';
   }
 
   function setActiveWord(ayahKey, wordPosition) {
@@ -305,6 +331,7 @@
   window.mushaf = Object.freeze({
     renderPage,
     setPalette,
+    setTypography,
     setActiveWord,
     setActiveAyah,
     setRange,

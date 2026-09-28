@@ -101,6 +101,9 @@ void main() {
       surahFontBytes: const [2],
       bismillahFontBytes: const [3],
       endMarkerFontBytes: const [4],
+      fontSize: 56,
+      lineHeight: 2.4,
+      showTajweedColors: false,
     ).toRendererJson();
 
     final lines = payload['lines']! as List<Object?>;
@@ -108,6 +111,20 @@ void main() {
         (lines.single as Map<String, Object?>)['tokens']! as List<Object?>;
     expect((tokens.single as Map<String, Object?>)['unicodeFallback'], '١');
     expect(payload['endMarkerFontFamily'], 'QuranUnicodeHafs');
+    expect(payload['fontSize'], 56);
+    expect(payload['lineHeight'], 2.4);
+    expect(payload['showTajweedColors'], isFalse);
+  });
+
+  test('setTypography sends exact requested Hifz values', () async {
+    await driver.setTypography(
+      fontSize: 48,
+      lineHeight: 1.8,
+      showTajweedColors: false,
+    );
+
+    expect(controller.lastScript, contains('setTypography'));
+    expect(_decodeFirstArgumentList(controller.lastScript!), [48.0, 1.8, false]);
   });
 
   test(
@@ -166,6 +183,9 @@ void main() {
 MushafRenderPayload _fixture({
   required String display,
   QuranMushafVariant variant = QuranMushafVariant.qcfV4Tajweed,
+  double fontSize = 32,
+  double lineHeight = 1.35,
+  bool showTajweedColors = true,
 }) {
   return MushafRenderPayload(
     page: QcfMushafPage(
@@ -194,6 +214,9 @@ MushafRenderPayload _fixture({
     surahFontBytes: const [1, 2, 3],
     bismillahFontBytes: const [4, 5, 6],
     endMarkerFontBytes: const [7, 8, 9],
+    fontSize: fontSize,
+    lineHeight: lineHeight,
+    showTajweedColors: showTajweedColors,
   );
 }
 
