@@ -39,6 +39,7 @@ class AppPreferences {
     required this.showTranslation,
     required this.tapToShowTranslation,
     required this.tapToShowBanglaWordMeaning,
+    this.showPlaybackBanglaWordMeaning = true,
     required this.showTajweedColors,
     required this.defaultRepeatCount,
     required this.defaultPlaybackSpeed,
@@ -65,6 +66,7 @@ class AppPreferences {
       showTranslation = true,
       tapToShowTranslation = true,
       tapToShowBanglaWordMeaning = true,
+      showPlaybackBanglaWordMeaning = true,
       showTajweedColors = true,
       defaultRepeatCount = 1,
       defaultPlaybackSpeed = 1.0,
@@ -89,6 +91,7 @@ class AppPreferences {
   final bool showTranslation;
   final bool tapToShowTranslation;
   final bool tapToShowBanglaWordMeaning;
+  final bool showPlaybackBanglaWordMeaning;
   final bool showTajweedColors;
   final int defaultRepeatCount;
   final double defaultPlaybackSpeed;
@@ -114,6 +117,7 @@ class AppPreferences {
     bool? showTranslation,
     bool? tapToShowTranslation,
     bool? tapToShowBanglaWordMeaning,
+    bool? showPlaybackBanglaWordMeaning,
     bool? showTajweedColors,
     int? defaultRepeatCount,
     double? defaultPlaybackSpeed,
@@ -149,6 +153,8 @@ class AppPreferences {
       tapToShowTranslation: tapToShowTranslation ?? this.tapToShowTranslation,
       tapToShowBanglaWordMeaning:
           tapToShowBanglaWordMeaning ?? this.tapToShowBanglaWordMeaning,
+      showPlaybackBanglaWordMeaning:
+          showPlaybackBanglaWordMeaning ?? this.showPlaybackBanglaWordMeaning,
       showTajweedColors: showTajweedColors ?? this.showTajweedColors,
       defaultRepeatCount: defaultRepeatCount ?? this.defaultRepeatCount,
       defaultPlaybackSpeed: defaultPlaybackSpeed ?? this.defaultPlaybackSpeed,

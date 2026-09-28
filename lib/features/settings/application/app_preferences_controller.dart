@@ -119,6 +119,10 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
   Future<void> setTapToShowBanglaWordMeaning(bool value) =>
       _update((current) => current.copyWith(tapToShowBanglaWordMeaning: value));
 
+  Future<void> setShowPlaybackBanglaWordMeaning(bool value) => _update(
+    (current) => current.copyWith(showPlaybackBanglaWordMeaning: value),
+  );
+
   Future<void> setShowTajweedColors(bool value) =>
       _update((current) => current.copyWith(showTajweedColors: value));
 
@@ -183,6 +187,15 @@ final tapToShowBanglaWordMeaningProvider = Provider<bool>(
           .value
           ?.tapToShowBanglaWordMeaning ??
       const AppPreferences.defaults().tapToShowBanglaWordMeaning,
+);
+
+final showPlaybackBanglaWordMeaningProvider = Provider<bool>(
+  (ref) =>
+      ref
+          .watch(appPreferencesControllerProvider)
+          .value
+          ?.showPlaybackBanglaWordMeaning ??
+      const AppPreferences.defaults().showPlaybackBanglaWordMeaning,
 );
 
 final appLanguageProvider = Provider<AppLanguage>(

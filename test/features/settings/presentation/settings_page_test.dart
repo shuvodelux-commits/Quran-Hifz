@@ -67,6 +67,48 @@ void main() {
     expect(find.text('Audio & Recitation'), findsOneWidget);
   });
 
+  testWidgets('playback Bangla word meaning has its own toggle', (
+    tester,
+  ) async {
+    final preferences = _MemoryPreferencesRepository()
+      ..value = const AppPreferences.defaults().copyWith(
+        language: AppLanguage.english,
+      );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appPreferencesRepositoryProvider.overrideWithValue(preferences),
+          indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
+          tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
+        ],
+        child: const MaterialApp(home: SettingsPage(currentSurahNumber: 1)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final label = find.text('Show Bangla word meaning during playback');
+    await tester.scrollUntilVisible(
+      label,
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    final tile = find.widgetWithText(
+      SwitchListTile,
+      'Show Bangla word meaning during playback',
+    );
+    expect(tile, findsOneWidget);
+    expect(tester.widget<SwitchListTile>(tile).value, isTrue);
+
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+    expect(preferences.value.showPlaybackBanglaWordMeaning, isFalse);
+  });
+
   testWidgets('playback choices use compact chips and persist selections', (
     tester,
   ) async {

@@ -22,6 +22,8 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
   static const tapToShowTranslationKey = 'tap_to_show_translation';
   static const tapToShowBanglaWordMeaningKey =
       'tap_to_show_bangla_word_meaning';
+  static const showPlaybackBanglaWordMeaningKey =
+      'show_playback_bangla_word_meaning';
   static const showTajweedColorsKey = 'show_tajweed_colors';
   static const repeatCountKey = 'default_repeat_count';
   static const playbackSpeedKey = 'default_playback_speed';
@@ -62,6 +64,7 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       _database.getSetting(hifzFontSizeKey),
       _database.getSetting(hifzLineHeightKey),
       _database.getSetting(hifzShowTajweedColorsKey),
+      _database.getSetting(showPlaybackBanglaWordMeaningKey),
     ]);
 
     final theme = switch (values[0]) {
@@ -152,6 +155,10 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
         values[16],
         defaults.tapToShowBanglaWordMeaning,
       ),
+      showPlaybackBanglaWordMeaning: _parseBool(
+        values[23],
+        defaults.showPlaybackBanglaWordMeaning,
+      ),
       showTajweedColors: _parseBool(values[6], defaults.showTajweedColors),
       defaultRepeatCount:
           repeatCount != null &&
@@ -232,6 +239,10 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       await _database.saveSetting(
         tapToShowBanglaWordMeaningKey,
         preferences.tapToShowBanglaWordMeaning.toString(),
+      );
+      await _database.saveSetting(
+        showPlaybackBanglaWordMeaningKey,
+        preferences.showPlaybackBanglaWordMeaning.toString(),
       );
       await _database.saveSetting(
         showTajweedColorsKey,
