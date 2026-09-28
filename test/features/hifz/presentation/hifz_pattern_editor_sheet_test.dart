@@ -52,6 +52,9 @@ void main() {
       findsOneWidget,
     );
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hifz-pattern-save')),
+    );
     await tester.tap(find.byKey(const ValueKey('hifz-pattern-save')));
     await tester.pumpAndSettle();
 
@@ -91,6 +94,9 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('hifz-pattern-final-0')));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hifz-pattern-save')),
+    );
     await tester.tap(find.byKey(const ValueKey('hifz-pattern-save')));
     await tester.pumpAndSettle();
 
