@@ -157,7 +157,7 @@ body[data-tajweed-colors="off"] .mushaf-line.ayah {
 
 .word.active-ayah:not(.active-word),
 .ayah-end.active-ayah {
-  background: color-mix(in srgb, var(--active-accent) 8%, transparent);
+  background: color-mix(in srgb, var(--active-accent) 13%, transparent);
   border-radius: .28em;
 }
 
