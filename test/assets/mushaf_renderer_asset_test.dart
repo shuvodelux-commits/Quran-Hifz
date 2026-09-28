@@ -80,6 +80,8 @@ void main() {
     expect(css, contains('.playback-meaning-bubble'));
     expect(js, contains('showMeaningBubble'));
     expect(js, contains('postPlaybackTarget'));
+    expect(js, contains("querySelectorAll('.word.active-word')"));
+    expect(js, contains('clearMeaningBubble();'));
   });
 
   test('continuous layout disables nested scrolling without changing page styles', () {
