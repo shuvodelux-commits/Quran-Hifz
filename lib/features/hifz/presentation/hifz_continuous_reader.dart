@@ -266,11 +266,11 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader>
       (controller?.hasClients ?? false) ? controller!.offset : 0,
     );
     final shouldCompensate =
-        previous != null &&
         event.page < currentPage &&
         controller != null &&
         controller.hasClients;
-    final delta = previous == null ? 0.0 : next - previous;
+    final previousExtent = previous ?? minimumHeight;
+    final delta = next - previousExtent;
 
     setState(() => _pageHeights[event.page] = next);
 
