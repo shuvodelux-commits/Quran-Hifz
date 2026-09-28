@@ -21,6 +21,7 @@ jobs:
       - run: flutter pub get
       - name: Targeted tests
         run: |
+          flutter test --fail-fast test/features/hifz/data/drift_hifz_plan_repository_test.dart
           flutter test --fail-fast test/features/hifz/presentation/hifz_pattern_editor_sheet_test.dart
           flutter test --fail-fast test/features/hifz/presentation/hifz_setup_sheet_test.dart
           flutter test --fail-fast test/features/hifz/presentation/hifz_reader_page_test.dart
