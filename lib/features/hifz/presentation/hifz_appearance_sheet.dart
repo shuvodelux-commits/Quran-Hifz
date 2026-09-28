@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../quran/domain/quran_mushaf_variant.dart';
+import '../domain/hifz_reader_mode.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/domain/app_preferences.dart';
 
@@ -97,6 +98,62 @@ class HifzAppearanceSheet extends ConsumerWidget {
                 unawaited(controller.setHifzShowTajweedColors(value));
               },
             ),
+            const SizedBox(height: 18),
+            Text('Reader view', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            SegmentedButton<HifzReaderMode>(
+              segments: const [
+                ButtonSegment<HifzReaderMode>(
+                  value: HifzReaderMode.page,
+                  label: Text(
+                    'Page',
+                    key: ValueKey('hifz-reader-mode-page'),
+                  ),
+                ),
+                ButtonSegment<HifzReaderMode>(
+                  value: HifzReaderMode.continuous,
+                  label: Text(
+                    'Continuous',
+                    key: ValueKey('hifz-reader-mode-continuous'),
+                  ),
+                ),
+              ],
+              selected: {preferences.hifzReaderMode},
+              showSelectedIcon: false,
+              onSelectionChanged: (selection) {
+                if (selection.isEmpty) return;
+                unawaited(controller.setHifzReaderMode(selection.first));
+              },
+            ),
+            if (preferences.hifzReaderMode == HifzReaderMode.continuous) ...[
+              const SizedBox(height: 8),
+              SwitchListTile(
+                key: const ValueKey('hifz-continuous-auto-scroll-switch'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Continuous auto-scroll'),
+                subtitle: const Text('For silent reading only'),
+                value: preferences.hifzContinuousAutoScrollEnabled,
+                onChanged: (value) {
+                  unawaited(
+                    controller.setHifzContinuousAutoScrollEnabled(value),
+                  );
+                },
+              ),
+              _SliderLabel(
+                label: 'Auto-scroll speed',
+                value:
+                    '${(preferences.hifzAutoScrollSpeed * 100).round()}%',
+              ),
+              Slider(
+                key: const ValueKey('hifz-auto-scroll-speed-slider'),
+                min: 0,
+                max: 1,
+                value: preferences.hifzAutoScrollSpeed,
+                onChanged: (value) {
+                  unawaited(controller.setHifzAutoScrollSpeed(value));
+                },
+              ),
+            ],
             const SizedBox(height: 8),
             TextButton.icon(
               key: const ValueKey('hifz-appearance-reset'),
@@ -115,6 +172,9 @@ class HifzAppearanceSheet extends ConsumerWidget {
     await controller.setHifzFontSize(32);
     await controller.setHifzLineHeight(1.35);
     await controller.setHifzShowTajweedColors(true);
+    await controller.setHifzReaderMode(HifzReaderMode.page);
+    await controller.setHifzContinuousAutoScrollEnabled(false);
+    await controller.setHifzAutoScrollSpeed(0.35);
   }
 }
 
