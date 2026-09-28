@@ -6,7 +6,9 @@ import 'package:quran_hifz/features/audio/application/quran_audio_controller.dar
 import 'package:quran_hifz/features/audio/domain/playback_requests.dart';
 import 'package:quran_hifz/features/audio/domain/quran_audio_state.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_preset.dart';
+import 'package:quran_hifz/features/hifz/domain/hifz_reader_mode.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_session.dart';
+import 'package:quran_hifz/features/hifz/presentation/hifz_continuous_reader.dart';
 import 'package:quran_hifz/features/hifz/presentation/hifz_controls_bar.dart';
 import 'package:quran_hifz/features/hifz/presentation/hifz_reader_page.dart';
 import 'package:quran_hifz/features/quran/application/quran_mushaf_providers.dart';
@@ -56,8 +58,62 @@ void main() {
     expect(mushaf.selectedEndAyahKey, '1:2');
     expect(mushaf.activeAyahKey, '1:1');
     expect(mushaf.activeWordPosition, 2);
+    expect(mushaf.activeWordBanglaMeaning, 'পরম করুণাময়');
   });
 
+
+
+  testWidgets('reader switches to Continuous without changing Hifz typography', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_readerApp());
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HifzReaderPage)),
+    );
+    await container
+        .read(appPreferencesControllerProvider.notifier)
+        .setHifzFontSize(48);
+    await container
+        .read(appPreferencesControllerProvider.notifier)
+        .setHifzLineHeight(1.8);
+    await container
+        .read(appPreferencesControllerProvider.notifier)
+        .setHifzReaderMode(HifzReaderMode.continuous);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(QuranStrictReaderBody), findsNothing);
+    expect(find.byType(HifzContinuousReader), findsOneWidget);
+    final continuous = tester.widget<HifzContinuousReader>(
+      find.byType(HifzContinuousReader),
+    );
+    expect(continuous.fontSize, 48);
+    expect(continuous.lineHeight, 1.8);
+    expect(continuous.variant, QuranMushafVariant.qcfV4Tajweed);
+  });
+
+  testWidgets('playback meaning setting hides meaning but keeps active word', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_readerApp());
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HifzReaderPage)),
+    );
+    await container
+        .read(appPreferencesControllerProvider.notifier)
+        .setShowPlaybackBanglaWordMeaning(false);
+    await tester.pumpAndSettle();
+
+    final mushaf = tester.widget<QuranStrictReaderBody>(
+      find.byType(QuranStrictReaderBody),
+    );
+    expect(mushaf.activeAyahKey, '1:1');
+    expect(mushaf.activeWordPosition, 2);
+    expect(mushaf.activeWordBanglaMeaning, isNull);
+  });
 
   testWidgets('repeat button edits and keeps the current Hifz pattern', (
     tester,
@@ -276,11 +332,19 @@ class _FixtureQuranRepository implements QuranRepository {
     return const QuranAyah(
       surahNumber: 1,
       ayahNumber: 1,
+      pageNumber: 1,
       words: [
         QuranWord(
           position: 1,
           arabic: 'بِسْمِ',
           audioUrl: '001_001_001.mp3',
+          banglaMeaning: 'নামে',
+        ),
+        QuranWord(
+          position: 2,
+          arabic: 'ٱلرَّحْمَٰنِ',
+          audioUrl: '001_001_002.mp3',
+          banglaMeaning: 'পরম করুণাময়',
         ),
       ],
     );
