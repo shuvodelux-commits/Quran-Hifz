@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/database_providers.dart';
 import '../../quran/domain/quran_font_preference.dart';
 import '../../quran/domain/quran_mushaf_variant.dart';
+import '../../hifz/domain/hifz_reader_mode.dart';
 import '../data/user_database_app_preferences_repository.dart';
 import '../domain/app_preferences.dart';
 import '../domain/app_preferences_repository.dart';
@@ -78,6 +79,20 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
 
   Future<void> setHifzShowTajweedColors(bool value) =>
       _update((current) => current.copyWith(hifzShowTajweedColors: value));
+
+  Future<void> setHifzReaderMode(HifzReaderMode value) =>
+      _update((current) => current.copyWith(hifzReaderMode: value));
+
+  Future<void> setHifzContinuousAutoScrollEnabled(bool value) => _update(
+    (current) => current.copyWith(hifzContinuousAutoScrollEnabled: value),
+  );
+
+  Future<void> setHifzAutoScrollSpeed(double value) {
+    if (!value.isFinite || value < 0 || value > 1) {
+      throw ArgumentError.value(value, 'value');
+    }
+    return _update((current) => current.copyWith(hifzAutoScrollSpeed: value));
+  }
 
   Future<void> setArabicFontSize(double value) {
     if (value < 20 || value > 56) {
@@ -245,6 +260,24 @@ final hifzShowTajweedColorsProvider = Provider<bool>((ref) {
           .value
           ?.hifzShowTajweedColors ??
       const AppPreferences.defaults().hifzShowTajweedColors;
+});
+
+final hifzReaderModeProvider = Provider<HifzReaderMode>((ref) {
+  return ref.watch(appPreferencesControllerProvider).value?.hifzReaderMode ??
+      const AppPreferences.defaults().hifzReaderMode;
+});
+
+final hifzContinuousAutoScrollEnabledProvider = Provider<bool>((ref) {
+  return ref
+          .watch(appPreferencesControllerProvider)
+          .value
+          ?.hifzContinuousAutoScrollEnabled ??
+      const AppPreferences.defaults().hifzContinuousAutoScrollEnabled;
+});
+
+final hifzAutoScrollSpeedProvider = Provider<double>((ref) {
+  return ref.watch(appPreferencesControllerProvider).value?.hifzAutoScrollSpeed ??
+      const AppPreferences.defaults().hifzAutoScrollSpeed;
 });
 
 final arabicFontSizeProvider = Provider<double>((ref) {
