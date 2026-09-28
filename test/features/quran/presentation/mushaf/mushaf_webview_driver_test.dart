@@ -84,6 +84,20 @@ void main() {
     expect(v2['pageFontFamily'], isNot(v4['pageFontFamily']));
   });
 
+
+  test('continuous Mushaf payload preserves typography and opts into natural height', () {
+    final payload = _fixture(
+      display: 'A',
+      fontSize: 48,
+      lineHeight: 1.8,
+      continuousLayout: true,
+    ).toRendererJson();
+
+    expect(payload['fontSize'], 48);
+    expect(payload['lineHeight'], 1.8);
+    expect(payload['continuousLayout'], isTrue);
+  });
+
   test('ayah end carries Unicode Hafs fallback text', () {
     final payload = MushafRenderPayload(
       page: QcfMushafPage(
@@ -208,6 +222,7 @@ MushafRenderPayload _fixture({
   double fontSize = 32,
   double lineHeight = 1.35,
   bool showTajweedColors = true,
+  bool continuousLayout = false,
 }) {
   return MushafRenderPayload(
     page: QcfMushafPage(
@@ -239,6 +254,7 @@ MushafRenderPayload _fixture({
     fontSize: fontSize,
     lineHeight: lineHeight,
     showTajweedColors: showTajweedColors,
+    continuousLayout: continuousLayout,
   );
 }
 
