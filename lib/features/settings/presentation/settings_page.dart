@@ -420,14 +420,20 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              appText(value.language, 'অডিও সেটিংস', 'Playback settings'),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
+            _SettingsSectionHeader(
+              icon: Icons.graphic_eq_rounded,
+              title: appText(
+                value.language,
+                'অডিও ও তিলাওয়াত',
+                'Audio & Recitation',
+              ),
+              subtitle: appText(
+                value.language,
+                'পুনরাবৃত্তি, গতি ও কারি',
+                'Repeat, speed and reciter',
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             _SettingsCard(
               children: [
                 DropdownButtonFormField<int>(
