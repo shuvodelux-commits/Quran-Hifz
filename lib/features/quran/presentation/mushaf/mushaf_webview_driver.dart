@@ -49,6 +49,7 @@ class MushafRenderPayload {
     required this.fontSize,
     required this.lineHeight,
     required this.showTajweedColors,
+    this.continuousLayout = false,
   });
 
   final QcfMushafPage page;
@@ -61,6 +62,7 @@ class MushafRenderPayload {
   final double fontSize;
   final double lineHeight;
   final bool showTajweedColors;
+  final bool continuousLayout;
 
   Map<String, Object?> toRendererJson() {
     if (generation < 0) {
@@ -80,6 +82,7 @@ class MushafRenderPayload {
       'fontSize': fontSize,
       'lineHeight': lineHeight,
       'showTajweedColors': showTajweedColors,
+      'continuousLayout': continuousLayout,
       'fontDataUrl': _fontDataUrl(pageFontBytes, 'woff2'),
       'surahFontDataUrl': _fontDataUrl(surahFontBytes, 'ttf'),
       'bismillahFontDataUrl': _fontDataUrl(bismillahFontBytes, 'ttf'),
