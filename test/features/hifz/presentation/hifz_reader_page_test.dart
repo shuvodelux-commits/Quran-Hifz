@@ -72,6 +72,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('hifz-pattern-combined-2')));
     await tester.tap(find.byKey(const ValueKey('hifz-pattern-final-1')));
     await tester.tap(find.byKey(const ValueKey('hifz-pattern-pause-500')));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('hifz-pattern-save')),
+    );
     await tester.tap(find.byKey(const ValueKey('hifz-pattern-save')));
     await tester.pumpAndSettle();
 
