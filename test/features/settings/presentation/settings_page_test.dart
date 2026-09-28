@@ -67,6 +67,48 @@ void main() {
     expect(find.text('Audio & Recitation'), findsOneWidget);
   });
 
+  testWidgets('playback choices use compact chips and persist selections', (
+    tester,
+  ) async {
+    final preferences = _MemoryPreferencesRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appPreferencesRepositoryProvider.overrideWithValue(preferences),
+          indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
+          tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
+        ],
+        child: const MaterialApp(home: SettingsPage(currentSurahNumber: 1)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('অডিও ও তিলাওয়াত'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DropdownButtonFormField<int>), findsNothing);
+    expect(find.byType(DropdownButtonFormField<double>), findsNothing);
+
+    expect(find.byKey(const ValueKey('repeat-choice-1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('repeat-choice-20')), findsOneWidget);
+    expect(find.byKey(const ValueKey('speed-choice-0.5')), findsOneWidget);
+    expect(find.byKey(const ValueKey('speed-choice-1.25')), findsOneWidget);
+
+    await tester.ensureVisible(find.byKey(const ValueKey('repeat-choice-5')));
+    await tester.tap(find.byKey(const ValueKey('repeat-choice-5')));
+    await tester.pumpAndSettle();
+    expect(preferences.value.defaultRepeatCount, 5);
+
+    await tester.ensureVisible(find.byKey(const ValueKey('speed-choice-1.25')));
+    await tester.tap(find.byKey(const ValueKey('speed-choice-1.25')));
+    await tester.pumpAndSettle();
+    expect(preferences.value.defaultPlaybackSpeed, 1.25);
+  });
+
   testWidgets('playback dropdowns expose exactly the supported values', (
     tester,
   ) async {
