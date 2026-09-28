@@ -195,7 +195,12 @@ void main() {
       await tester.pumpAndSettle();
 
       final preview = find.text(BismillahText.indoPak);
-      await tester.ensureVisible(preview);
+      await tester.scrollUntilVisible(
+        preview,
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       final previewStyle = DefaultTextStyle.of(tester.element(preview)).style;
       expect(previewStyle.fontFamily, 'IndoPak Nastaleeq');
       expect(previewStyle.fontWeight, FontWeight.w400);
@@ -228,6 +233,12 @@ void main() {
     final fontDropdown = find.byType(
       DropdownButtonFormField<QuranFontPreference>,
     );
+    await tester.scrollUntilVisible(
+      fontDropdown,
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     expect(fontDropdown, findsOneWidget);
     await tester.tap(fontDropdown);
     await tester.pumpAndSettle();
@@ -258,12 +269,24 @@ void main() {
     final fontDropdown = find.byType(
       DropdownButtonFormField<QuranFontPreference>,
     );
+    await tester.scrollUntilVisible(
+      fontDropdown,
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(fontDropdown);
     await tester.pumpAndSettle();
     await tester.tap(find.text('QPC Hafs / Uthmani').last);
     await tester.pumpAndSettle();
 
     final uthmaniPreview = find.text(BismillahText.uthmani);
+    await tester.scrollUntilVisible(
+      uthmaniPreview,
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     final uthmaniContainer = ProviderScope.containerOf(
       tester.element(uthmaniPreview),
     );
@@ -276,12 +299,24 @@ void main() {
       'QPC Hafs',
     );
 
+    await tester.scrollUntilVisible(
+      fontDropdown,
+      -250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(fontDropdown);
     await tester.pumpAndSettle();
     await tester.tap(find.text('IndoPak Nastaleeq').last);
     await tester.pumpAndSettle();
 
     final indoPakPreview = find.text(BismillahText.indoPak);
+    await tester.scrollUntilVisible(
+      indoPakPreview,
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     final indoPakContainer = ProviderScope.containerOf(
       tester.element(indoPakPreview),
     );
