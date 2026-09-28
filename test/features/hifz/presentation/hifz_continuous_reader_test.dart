@@ -83,6 +83,73 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+
+  testWidgets('continuous reader lazily mounts only pages near a middle anchor', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final needed = <int>[];
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          quranMushafPageRepositoryProvider.overrideWithValue(
+            _MushafRepository(),
+          ),
+          quranPageFontRepositoryProvider.overrideWith(
+            (ref, variant) => _FontRepository(),
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: HifzContinuousReader(
+              state: ReaderState(
+                currentPage: 10,
+                firstPage: 1,
+                lastPage: 20,
+                translationResourceId: 1,
+                windows: {
+                  10: QuranPageWindow(
+                    page: 10,
+                    ayahs: const [],
+                    previousPage: 9,
+                    nextPage: 11,
+                  ),
+                },
+              ),
+              variant: QuranMushafVariant.qcfV4Tajweed,
+              fontSize: 32,
+              lineHeight: 1.35,
+              showTajweedColors: true,
+              activeAyahKey: null,
+              activeWordPosition: null,
+              selectedStartAyahKey: '1:1',
+              selectedEndAyahKey: '1:2',
+              onPageNeeded: needed.add,
+              onCurrentPageChanged: (_) {},
+              onWordTap: (_, __) {},
+              onWordLongPress: (_, __) {},
+              onAyahTap: (_) {},
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('hifz-continuous-page-10')), findsOneWidget);
+    expect(find.byKey(const ValueKey('hifz-continuous-page-1')), findsNothing);
+    expect(
+      needed.every((page) => page >= 9 && page <= 11),
+      isTrue,
+      reason: 'Opening page 10 must not eagerly request distant Surah pages.',
+    );
+  });
+
   testWidgets('continuous reader forwards exact Hifz typography to page surface', (
     tester,
   ) async {
