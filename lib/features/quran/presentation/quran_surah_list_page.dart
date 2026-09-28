@@ -409,7 +409,7 @@ class _QuickActions extends StatelessWidget {
           OutlinedButton.icon(
             key: const ValueKey('quran-quick-hifz'),
             onPressed: onHifz,
-            icon: const Icon(Icons.psychology_alt_outlined),
+            icon: const Icon(Icons.school_outlined),
             label: Text(appText(language, 'হিফজ', 'Hifz')),
           ),
         ],
