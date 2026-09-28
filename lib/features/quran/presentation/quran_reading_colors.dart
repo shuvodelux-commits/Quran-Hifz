@@ -17,8 +17,8 @@ abstract final class QuranReadingColors {
 
     final hsv = HSVColor.fromColor(accent);
     return hsv
-        .withSaturation((hsv.saturation + 0.18).clamp(0.0, 1.0))
-        .withValue((hsv.value + 0.18).clamp(0.0, 1.0))
+        .withSaturation((hsv.saturation + 0.18).clamp(0.0, 1.0).toDouble())
+        .withValue((hsv.value + 0.18).clamp(0.0, 1.0).toDouble())
         .toColor();
   }
 
