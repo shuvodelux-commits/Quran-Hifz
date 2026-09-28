@@ -13,6 +13,7 @@
     fontSize: 32,
     lineHeight: 1.35,
     showTajweedColors: true,
+    continuousLayout: false,
     rangeStart: null,
     rangeEnd: null,
   };
@@ -136,12 +137,14 @@
     const pageNode = pageElement();
     if (!pageNode || !state.page) return;
     const rect = pageNode.getBoundingClientRect();
-    const contentHeight = Math.max(
-      pageNode.scrollHeight,
-      rect.height,
-      document.documentElement.scrollHeight,
-      document.body.scrollHeight,
-    );
+    const contentHeight = state.continuousLayout
+      ? Math.max(pageNode.scrollHeight, rect.height)
+      : Math.max(
+          pageNode.scrollHeight,
+          rect.height,
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight,
+        );
     if (!Number.isFinite(contentHeight) || contentHeight <= 0) return;
     post('pageMetrics', {
       page: state.page,
@@ -178,6 +181,35 @@
       top,
       bottom,
     });
+  }
+
+  function playbackElements(ayahKey, wordPosition = null) {
+    if (!ayahKey) return [];
+    if (Number(wordPosition) > 0) {
+      const element = root.querySelector(
+        '.word[data-ayah-key="' + CSS.escape(ayahKey) +
+        '"][data-word-position="' + Number(wordPosition) + '"]',
+      );
+      return element ? [element] : [];
+    }
+    return [...root.querySelectorAll('.word, .ayah-end')]
+      .filter((element) => element.dataset.ayahKey === ayahKey);
+  }
+
+  function ensurePlaybackTargetVisible(ayahKey, wordPosition = null) {
+    const elements = playbackElements(ayahKey, wordPosition);
+    if (elements.length === 0) return;
+    const rects = elements.map((element) => element.getBoundingClientRect());
+    const top = Math.min(...rects.map((rect) => rect.top));
+    const bottom = Math.max(...rects.map((rect) => rect.bottom));
+    const safeTop = 48;
+    const safeBottom = Math.max(safeTop + 1, window.innerHeight - 88);
+    if (top >= safeTop && bottom <= safeBottom) return;
+    const target = Math.max(
+      0,
+      window.scrollY + top - window.innerHeight * 0.34,
+    );
+    window.scrollTo({ top: target, behavior: 'smooth' });
   }
 
   function clearMeaningBubble() {
@@ -324,6 +356,9 @@
       installFonts(payload);
       state.page = page;
       state.generation = generation;
+      state.continuousLayout = Boolean(payload.continuousLayout);
+      document.body.dataset.continuousLayout =
+        state.continuousLayout ? 'on' : 'off';
       setPalette(payload.palette || state.palette);
       setTypography(
         payload.fontSize ?? state.fontSize,
@@ -390,7 +425,10 @@
       }
     });
     showMeaningBubble(activeWord, banglaMeaning);
-    requestAnimationFrame(() => postPlaybackTarget(ayahKey, wordPosition));
+    requestAnimationFrame(() => {
+      ensurePlaybackTargetVisible(ayahKey, wordPosition);
+      postPlaybackTarget(ayahKey, wordPosition);
+    });
   }
   function setActiveAyah(ayahKey) {
     root.querySelectorAll('.word, .ayah-end').forEach((element) => {
@@ -399,7 +437,10 @@
         element.dataset.ayahKey === ayahKey,
       );
     });
-    requestAnimationFrame(() => postPlaybackTarget(ayahKey));
+    requestAnimationFrame(() => {
+      ensurePlaybackTargetVisible(ayahKey);
+      postPlaybackTarget(ayahKey);
+    });
   }
 
   function setRange(startAyahKey, endAyahKey) {
