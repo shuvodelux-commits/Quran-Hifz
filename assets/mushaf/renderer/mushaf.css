@@ -37,6 +37,16 @@ body {
   min-height: 100%;
 }
 
+body[data-continuous-layout="on"] {
+  min-height: 0;
+  overflow-y: hidden;
+}
+
+body[data-continuous-layout="on"] #mushaf-root,
+body[data-continuous-layout="on"] .mushaf-page {
+  min-height: 0;
+}
+
 .mushaf-page {
   width: 100%;
   min-height: 100%;
