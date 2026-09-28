@@ -145,11 +145,11 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader>
               _userScrollActive = true;
               _syncAutoScrollTicker();
             }
-            if (notification is ScrollEndNotification) {
-              final wasUserScroll = _userScrollActive;
+            if (notification is ScrollEndNotification &&
+                _userScrollActive) {
               _userScrollActive = false;
-              _lastAutoScrollTick = null;
-              if (wasUserScroll) _syncAutoScrollTicker();
+              _lastAutoScrollTick = Duration.zero;
+              _syncAutoScrollTicker();
             }
             if (notification is ScrollUpdateNotification ||
                 notification is ScrollEndNotification) {
