@@ -183,6 +183,10 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
     final lineHeight = ref.watch(hifzLineHeightProvider);
     final tajweed = ref.watch(hifzShowTajweedColorsProvider);
     final readerMode = ref.watch(hifzReaderModeProvider);
+    final continuousAutoScrollEnabled = ref.watch(
+      hifzContinuousAutoScrollEnabledProvider,
+    );
+    final autoScrollSpeed = ref.watch(hifzAutoScrollSpeedProvider);
     final showPlaybackMeaning = ref.watch(
       showPlaybackBanglaWordMeaningProvider,
     );
@@ -202,6 +206,9 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
         (audio.mode == QuranAudioMode.ayah || audio.mode == QuranAudioMode.word);
     final activeAyahKey = audioVisible ? audio.ayahKey : null;
     final activeWordPosition = audioVisible ? audio.activeWordPosition : null;
+    final audioPlaying =
+        audio.status == QuranAudioStatus.loading ||
+        audio.status == QuranAudioStatus.playing;
 
     return Scaffold(
       appBar: AppBar(
@@ -249,6 +256,9 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
               lineHeight: lineHeight,
               tajweed: tajweed,
               readerMode: readerMode,
+              continuousAutoScrollEnabled: continuousAutoScrollEnabled,
+              autoScrollSpeed: autoScrollSpeed,
+              audioPlaying: audioPlaying,
               activeAyahKey: activeAyahKey,
               activeWordPosition: activeWordPosition,
               activeWordBanglaMeaning: showPlaybackMeaning
@@ -283,6 +293,9 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
     required double lineHeight,
     required bool tajweed,
     required HifzReaderMode readerMode,
+    required bool continuousAutoScrollEnabled,
+    required double autoScrollSpeed,
+    required bool audioPlaying,
     required String? activeAyahKey,
     required int? activeWordPosition,
     required String? activeWordBanglaMeaning,
@@ -349,6 +362,14 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
             selectedStartAyahKey: _config.start.verseKey,
             selectedEndAyahKey: _config.end.verseKey,
             playbackPage: _playbackPage,
+            autoScrollEnabled: continuousAutoScrollEnabled,
+            autoScrollSpeed: autoScrollSpeed,
+            audioPlaying: audioPlaying,
+            onDisableAutoScroll: () => unawaited(
+              ref
+                  .read(appPreferencesControllerProvider.notifier)
+                  .setHifzContinuousAutoScrollEnabled(false),
+            ),
             onPageNeeded: (page) =>
                 unawaited(_ensurePageWindow(page, makeCurrent: false)),
             onCurrentPageChanged: _setContinuousCurrentPage,
