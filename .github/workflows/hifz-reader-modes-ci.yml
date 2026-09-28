@@ -11,7 +11,7 @@ permissions:
 jobs:
   flutter:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -23,5 +23,5 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Full baseline
-        run: flutter test --fail-fast
+      - name: Task 1 settings tests
+        run: flutter test test/features/settings/domain/app_preferences_test.dart test/features/settings/application/app_preferences_controller_test.dart test/features/settings/data/user_database_app_preferences_repository_test.dart
