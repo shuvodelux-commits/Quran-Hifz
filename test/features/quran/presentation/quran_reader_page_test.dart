@@ -214,6 +214,19 @@ void main() {
       final decoration = container.decoration as BoxDecoration;
       expect(decoration.borderRadius, BorderRadius.circular(16));
       expect(decoration.boxShadow, isNotEmpty);
+
+      final wordRect = tester.getRect(find.text('A'));
+      final bubbleRect = tester.getRect(bubble);
+      expect(
+        bubbleRect.bottom,
+        lessThan(wordRect.top),
+        reason: 'The live Bangla meaning must float above the active Arabic word.',
+      );
+      expect(
+        (bubbleRect.center.dx - wordRect.center.dx).abs(),
+        lessThan(24),
+        reason: 'The meaning bubble must stay horizontally anchored to the active word.',
+      );
     },
   );
 
