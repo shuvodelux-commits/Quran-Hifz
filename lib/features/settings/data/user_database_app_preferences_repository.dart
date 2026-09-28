@@ -1,6 +1,7 @@
 import '../../../core/database/user_database.dart';
 import '../../quran/domain/quran_font_preference.dart';
 import '../../quran/domain/quran_mushaf_variant.dart';
+import '../../hifz/domain/hifz_reader_mode.dart';
 import '../domain/app_preferences.dart';
 import '../domain/app_preferences_repository.dart';
 
@@ -16,6 +17,9 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
   static const hifzFontSizeKey = 'hifz_font_size_v2';
   static const hifzLineHeightKey = 'hifz_line_height_v2';
   static const hifzShowTajweedColorsKey = 'hifz_tajweed_colors_v2';
+  static const hifzReaderModeKey = 'hifz_reader_mode_v1';
+  static const hifzContinuousAutoScrollKey = 'hifz_continuous_auto_scroll_v1';
+  static const hifzAutoScrollSpeedKey = 'hifz_auto_scroll_speed_v1';
   static const banglaLineHeightKey = 'bangla_line_height';
   static const banglaFontSizeKey = 'bangla_font_size';
   static const showTranslationKey = 'show_translation';
@@ -65,6 +69,9 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       _database.getSetting(hifzLineHeightKey),
       _database.getSetting(hifzShowTajweedColorsKey),
       _database.getSetting(showPlaybackBanglaWordMeaningKey),
+      _database.getSetting(hifzReaderModeKey),
+      _database.getSetting(hifzContinuousAutoScrollKey),
+      _database.getSetting(hifzAutoScrollSpeedKey),
     ]);
 
     final theme = switch (values[0]) {
@@ -96,6 +103,7 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
     final banglaFontSize = double.tryParse(values[17] ?? '');
     final hifzFontSize = double.tryParse(values[20] ?? '');
     final hifzLineHeight = double.tryParse(values[21] ?? '');
+    final hifzAutoScrollSpeed = double.tryParse(values[26] ?? '');
 
     return AppPreferences(
       theme: theme,
@@ -134,6 +142,18 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
         values[22],
         defaults.hifzShowTajweedColors,
       ),
+      hifzReaderMode: _hifzReaderModeFromName(
+        values[24],
+        defaults.hifzReaderMode,
+      ),
+      hifzContinuousAutoScrollEnabled: _parseBool(
+        values[25],
+        defaults.hifzContinuousAutoScrollEnabled,
+      ),
+      hifzAutoScrollSpeed:
+          _isFiniteInRange(hifzAutoScrollSpeed, 0, 1)
+          ? hifzAutoScrollSpeed!
+          : defaults.hifzAutoScrollSpeed,
       banglaLineHeight:
           banglaLineHeight != null &&
               banglaLineHeight >= AppPreferences.minBanglaLineHeight &&
@@ -221,6 +241,18 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
         preferences.hifzShowTajweedColors.toString(),
       );
       await _database.saveSetting(
+        hifzReaderModeKey,
+        preferences.hifzReaderMode.name,
+      );
+      await _database.saveSetting(
+        hifzContinuousAutoScrollKey,
+        preferences.hifzContinuousAutoScrollEnabled.toString(),
+      );
+      await _database.saveSetting(
+        hifzAutoScrollSpeedKey,
+        preferences.hifzAutoScrollSpeed.toString(),
+      );
+      await _database.saveSetting(
         banglaLineHeightKey,
         preferences.banglaLineHeight.toString(),
       );
@@ -296,6 +328,16 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
   ) {
     for (final variant in QuranMushafVariant.values) {
       if (variant.name == raw) return variant;
+    }
+    return fallback;
+  }
+
+  HifzReaderMode _hifzReaderModeFromName(
+    String? raw,
+    HifzReaderMode fallback,
+  ) {
+    for (final mode in HifzReaderMode.values) {
+      if (mode.name == raw) return mode;
     }
     return fallback;
   }
