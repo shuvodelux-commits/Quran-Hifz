@@ -442,6 +442,8 @@
       );
     });
     requestAnimationFrame(() => {
+      const activeWord = root.querySelector('.word.active-word');
+      if (activeWord && activeWord.dataset.ayahKey === ayahKey) return;
       ensurePlaybackTargetVisible(ayahKey);
       postPlaybackTarget(ayahKey);
     });
