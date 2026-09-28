@@ -128,13 +128,24 @@ void main() {
   });
 
   test(
-    'typed commands encode arguments instead of interpolating them',
+    'typed commands encode arguments and Bangla meaning without interpolation',
     () async {
-      await driver.setActiveWord("2:255');window.evil=true;//", 3);
+      await driver.setActiveWord(
+        "2:255');window.evil=true;//",
+        3,
+        banglaMeaning: "আল্লাহ');window.evil=true;//",
+      );
 
       final js = controller.lastScript!;
       expect(js, isNot(contains('window.evil=true')));
-      expect(_decodeFirstArgumentList(js), ["2:255');window.evil=true;//", 3]);
+      expect(
+        _decodeFirstArgumentList(js),
+        [
+          "2:255');window.evil=true;//",
+          3,
+          "আল্লাহ');window.evil=true;//",
+        ],
+      );
     },
   );
 

@@ -23,5 +23,5 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Task 1 settings tests
-        run: flutter test test/features/settings/domain/app_preferences_test.dart test/features/settings/application/app_preferences_controller_test.dart test/features/settings/data/user_database_app_preferences_repository_test.dart
+      - name: Task 2 renderer protocol tests
+        run: flutter test test/features/quran/presentation/mushaf/mushaf_renderer_message_test.dart test/features/quran/presentation/mushaf/mushaf_webview_driver_test.dart

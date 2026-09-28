@@ -27,6 +27,56 @@ void main() {
     );
   });
 
+  test('parses page metrics and playback target geometry', () {
+    expect(
+      MushafRendererEvent.parse(
+        '{"type":"pageMetrics","page":2,"generation":7,"contentHeight":812.5}',
+      ),
+      const MushafPageMetricsEvent(
+        page: 2,
+        generation: 7,
+        contentHeight: 812.5,
+      ),
+    );
+    expect(
+      MushafRendererEvent.parse(
+        '{"type":"playbackTarget","page":2,"generation":7,"ayahKey":"2:255","wordPosition":3,"top":180.25,"bottom":224.75}',
+      ),
+      const MushafPlaybackTargetEvent(
+        page: 2,
+        generation: 7,
+        ayahKey: '2:255',
+        wordPosition: 3,
+        top: 180.25,
+        bottom: 224.75,
+      ),
+    );
+    expect(
+      MushafRendererEvent.parse(
+        '{"type":"playbackTarget","page":2,"generation":7,"ayahKey":"2:255","top":160.0,"bottom":260.0}',
+      ),
+      const MushafPlaybackTargetEvent(
+        page: 2,
+        generation: 7,
+        ayahKey: '2:255',
+        top: 160,
+        bottom: 260,
+      ),
+    );
+  });
+
+  test('rejects invalid renderer geometry', () {
+    for (final raw in [
+      '{"type":"pageMetrics","page":2,"generation":7,"contentHeight":0}',
+      '{"type":"pageMetrics","page":2,"generation":7,"contentHeight":"NaN"}',
+      '{"type":"playbackTarget","page":2,"generation":7,"ayahKey":"2:255","top":20.0,"bottom":10.0}',
+      '{"type":"playbackTarget","page":605,"generation":7,"ayahKey":"2:255","top":10.0,"bottom":20.0}',
+      '{"type":"playbackTarget","page":2,"generation":-1,"ayahKey":"2:255","top":10.0,"bottom":20.0}',
+    ]) {
+      expect(() => MushafRendererEvent.parse(raw), throwsFormatException);
+    }
+  });
+
   test('rejects pageReady outside 1 through 604', () {
     expect(
       () => MushafRendererEvent.parse(
