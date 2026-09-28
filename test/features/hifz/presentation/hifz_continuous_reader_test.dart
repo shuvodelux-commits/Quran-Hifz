@@ -220,6 +220,28 @@ void main() {
     expect(stoppedAt, greaterThanOrEqualTo(beforeAudio));
   });
 
+
+  testWidgets('programmatic scroll notifications do not halve auto-scroll speed', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _continuousTestApp(
+        autoScrollEnabled: true,
+        autoScrollSpeed: 0.5,
+        audioPlaying: false,
+        onDisableAutoScroll: () {},
+      ),
+    );
+    await tester.pump();
+
+    final controller = tester.widget<ListView>(find.byType(ListView)).controller!;
+    for (var frame = 0; frame < 10; frame++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+
+    expect(controller.offset, closeTo(40, 2));
+  });
+
   testWidgets('enabling auto-scroll while audio is already playing is rejected', (
     tester,
   ) async {
