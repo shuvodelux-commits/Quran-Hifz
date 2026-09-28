@@ -72,14 +72,6 @@ class _AyahCardState extends ConsumerState<AyahCard> {
       showPlaybackBanglaWordMeaningProvider,
     );
     final translationVisible = widget.showTranslation;
-    final activeMeaning =
-        isSentencePlaying && showPlaybackBanglaWordMeaning
-        ? widget.ayah.words
-              .where((word) => word.position == activeWordPosition)
-              .map((word) => word.banglaMeaning?.trim())
-              .firstOrNull
-        : null;
-    final hasActiveMeaning = activeMeaning?.isNotEmpty == true;
     final isFatihahBismillah =
         widget.ayah.surahNumber == 1 &&
         widget.ayah.ayahNumber == 1 &&
@@ -148,33 +140,34 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                   runSpacing: 12,
                   children: [
                     for (final word in widget.ayah.words)
-                      QuranWordView(
-                        key:
-                            widget.wordKeyFor?.call(word) ??
-                            ValueKey(
-                              'word-${widget.ayah.key}:${word.position}',
-                            ),
-                        word: word,
-                        playbackAyahKey: widget.ayah.key,
-                        onTap: widget.onWordTap == null
-                            ? null
-                            : () => widget.onWordTap!(word),
-                        onLongPress: widget.onWordLongPress == null
-                            ? () => _showWordDetails(word)
-                            : () => widget.onWordLongPress!(word),
+                      _PlaybackWordMeaningAnchor(
+                        meaning:
+                            isSentencePlaying &&
+                                showPlaybackBanglaWordMeaning &&
+                                word.position == activeWordPosition
+                            ? word.banglaMeaning?.trim()
+                            : null,
+                        child: QuranWordView(
+                          key:
+                              widget.wordKeyFor?.call(word) ??
+                              ValueKey(
+                                'word-${widget.ayah.key}:${word.position}',
+                              ),
+                          word: word,
+                          playbackAyahKey: widget.ayah.key,
+                          onTap: widget.onWordTap == null
+                              ? null
+                              : () => widget.onWordTap!(word),
+                          onLongPress: widget.onWordLongPress == null
+                              ? () => _showWordDetails(word)
+                              : () => widget.onWordLongPress!(word),
+                        ),
                       ),
                   ],
                 ),
               ),
-            if (hasActiveMeaning) ...[
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: _PlaybackWordMeaningBubble(meaning: activeMeaning!),
-              ),
-            ],
             if (translationVisible && widget.ayah.translation != null) ...[
-              SizedBox(height: hasActiveMeaning ? 6 : 16),
+              const SizedBox(height: 16),
               Text(
                 widget.ayah.translation!,
                 style: theme.textTheme.bodyLarge?.copyWith(
@@ -292,6 +285,43 @@ class _AyahCardState extends ConsumerState<AyahCard> {
   }
 }
 
+class _PlaybackWordMeaningAnchor extends StatelessWidget {
+  const _PlaybackWordMeaningAnchor({
+    required this.child,
+    this.meaning,
+  });
+
+  final Widget child;
+  final String? meaning;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = meaning?.trim();
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        child,
+        if (text != null && text.isNotEmpty)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: FractionalTranslation(
+              translation: const Offset(0, -1.18),
+              child: OverflowBox(
+                minWidth: 0,
+                maxWidth: 220,
+                alignment: Alignment.bottomCenter,
+                child: _PlaybackWordMeaningBubble(meaning: text),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class _PlaybackWordMeaningBubble extends StatelessWidget {
   const _PlaybackWordMeaningBubble({required this.meaning});
 
@@ -308,25 +338,28 @@ class _PlaybackWordMeaningBubble extends StatelessWidget {
       label: 'Current word meaning: $meaning',
       child: Container(
         key: const ValueKey('playback-word-meaning-bubble'),
-        constraints: const BoxConstraints(maxWidth: 280),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        constraints: const BoxConstraints(maxWidth: 220),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: scheme.primaryContainer.withValues(alpha: 0.72),
+          color: scheme.inverseSurface.withValues(alpha: 0.96),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: accent.withValues(alpha: 0.24)),
+          border: Border.all(color: accent.withValues(alpha: 0.38)),
           boxShadow: [
             BoxShadow(
-              color: scheme.shadow.withValues(alpha: 0.12),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: scheme.shadow.withValues(alpha: 0.22),
+              blurRadius: 14,
+              spreadRadius: 1,
+              offset: const Offset(0, 5),
             ),
           ],
         ),
         child: Text(
           meaning,
+          textAlign: TextAlign.center,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: scheme.onSurface,
+            color: scheme.onInverseSurface,
             fontWeight: FontWeight.w600,
+            height: 1.25,
           ),
         ),
       ),
