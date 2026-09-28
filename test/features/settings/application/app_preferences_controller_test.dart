@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quran_hifz/features/hifz/domain/hifz_reader_mode.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_variant.dart';
 import 'package:quran_hifz/features/hifz/domain/hifz_reader_mode.dart';
@@ -177,40 +176,6 @@ void main() {
     expect(state.hifzAutoScrollSpeed, 0.173);
     expect(state.quranFont, QuranFontPreference.qpcHafs);
     expect(state.hifzFontSize, 32);
-  });
-
-  test('rejects invalid Hifz auto-scroll speed values', () async {
-    final repository = _MemoryRepository();
-    final container = containerFor(repository);
-    await container.read(appPreferencesControllerProvider.future);
-    final controller = container.read(
-      appPreferencesControllerProvider.notifier,
-    );
-
-    expect(() => controller.setHifzAutoScrollSpeed(double.nan), throwsArgumentError);
-    expect(() => controller.setHifzAutoScrollSpeed(-0.01), throwsArgumentError);
-    expect(() => controller.setHifzAutoScrollSpeed(1.01), throwsArgumentError);
-  });
-
-
-  test('Hifz reader behavior preferences update independently', () async {
-    final repository = _MemoryRepository();
-    final container = containerFor(repository);
-    await container.read(appPreferencesControllerProvider.future);
-    final controller = container.read(
-      appPreferencesControllerProvider.notifier,
-    );
-
-    await controller.setHifzReaderMode(HifzReaderMode.continuous);
-    await controller.setHifzContinuousAutoScrollEnabled(true);
-    await controller.setHifzAutoScrollSpeed(0.173);
-
-    final state = container.read(appPreferencesControllerProvider).value!;
-    expect(state.hifzReaderMode, HifzReaderMode.continuous);
-    expect(state.hifzContinuousAutoScrollEnabled, isTrue);
-    expect(state.hifzAutoScrollSpeed, 0.173);
-    expect(state.quranFont, QuranFontPreference.qpcHafs);
-    expect(state.arabicFontSize, 27);
   });
 
   test('rejects invalid Hifz auto-scroll speed values', () async {
