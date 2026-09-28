@@ -82,7 +82,7 @@ void main() {
 
     expect(find.text('তাজবিদের রং'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('অডিও সেটিংস'),
+      find.text('অডিও ও তিলাওয়াত'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
