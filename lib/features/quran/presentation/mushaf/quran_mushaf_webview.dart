@@ -22,8 +22,14 @@ class MushafWebViewLoadGate {
     _rendererLoadRequested = true;
   }
 
-  bool onPageFinished() {
+  bool onPageFinished(String url) {
     if (!_rendererLoadRequested || _readyNotified) return false;
+    final uri = Uri.tryParse(url);
+    if (uri == null ||
+        uri.scheme != 'file' ||
+        !uri.path.endsWith('/assets/mushaf/renderer/index.html')) {
+      return false;
+    }
     _readyNotified = true;
     return true;
   }
@@ -72,8 +78,8 @@ class _QuranMushafWebViewState extends State<QuranMushafWebView> {
         NavigationDelegate(
           onNavigationRequest: (request) =>
               mushafNavigationDecision(request.url),
-          onPageFinished: (_) {
-            if (mounted && _loadGate.onPageFinished()) {
+          onPageFinished: (url) {
+            if (mounted && _loadGate.onPageFinished(url)) {
               widget.onDriverReady(_driver);
             }
           },
