@@ -246,6 +246,48 @@ void main() {
     expect(disableCalls, 0);
   });
 
+  testWidgets('auto-scroll rests at the end and resumes after manual movement up', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 480);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    var disableCalls = 0;
+    await tester.pumpWidget(
+      _continuousTestApp(
+        autoScrollEnabled: true,
+        autoScrollSpeed: 1,
+        audioPlaying: false,
+        onDisableAutoScroll: () => disableCalls++,
+      ),
+    );
+    await tester.pump();
+
+    final controller = tester.widget<ListView>(find.byType(ListView)).controller!;
+    controller.jumpTo(controller.position.maxScrollExtent);
+    await tester.pump(const Duration(milliseconds: 100));
+    final atEnd = controller.offset;
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(controller.offset, closeTo(atEnd, 1));
+    expect(disableCalls, 0);
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byType(ListView)),
+    );
+    await gesture.moveBy(const Offset(0, 120));
+    await tester.pump();
+    await gesture.up();
+    await tester.pump();
+    final movedUp = controller.offset;
+    expect(movedUp, lessThan(atEnd));
+
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(controller.offset, greaterThan(movedUp));
+    expect(disableCalls, 0);
+  });
+
   testWidgets('audio start disables silent auto-scroll once and it stays stopped', (
     tester,
   ) async {
