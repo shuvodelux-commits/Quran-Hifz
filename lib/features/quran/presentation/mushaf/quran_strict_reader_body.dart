@@ -177,11 +177,6 @@ class _QuranStrictReaderBodyState extends ConsumerState<QuranStrictReaderBody> {
     final variant = widget.variant;
 
     final pageRepository = ref.read(quranMushafPageRepositoryProvider);
-    if (variant == QuranMushafVariant.qcfV2 &&
-        !await pageRepository.isVariantAvailable(variant)) {
-      throw StateError('QCF V2 Quran page data is not installed.');
-    }
-
     final mushafPage = await pageRepository.loadPage(
       variant: variant,
       page: page,
