@@ -30,7 +30,10 @@ abstract interface class MushafWebViewDriver {
     String? banglaMeaning,
   });
 
-  Future<void> setActiveAyah(String ayahKey);
+  Future<void> setActiveAyah(
+    String ayahKey, {
+    bool deferFollowToWord = false,
+  });
 
   Future<void> setRange(String? startAyahKey, String? endAyahKey);
 
@@ -172,8 +175,14 @@ class ControllerMushafWebViewDriver implements MushafWebViewDriver {
   }
 
   @override
-  Future<void> setActiveAyah(String ayahKey) {
-    return _runEncoded('setActiveAyah', <Object?>[ayahKey]);
+  Future<void> setActiveAyah(
+    String ayahKey, {
+    bool deferFollowToWord = false,
+  }) {
+    return _runEncoded(
+      'setActiveAyah',
+      <Object?>[ayahKey, deferFollowToWord],
+    );
   }
 
   @override
