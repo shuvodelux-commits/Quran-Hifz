@@ -413,6 +413,16 @@
     requestAnimationFrame(postPageMetrics);
   }
 
+  function setPlaybackAccent(ayahColor, wordColor) {
+    const hex = /^#[0-9a-fA-F]{6}$/;
+    if (!hex.test(String(ayahColor)) || !hex.test(String(wordColor))) {
+      throw new Error('Playback accent colors must be #RRGGBB');
+    }
+    document.documentElement.style.setProperty('--active-accent', String(ayahColor));
+    document.documentElement.style.setProperty('--active-word-accent', String(wordColor));
+    document.documentElement.style.setProperty('--range-accent', String(ayahColor));
+  }
+
   function setActiveWord(ayahKey, wordPosition, banglaMeaning = null) {
     root.querySelectorAll('.word.active-word')
       .forEach((element) => element.classList.remove('active-word'));
@@ -465,6 +475,7 @@
     renderPage,
     setPalette,
     setTypography,
+    setPlaybackAccent,
     setActiveWord,
     setActiveAyah,
     setRange,

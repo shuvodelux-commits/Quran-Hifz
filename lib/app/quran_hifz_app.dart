@@ -15,19 +15,25 @@ class QuranHifzApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themePreference = ref.watch(themePreferenceProvider);
+    final accentPreference = ref.watch(accentPreferenceProvider);
     final language = ref.watch(appLanguageProvider);
-    final themeMode = switch (themePreference) {
-      AppThemePreference.light => ThemeMode.light,
-      AppThemePreference.dark => ThemeMode.dark,
-      AppThemePreference.green => ThemeMode.light,
-      AppThemePreference.women => ThemeMode.light,
-    };
+    final themeMode = themePreference == AppThemePreference.dark
+        ? ThemeMode.dark
+        : ThemeMode.light;
 
     return MaterialApp(
       title: 'Quran Hifz',
       debugShowCheckedModeBanner: false,
-      theme: appTheme(themePreference, language: language),
-      darkTheme: appTheme(AppThemePreference.dark, language: language),
+      theme: appTheme(
+        AppThemePreference.light,
+        accent: accentPreference,
+        language: language,
+      ),
+      darkTheme: appTheme(
+        AppThemePreference.dark,
+        accent: accentPreference,
+        language: language,
+      ),
       themeMode: themeMode,
       home: const AppOpeningSplash(
         child: QuranContentBootstrapGate(

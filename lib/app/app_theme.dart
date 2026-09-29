@@ -1,52 +1,52 @@
 import 'package:flutter/material.dart';
 
+import '../core/theme/app_accent_colors.dart';
 import '../core/theme/app_palette.dart';
 import '../core/theme/reference_colors.dart';
 import '../features/settings/domain/app_preferences.dart';
 
 ThemeData appTheme(
   AppThemePreference preference, {
+  AppAccentPreference? accent,
   AppLanguage language = AppLanguage.bangla,
 }) {
   final dark = preference == AppThemePreference.dark;
-  final seed = switch (preference) {
-    AppThemePreference.green => const Color(0xFF397A65),
-    AppThemePreference.women => const Color(0xFFA75E7B),
-    AppThemePreference.dark => const Color(0xFF55BBC2),
-    _ => ReferenceColors.appBlue,
-  };
+  final effectiveAccent =
+      accent ??
+      (dark ? AppAccentPreference.graphite : AppAccentPreference.sky);
+  final accentColors = appAccentColors(effectiveAccent);
   var scheme = ColorScheme.fromSeed(
-    seedColor: seed,
+    seedColor: accentColors.main,
     brightness: dark ? Brightness.dark : Brightness.light,
   );
-  if (!dark && preference == AppThemePreference.light) {
+  if (!dark) {
     scheme = scheme.copyWith(
-      primary: ReferenceColors.appBlue,
+      primary: accentColors.main,
       onPrimary: Colors.white,
-      primaryContainer: ReferenceColors.blueTint,
-      onPrimaryContainer: const Color(0xFF172126),
-      secondary: ReferenceColors.deepBlue,
+      primaryContainer: accentColors.softTint,
+      onPrimaryContainer: const Color(0xFF253533),
+      secondary: accentColors.strong,
       onSecondary: Colors.white,
-      secondaryContainer: ReferenceColors.blueTint,
-      onSecondaryContainer: const Color(0xFF172126),
-      tertiary: ReferenceColors.appBlue,
+      secondaryContainer: accentColors.softTint,
+      onSecondaryContainer: const Color(0xFF253533),
+      tertiary: accentColors.main,
       onTertiary: Colors.white,
-      tertiaryContainer: ReferenceColors.blueTint,
-      onTertiaryContainer: const Color(0xFF172126),
+      tertiaryContainer: accentColors.softTint,
+      onTertiaryContainer: const Color(0xFF253533),
       error: const Color(0xFFB94A52),
-      surface: ReferenceColors.warmCanvas,
-      onSurface: const Color(0xFF172126),
-      onSurfaceVariant: const Color(0xFF667178),
+      surface: const Color(0xFFF8FAFA),
+      onSurface: const Color(0xFF253533),
+      onSurfaceVariant: const Color(0xFF6B7775),
       surfaceContainerLowest: Colors.white,
-      surfaceContainerLow: ReferenceColors.cardSurface,
-      surfaceContainer: const Color(0xFFF2F1EC),
-      surfaceContainerHigh: const Color(0xFFECEAE4),
-      surfaceContainerHighest: const Color(0xFFE1DED5),
-      outline: const Color(0xFF8B9599),
-      outlineVariant: const Color(0xFFE6E8E8),
-      inverseSurface: const Color(0xFF172126),
+      surfaceContainerLow: Colors.white,
+      surfaceContainer: const Color(0xFFF3F6F5),
+      surfaceContainerHigh: const Color(0xFFEDF1F0),
+      surfaceContainerHighest: const Color(0xFFE6ECEA),
+      outline: const Color(0xFF9AA6A2),
+      outlineVariant: const Color(0xFFE2E8E6),
+      inverseSurface: const Color(0xFF253533),
       onInverseSurface: Colors.white,
-      inversePrimary: const Color(0xFF9CC4CF),
+      inversePrimary: accentColors.main,
     );
   }
 
@@ -77,20 +77,14 @@ ThemeData appTheme(
     colorScheme: scheme,
     extensions: [
       AppPalette(
-        readerAccent: scheme.primary,
-        accentPressed: preference == AppThemePreference.light
-            ? ReferenceColors.deepBlue
-            : scheme.secondary,
-        accentTint: scheme.primaryContainer,
+        readerAccent: accentColors.ayahHighlight,
+        accentPressed: accentColors.wordHighlight,
+        accentTint: accentColors.selectedSurface,
         cardSurface: scheme.surfaceContainerLow,
         secondaryText: scheme.onSurfaceVariant,
         subtleBorder: scheme.outlineVariant,
-        quranHeader: preference == AppThemePreference.light
-            ? ReferenceColors.quranCardBlue
-            : scheme.primary,
-        goldAccent: preference == AppThemePreference.light
-            ? ReferenceColors.goldAccent
-            : scheme.tertiary,
+        quranHeader: accentColors.strong,
+        goldAccent: ReferenceColors.goldAccent,
       ),
     ],
     brightness: scheme.brightness,

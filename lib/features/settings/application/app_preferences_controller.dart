@@ -28,8 +28,17 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
   @override
   Future<AppPreferences> build() => _repository.load();
 
-  Future<void> setTheme(AppThemePreference value) =>
-      _update((current) => current.copyWith(theme: value));
+  Future<void> setTheme(AppThemePreference value) => _update(
+    (current) => current.copyWith(
+      theme: value,
+      accent: value == AppThemePreference.dark
+          ? AppAccentPreference.graphite
+          : AppAccentPreference.sky,
+    ),
+  );
+
+  Future<void> setAccent(AppAccentPreference value) =>
+      _update((current) => current.copyWith(accent: value));
 
   Future<void> setLanguage(AppLanguage value) =>
       _update((current) => current.copyWith(language: value));
@@ -189,6 +198,11 @@ final themePreferenceProvider = Provider<AppThemePreference>((ref) {
       AppThemePreference.light;
 });
 
+final accentPreferenceProvider = Provider<AppAccentPreference>((ref) {
+  return ref.watch(appPreferencesControllerProvider).value?.accent ??
+      const AppPreferences.defaults().accent;
+});
+
 final tapToShowTranslationProvider = Provider<bool>(
   (ref) =>
       ref.watch(appPreferencesControllerProvider).value?.tapToShowTranslation ??
@@ -276,7 +290,10 @@ final hifzContinuousAutoScrollEnabledProvider = Provider<bool>((ref) {
 });
 
 final hifzAutoScrollSpeedProvider = Provider<double>((ref) {
-  return ref.watch(appPreferencesControllerProvider).value?.hifzAutoScrollSpeed ??
+  return ref
+          .watch(appPreferencesControllerProvider)
+          .value
+          ?.hifzAutoScrollSpeed ??
       const AppPreferences.defaults().hifzAutoScrollSpeed;
 });
 

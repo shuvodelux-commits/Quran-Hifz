@@ -1,9 +1,9 @@
 :root {
   --page-bg: #fff;
   --page-fg: #111;
-  --active-accent: #2563eb;
-  --active-word-accent: #f59e0b;
-  --range-accent: #16a34a;
+  --active-accent: #5aa3d6;
+  --active-word-accent: #2e6f9d;
+  --range-accent: #5aa3d6;
   --hifz-font-size: 32px;
   --hifz-line-height: 1.35;
 }

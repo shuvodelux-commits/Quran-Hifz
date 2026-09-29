@@ -24,16 +24,18 @@ abstract interface class MushafWebViewDriver {
     required bool showTajweedColors,
   });
 
+  Future<void> setPlaybackAccent({
+    required String ayahColor,
+    required String wordColor,
+  });
+
   Future<void> setActiveWord(
     String ayahKey,
     int wordPosition, {
     String? banglaMeaning,
   });
 
-  Future<void> setActiveAyah(
-    String ayahKey, {
-    bool deferFollowToWord = false,
-  });
+  Future<void> setActiveAyah(String ayahKey, {bool deferFollowToWord = false});
 
   Future<void> setRange(String? startAyahKey, String? endAyahKey);
 
@@ -156,10 +158,19 @@ class ControllerMushafWebViewDriver implements MushafWebViewDriver {
     required bool showTajweedColors,
   }) {
     _validateTypography(fontSize: fontSize, lineHeight: lineHeight);
-    return _runEncoded(
-      'setTypography',
-      <Object?>[fontSize, lineHeight, showTajweedColors],
-    );
+    return _runEncoded('setTypography', <Object?>[
+      fontSize,
+      lineHeight,
+      showTajweedColors,
+    ]);
+  }
+
+  @override
+  Future<void> setPlaybackAccent({
+    required String ayahColor,
+    required String wordColor,
+  }) {
+    return _runEncoded('setPlaybackAccent', <Object?>[ayahColor, wordColor]);
   }
 
   @override
@@ -168,21 +179,16 @@ class ControllerMushafWebViewDriver implements MushafWebViewDriver {
     int wordPosition, {
     String? banglaMeaning,
   }) {
-    return _runEncoded(
-      'setActiveWord',
-      <Object?>[ayahKey, wordPosition, banglaMeaning],
-    );
+    return _runEncoded('setActiveWord', <Object?>[
+      ayahKey,
+      wordPosition,
+      banglaMeaning,
+    ]);
   }
 
   @override
-  Future<void> setActiveAyah(
-    String ayahKey, {
-    bool deferFollowToWord = false,
-  }) {
-    return _runEncoded(
-      'setActiveAyah',
-      <Object?>[ayahKey, deferFollowToWord],
-    );
+  Future<void> setActiveAyah(String ayahKey, {bool deferFollowToWord = false}) {
+    return _runEncoded('setActiveAyah', <Object?>[ayahKey, deferFollowToWord]);
   }
 
   @override
@@ -200,6 +206,7 @@ class ControllerMushafWebViewDriver implements MushafWebViewDriver {
       'renderPage',
       'setPalette',
       'setTypography',
+      'setPlaybackAccent',
       'setActiveWord',
       'setActiveAyah',
       'setRange',

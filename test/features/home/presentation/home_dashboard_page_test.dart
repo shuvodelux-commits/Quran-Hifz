@@ -105,8 +105,8 @@ void main() {
     addTearDown(database.close);
     for (final preference in [
       AppThemePreference.light,
-      AppThemePreference.green,
-      AppThemePreference.women,
+      AppThemePreference.light,
+      AppThemePreference.light,
       AppThemePreference.dark,
     ]) {
       await tester.pumpWidget(

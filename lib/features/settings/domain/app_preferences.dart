@@ -5,7 +5,9 @@ import '../../hifz/domain/hifz_reader_mode.dart';
 
 export '../../quran/domain/quran_script.dart';
 
-enum AppThemePreference { light, green, dark, women }
+enum AppThemePreference { light, dark }
+
+enum AppAccentPreference { graphite, rose, mint, lavender, sky }
 
 enum AppLanguage { bangla, english }
 
@@ -27,6 +29,7 @@ class AppPreferences {
 
   const AppPreferences({
     required this.theme,
+    this.accent = AppAccentPreference.sky,
     required this.quranScript,
     required this.quranFont,
     required this.arabicFontSize,
@@ -57,6 +60,7 @@ class AppPreferences {
 
   const AppPreferences.defaults()
     : theme = AppThemePreference.light,
+      accent = AppAccentPreference.sky,
       quranScript = QuranScriptPreference.uthmaniMadani,
       quranFont = QuranFontPreference.defaultGlobal,
       arabicFontSize = 27,
@@ -85,6 +89,7 @@ class AppPreferences {
       prayerCityId = null;
 
   final AppThemePreference theme;
+  final AppAccentPreference accent;
   final QuranScriptPreference quranScript;
   final QuranFontPreference quranFont;
   final double arabicFontSize;
@@ -114,6 +119,7 @@ class AppPreferences {
 
   AppPreferences copyWith({
     AppThemePreference? theme,
+    AppAccentPreference? accent,
     QuranScriptPreference? quranScript,
     QuranFontPreference? quranFont,
     double? arabicFontSize,
@@ -151,6 +157,7 @@ class AppPreferences {
             : QuranFontPreference.qpcHafs);
     return AppPreferences(
       theme: theme ?? this.theme,
+      accent: accent ?? this.accent,
       quranScript: nextQuranFont.script,
       quranFont: nextQuranFont,
       arabicFontSize: arabicFontSize ?? this.arabicFontSize,
@@ -162,7 +169,8 @@ class AppPreferences {
           hifzShowTajweedColors ?? this.hifzShowTajweedColors,
       hifzReaderMode: hifzReaderMode ?? this.hifzReaderMode,
       hifzContinuousAutoScrollEnabled:
-          hifzContinuousAutoScrollEnabled ?? this.hifzContinuousAutoScrollEnabled,
+          hifzContinuousAutoScrollEnabled ??
+          this.hifzContinuousAutoScrollEnabled,
       hifzAutoScrollSpeed: hifzAutoScrollSpeed ?? this.hifzAutoScrollSpeed,
       banglaLineHeight: banglaLineHeight ?? this.banglaLineHeight,
       banglaFontSize: banglaFontSize ?? this.banglaFontSize,

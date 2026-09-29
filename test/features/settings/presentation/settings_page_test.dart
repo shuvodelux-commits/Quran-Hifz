@@ -11,7 +11,7 @@ import 'package:quran_hifz/features/settings/presentation/settings_page.dart';
 
 void main() {
   testWidgets(
-    'settings are grouped into clear sections with named color themes',
+    'settings separate appearance from ChatGPT-style accent color selection',
     (tester) async {
       final preferences = _MemoryPreferencesRepository()
         ..value = const AppPreferences.defaults().copyWith(
@@ -31,53 +31,46 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Appearance & Language'), findsOneWidget);
-      expect(find.text('Prayer & Location'), findsOneWidget);
       expect(
         find.byKey(const ValueKey('settings-language-card')),
         findsOneWidget,
       );
-      expect(find.byKey(const ValueKey('settings-theme-card')), findsOneWidget);
-      expect(find.byKey(const ValueKey('settings-asr-card')), findsOneWidget);
-      expect(find.text('Teal Blue'), findsOneWidget);
-      expect(find.text('Sea Green'), findsOneWidget);
-      expect(find.text('Turquoise Dark'), findsOneWidget);
-      expect(find.text('Mauve Rose'), findsOneWidget);
       expect(
-        find.byType(DropdownButtonFormField<AppThemePreference>),
-        findsNothing,
+        find.byKey(const ValueKey('settings-appearance-card')),
+        findsOneWidget,
       );
+      expect(
+        find.byKey(const ValueKey('settings-accent-card')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('accent-color-row')), findsOneWidget);
+      expect(find.text('Teal Blue'), findsNothing);
+      expect(find.text('Sea Green'), findsNothing);
+      expect(find.text('Turquoise Dark'), findsNothing);
+      expect(find.text('Mauve Rose'), findsNothing);
 
-      await tester.tap(find.text('Sea Green'));
+      await tester.tap(find.byKey(const ValueKey('accent-color-row')));
       await tester.pumpAndSettle();
-      expect(preferences.value.theme, AppThemePreference.green);
 
-      await tester.drag(find.byType(ListView), const Offset(0, -320));
+      for (final label in ['Graphite', 'Rose', 'Mint', 'Lavender', 'Sky']) {
+        expect(find.text(label), findsWidgets);
+      }
+
+      await tester.tap(find.byKey(const ValueKey('accent-choice-mint')));
+      await tester.pumpAndSettle();
+      expect(preferences.value.accent, AppAccentPreference.mint);
+
+      await tester.tap(find.text('Dark'));
+      await tester.pumpAndSettle();
+      expect(preferences.value.theme, AppThemePreference.dark);
+      expect(preferences.value.accent, AppAccentPreference.graphite);
+
+      await tester.drag(find.byType(ListView), const Offset(0, -420));
       await tester.pumpAndSettle();
       expect(
         find.byKey(const ValueKey('settings-location-card')),
         findsOneWidget,
       );
-
-      await tester.scrollUntilVisible(
-        find.text('Quran Reading'),
-        250,
-        scrollable: find.byType(Scrollable).first,
-      );
-      expect(find.text('Quran Reading'), findsOneWidget);
-
-      await tester.scrollUntilVisible(
-        find.text('Text & Reading Layout'),
-        250,
-        scrollable: find.byType(Scrollable).first,
-      );
-      expect(find.text('Text & Reading Layout'), findsOneWidget);
-
-      await tester.scrollUntilVisible(
-        find.text('Audio & Recitation'),
-        250,
-        scrollable: find.byType(Scrollable).first,
-      );
-      expect(find.text('Audio & Recitation'), findsOneWidget);
     },
   );
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/localization/app_locale_text.dart';
+import '../../../core/theme/app_accent_colors.dart';
 import '../../home/data/bangladesh_cities.dart';
 import '../../home/presentation/prayer_location_page.dart';
 import '../../quran/application/quran_providers.dart';
@@ -49,8 +50,8 @@ class SettingsPage extends ConsumerWidget {
               ),
               subtitle: appText(
                 value.language,
-                'ভাষা ও UI রং বেছে নিন',
-                'Choose app language and UI color',
+                'ভাষা, অ্যাপের রূপ ও অ্যাকসেন্ট রং বেছে নিন',
+                'Choose language, appearance, and accent color',
               ),
             ),
             const SizedBox(height: 8),
@@ -86,19 +87,53 @@ class SettingsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             _SettingsCard(
-              key: const ValueKey('settings-theme-card'),
+              key: const ValueKey('settings-appearance-card'),
               children: [
                 Text(
-                  appText(value.language, 'UI রং', 'UI color'),
+                  appText(value.language, 'অ্যাপের রূপ', 'Appearance'),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
-                _ThemePicker(
-                  language: value.language,
-                  selected: value.theme,
-                  onSelected: (theme) => ref
+                SegmentedButton<AppThemePreference>(
+                  segments: [
+                    ButtonSegment(
+                      value: AppThemePreference.light,
+                      icon: const Icon(Icons.light_mode_outlined),
+                      label: Text(appText(value.language, 'লাইট', 'Light')),
+                    ),
+                    ButtonSegment(
+                      value: AppThemePreference.dark,
+                      icon: const Icon(Icons.dark_mode_outlined),
+                      label: Text(appText(value.language, 'ডার্ক', 'Dark')),
+                    ),
+                  ],
+                  selected: {value.theme},
+                  showSelectedIcon: false,
+                  onSelectionChanged: (selection) => ref
                       .read(appPreferencesControllerProvider.notifier)
-                      .setTheme(theme),
+                      .setTheme(selection.single),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _SettingsCard(
+              key: const ValueKey('settings-accent-card'),
+              children: [
+                ListTile(
+                  key: const ValueKey('accent-color-row'),
+                  contentPadding: EdgeInsets.zero,
+                  leading: _AccentDot(accent: value.accent, size: 22),
+                  title: Text(
+                    appText(value.language, 'অ্যাকসেন্ট রং', 'Accent color'),
+                  ),
+                  subtitle: Text(_accentLabel(value.accent, value.language)),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => _showAccentColorSheet(
+                    context,
+                    ref,
+                    value.language,
+                    value.accent,
+                  ),
                 ),
               ],
             ),
@@ -652,52 +687,98 @@ class _SettingsSectionHeader extends StatelessWidget {
   }
 }
 
-class _ThemePicker extends StatelessWidget {
-  const _ThemePicker({
-    required this.language,
-    required this.selected,
-    required this.onSelected,
-  });
+class _AccentDot extends StatelessWidget {
+  const _AccentDot({required this.accent, this.size = 28});
 
-  final AppLanguage language;
-  final AppThemePreference selected;
-  final ValueChanged<AppThemePreference> onSelected;
+  final AppAccentPreference accent;
+  final double size;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      const gap = 8.0;
-      final width = (constraints.maxWidth - gap) / 2;
-      return Wrap(
-        spacing: gap,
-        runSpacing: gap,
-        children: [
-          for (final theme in AppThemePreference.values)
-            SizedBox(
-              width: width,
-              child: _ThemeChoice(
-                label: _themeLabel(theme, language),
-                swatch: _themeSwatch(theme),
-                selected: theme == selected,
-                onTap: () => onSelected(theme),
-              ),
+  Widget build(BuildContext context) {
+    final color = _accentSwatch(accent);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Theme.of(
+            context,
+          ).colorScheme.onSurface.withValues(alpha: 0.10),
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _showAccentColorSheet(
+  BuildContext context,
+  WidgetRef ref,
+  AppLanguage language,
+  AppAccentPreference selected,
+) {
+  return showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (sheetContext) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              appText(language, 'অ্যাকসেন্ট রং', 'Accent color'),
+              style: Theme.of(sheetContext).textTheme.titleLarge,
             ),
-        ],
-      );
-    },
+            const SizedBox(height: 6),
+            Text(
+              appText(
+                language,
+                'নির্বাচিত রং বাটন, ট্যাব, হাইলাইট ও সক্রিয় অবস্থায় ব্যবহার হবে।',
+                'The selected color is used for buttons, tabs, highlights, and active states.',
+              ),
+              style: Theme.of(sheetContext).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 18),
+            Wrap(
+              spacing: 14,
+              runSpacing: 18,
+              children: [
+                for (final accent in AppAccentPreference.values)
+                  _AccentChoice(
+                    accent: accent,
+                    language: language,
+                    selected: accent == selected,
+                    onTap: () async {
+                      await ref
+                          .read(appPreferencesControllerProvider.notifier)
+                          .setAccent(accent);
+                      if (sheetContext.mounted) {
+                        Navigator.of(sheetContext).pop();
+                      }
+                    },
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
   );
 }
 
-class _ThemeChoice extends StatelessWidget {
-  const _ThemeChoice({
-    required this.label,
-    required this.swatch,
+class _AccentChoice extends StatelessWidget {
+  const _AccentChoice({
+    required this.accent,
+    required this.language,
     required this.selected,
     required this.onTap,
   });
 
-  final String label;
-  final Color swatch;
+  final AppAccentPreference accent;
+  final AppLanguage language;
   final bool selected;
   final VoidCallback onTap;
 
@@ -707,59 +788,45 @@ class _ThemeChoice extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: label,
-      child: Material(
-        color: selected
-            ? colors.primaryContainer.withValues(alpha: 0.45)
-            : colors.surfaceContainer,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 58),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: selected ? colors.primary : colors.outlineVariant,
-                width: selected ? 1.5 : 1,
+      label: _accentLabel(accent, language),
+      child: InkWell(
+        key: ValueKey('accent-choice-${accent.name}'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: SizedBox(
+          width: 76,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: _accentSwatch(accent),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: selected ? colors.onSurface : colors.outlineVariant,
+                    width: selected ? 2.5 : 1,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: selected
+                    ? const Icon(
+                        Icons.check_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      )
+                    : null,
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    color: swatch,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: colors.onSurface.withValues(alpha: 0.12),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    label,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
-                    ),
-                  ),
-                ),
-                if (selected) ...[
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.check_circle_rounded,
-                    size: 16,
-                    color: colors.primary,
-                  ),
-                ],
-              ],
-            ),
+              const SizedBox(height: 7),
+              Text(
+                _accentLabel(accent, language),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+            ],
           ),
         ),
       ),
@@ -767,24 +834,20 @@ class _ThemeChoice extends StatelessWidget {
   }
 }
 
-String _themeLabel(AppThemePreference theme, AppLanguage language) =>
-    switch (theme) {
-      AppThemePreference.light =>
-        language == AppLanguage.bangla ? 'টিল ব্লু' : 'Teal Blue',
-      AppThemePreference.green =>
-        language == AppLanguage.bangla ? 'সি গ্রিন' : 'Sea Green',
-      AppThemePreference.dark =>
-        language == AppLanguage.bangla ? 'টারকোয়েজ ডার্ক' : 'Turquoise Dark',
-      AppThemePreference.women =>
-        language == AppLanguage.bangla ? 'মভ রোজ' : 'Mauve Rose',
-    };
-
-Color _themeSwatch(AppThemePreference theme) => switch (theme) {
-  AppThemePreference.light => const Color(0xFF27687E),
-  AppThemePreference.green => const Color(0xFF397A65),
-  AppThemePreference.dark => const Color(0xFF55BBC2),
-  AppThemePreference.women => const Color(0xFFA75E7B),
+String _accentLabel(
+  AppAccentPreference accent,
+  AppLanguage language,
+) => switch (accent) {
+  AppAccentPreference.graphite =>
+    language == AppLanguage.bangla ? 'গ্রাফাইট' : 'Graphite',
+  AppAccentPreference.rose => language == AppLanguage.bangla ? 'রোজ' : 'Rose',
+  AppAccentPreference.mint => language == AppLanguage.bangla ? 'মিন্ট' : 'Mint',
+  AppAccentPreference.lavender =>
+    language == AppLanguage.bangla ? 'ল্যাভেন্ডার' : 'Lavender',
+  AppAccentPreference.sky => language == AppLanguage.bangla ? 'স্কাই' : 'Sky',
 };
+
+Color _accentSwatch(AppAccentPreference accent) => appAccentColors(accent).main;
 
 class _PlaybackChoiceGroup<T> extends StatelessWidget {
   const _PlaybackChoiceGroup({

@@ -9,17 +9,11 @@ abstract final class QuranReadingColors {
   ///
   /// Both sentence playback and tap-to-play word audio use this same word-only
   /// emphasis. The surrounding ayah remains unchanged.
-  static const activeWord = Color(0xFF087EAB);
+  static const activeWord = Color(0xFF2E6F9D);
 
   static Color activeWordFor(BuildContext context) {
-    final accent = Theme.of(context).extension<AppPalette>()?.readerAccent;
-    if (accent == null) return activeWord;
-
-    final hsv = HSVColor.fromColor(accent);
-    return hsv
-        .withSaturation((hsv.saturation + 0.18).clamp(0.0, 1.0).toDouble())
-        .withValue((hsv.value + 0.18).clamp(0.0, 1.0).toDouble())
-        .toColor();
+    return Theme.of(context).extension<AppPalette>()?.accentPressed ??
+        activeWord;
   }
 
   /// Classic Tajweed palette for the Quran Foundation embedded rule classes.

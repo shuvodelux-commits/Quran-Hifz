@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/theme/app_palette.dart';
 import '../../domain/quran_mushaf_page.dart';
 import '../../domain/quran_mushaf_palette.dart';
 import '../../domain/quran_mushaf_line.dart';
@@ -108,6 +109,8 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
   int _rendererFailures = 0;
   bool _rendererFallback = false;
   bool _pageReady = false;
+  Color _playbackAyahAccent = const Color(0xFF5AA3D6);
+  Color _playbackWordAccent = const Color(0xFF2E6F9D);
 
   QuranStrictMushafFontLoader get _fontLoader =>
       widget.fontLoader ?? loadQuranStrictMushafFonts;
@@ -119,6 +122,23 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
   void initState() {
     super.initState();
     _fonts = _loadFonts();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final palette = Theme.of(context).extension<AppPalette>();
+    final nextAyah = palette?.readerAccent ?? const Color(0xFF5AA3D6);
+    final nextWord = palette?.accentPressed ?? const Color(0xFF2E6F9D);
+    if (nextAyah == _playbackAyahAccent && nextWord == _playbackWordAccent) {
+      return;
+    }
+    _playbackAyahAccent = nextAyah;
+    _playbackWordAccent = nextWord;
+    final driver = _driver;
+    if (driver != null) {
+      unawaited(_syncPlaybackAccent(driver));
+    }
   }
 
   @override
@@ -218,6 +238,7 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
     QuranStrictMushafFonts fonts,
   ) async {
     try {
+      await _syncPlaybackAccent(driver);
       await driver.renderPage(
         MushafRenderPayload(
           page: widget.page,
@@ -238,6 +259,13 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
       _handleDiagnostic(error);
       _recoverRenderer();
     }
+  }
+
+  Future<void> _syncPlaybackAccent(MushafWebViewDriver driver) {
+    return driver.setPlaybackAccent(
+      ayahColor: _cssHex(_playbackAyahAccent),
+      wordColor: _cssHex(_playbackWordAccent),
+    );
   }
 
   Future<void> _syncHighlights(MushafWebViewDriver driver) async {
@@ -536,6 +564,9 @@ class _UnicodeQuranFallback extends StatelessWidget {
     return Column(mainAxisSize: MainAxisSize.min, children: children);
   }
 }
+
+String _cssHex(Color color) =>
+    '#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
 
 Future<QuranStrictMushafFonts> loadQuranStrictMushafFonts(
   Uri pageFontUri,

@@ -9,6 +9,7 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
   UserDatabaseAppPreferencesRepository(this._database);
 
   static const themeKey = 'theme_mode';
+  static const accentKey = 'accent_color_v1';
   static const quranScriptKey = 'quran_script';
   static const quranFontKey = 'quran_font';
   static const arabicFontSizeKey = 'arabic_font_size';
@@ -72,15 +73,18 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       _database.getSetting(hifzReaderModeKey),
       _database.getSetting(hifzContinuousAutoScrollKey),
       _database.getSetting(hifzAutoScrollSpeedKey),
+      _database.getSetting(accentKey),
     ]);
 
-    final theme = switch (values[0]) {
-      'light' => AppThemePreference.light,
-      'dark' => AppThemePreference.dark,
-      'green' => AppThemePreference.green,
-      'women' => AppThemePreference.women,
-      _ => defaults.theme,
-    };
+    final theme = values[0] == 'dark'
+        ? AppThemePreference.dark
+        : AppThemePreference.light;
+    final accent = _accentFromName(values[27], switch (values[0]) {
+      'green' => AppAccentPreference.mint,
+      'women' => AppAccentPreference.rose,
+      'dark' => AppAccentPreference.graphite,
+      _ => AppAccentPreference.sky,
+    });
     final legacyQuranScript = switch (values[1]) {
       'indoPak' => QuranScriptPreference.indoPak,
       'uthmaniMadani' => QuranScriptPreference.uthmaniMadani,
@@ -107,6 +111,7 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
 
     return AppPreferences(
       theme: theme,
+      accent: accent,
       quranScript: quranFont.script,
       quranFont: quranFont,
       arabicFontSize: fontSize != null && fontSize >= 20 && fontSize <= 56
@@ -150,8 +155,7 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
         values[25],
         defaults.hifzContinuousAutoScrollEnabled,
       ),
-      hifzAutoScrollSpeed:
-          _isFiniteInRange(hifzAutoScrollSpeed, 0, 1)
+      hifzAutoScrollSpeed: _isFiniteInRange(hifzAutoScrollSpeed, 0, 1)
           ? hifzAutoScrollSpeed!
           : defaults.hifzAutoScrollSpeed,
       banglaLineHeight:
@@ -211,6 +215,7 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
   Future<void> save(AppPreferences preferences) async {
     await _database.transaction(() async {
       await _database.saveSetting(themeKey, preferences.theme.name);
+      await _database.saveSetting(accentKey, preferences.accent.name);
       await _database.saveSetting(
         quranScriptKey,
         preferences.quranFont.script.name,
@@ -332,10 +337,17 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
     return fallback;
   }
 
-  HifzReaderMode _hifzReaderModeFromName(
+  AppAccentPreference _accentFromName(
     String? raw,
-    HifzReaderMode fallback,
+    AppAccentPreference fallback,
   ) {
+    for (final accent in AppAccentPreference.values) {
+      if (accent.name == raw) return accent;
+    }
+    return fallback;
+  }
+
+  HifzReaderMode _hifzReaderModeFromName(String? raw, HifzReaderMode fallback) {
     for (final mode in HifzReaderMode.values) {
       if (mode.name == raw) return mode;
     }

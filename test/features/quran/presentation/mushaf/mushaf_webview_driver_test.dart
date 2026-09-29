@@ -27,27 +27,29 @@ void main() {
     driver = ControllerMushafWebViewDriver(controller);
   });
 
+  test(
+    'renderer readiness ignores about:blank and fires once for renderer asset',
+    () {
+      final gate = MushafWebViewLoadGate();
 
-  test('renderer readiness ignores about:blank and fires once for renderer asset', () {
-    final gate = MushafWebViewLoadGate();
+      expect(gate.onPageFinished('about:blank'), isFalse);
 
-    expect(gate.onPageFinished('about:blank'), isFalse);
-
-    gate.markRendererLoadRequested();
-    expect(gate.onPageFinished('about:blank'), isFalse);
-    expect(
-      gate.onPageFinished(
-        'file:///android_asset/flutter_assets/assets/mushaf/renderer/index.html',
-      ),
-      isTrue,
-    );
-    expect(
-      gate.onPageFinished(
-        'file:///android_asset/flutter_assets/assets/mushaf/renderer/index.html',
-      ),
-      isFalse,
-    );
-  });
+      gate.markRendererLoadRequested();
+      expect(gate.onPageFinished('about:blank'), isFalse);
+      expect(
+        gate.onPageFinished(
+          'file:///android_asset/flutter_assets/assets/mushaf/renderer/index.html',
+        ),
+        isTrue,
+      );
+      expect(
+        gate.onPageFinished(
+          'file:///android_asset/flutter_assets/assets/mushaf/renderer/index.html',
+        ),
+        isFalse,
+      );
+    },
+  );
 
   test('loadRenderer loads only the bundled renderer asset', () async {
     await driver.loadRenderer();
@@ -95,19 +97,21 @@ void main() {
     expect(v2['pageFontFamily'], isNot(v4['pageFontFamily']));
   });
 
+  test(
+    'continuous Mushaf payload preserves typography and opts into natural height',
+    () {
+      final payload = _fixture(
+        display: 'A',
+        fontSize: 48,
+        lineHeight: 1.8,
+        continuousLayout: true,
+      ).toRendererJson();
 
-  test('continuous Mushaf payload preserves typography and opts into natural height', () {
-    final payload = _fixture(
-      display: 'A',
-      fontSize: 48,
-      lineHeight: 1.8,
-      continuousLayout: true,
-    ).toRendererJson();
-
-    expect(payload['fontSize'], 48);
-    expect(payload['lineHeight'], 1.8);
-    expect(payload['continuousLayout'], isTrue);
-  });
+      expect(payload['fontSize'], 48);
+      expect(payload['lineHeight'], 1.8);
+      expect(payload['continuousLayout'], isTrue);
+    },
+  );
 
   test('ayah end carries Unicode Hafs fallback text', () {
     final payload = MushafRenderPayload(
@@ -160,7 +164,21 @@ void main() {
     );
 
     expect(controller.lastScript, contains('setTypography'));
-    expect(_decodeFirstArgumentList(controller.lastScript!), [48.0, 1.8, false]);
+    expect(_decodeFirstArgumentList(controller.lastScript!), [
+      48.0,
+      1.8,
+      false,
+    ]);
+  });
+
+  test('setPlaybackAccent forwards exact accent colors', () async {
+    await driver.setPlaybackAccent(ayahColor: '#54b89b', wordColor: '#2e806b');
+
+    expect(controller.lastScript, contains('setPlaybackAccent'));
+    expect(_decodeFirstArgumentList(controller.lastScript!), [
+      '#54b89b',
+      '#2e806b',
+    ]);
   });
 
   test(
@@ -174,28 +192,19 @@ void main() {
 
       final js = controller.lastScript!;
       expect(js, isNot(contains('window.evil=true')));
-      expect(
-        _decodeFirstArgumentList(js),
-        [
-          "2:255');window.evil=true;//",
-          3,
-          "আল্লাহ');window.evil=true;//",
-        ],
-      );
+      expect(_decodeFirstArgumentList(js), [
+        "2:255');window.evil=true;//",
+        3,
+        "আল্লাহ');window.evil=true;//",
+      ]);
     },
   );
 
   test('active ayah can defer viewport follow to the active word', () async {
-    await driver.setActiveAyah(
-      '2:255',
-      deferFollowToWord: true,
-    );
+    await driver.setActiveAyah('2:255', deferFollowToWord: true);
 
     expect(controller.lastScript, contains('setActiveAyah'));
-    expect(
-      _decodeFirstArgumentList(controller.lastScript!),
-      ['2:255', true],
-    );
+    expect(_decodeFirstArgumentList(controller.lastScript!), ['2:255', true]);
   });
 
   test('ignores unknown bridge events without state callbacks', () {

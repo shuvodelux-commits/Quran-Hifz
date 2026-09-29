@@ -32,6 +32,34 @@ void main() {
     return container;
   }
 
+  test(
+    'appearance defaults accent to Sky for light and Graphite for dark',
+    () async {
+      final repository = _MemoryRepository();
+      final container = containerFor(repository);
+      await container.read(appPreferencesControllerProvider.future);
+      final controller = container.read(
+        appPreferencesControllerProvider.notifier,
+      );
+
+      await controller.setAccent(AppAccentPreference.rose);
+      expect(
+        container.read(appPreferencesControllerProvider).value!.accent,
+        AppAccentPreference.rose,
+      );
+
+      await controller.setTheme(AppThemePreference.dark);
+      var state = container.read(appPreferencesControllerProvider).value!;
+      expect(state.theme, AppThemePreference.dark);
+      expect(state.accent, AppAccentPreference.graphite);
+
+      await controller.setTheme(AppThemePreference.light);
+      state = container.read(appPreferencesControllerProvider).value!;
+      expect(state.theme, AppThemePreference.light);
+      expect(state.accent, AppAccentPreference.sky);
+    },
+  );
+
   test('changing Tajweed preference preserves Quran typography', () async {
     final repository = _MemoryRepository();
     final container = containerFor(repository);
@@ -116,32 +144,35 @@ void main() {
     expect(state.defaultPlaybackSpeed, 1.0);
   });
 
-  test('Hifz appearance updates never mutate normal Quran typography', () async {
-    final repository = _MemoryRepository();
-    final container = containerFor(repository);
-    await container.read(appPreferencesControllerProvider.future);
-    final controller = container.read(
-      appPreferencesControllerProvider.notifier,
-    );
+  test(
+    'Hifz appearance updates never mutate normal Quran typography',
+    () async {
+      final repository = _MemoryRepository();
+      final container = containerFor(repository);
+      await container.read(appPreferencesControllerProvider.future);
+      final controller = container.read(
+        appPreferencesControllerProvider.notifier,
+      );
 
-    await controller.setHifzMushafVariant(QuranMushafVariant.qcfV2);
-    await controller.setHifzFontSize(48);
-    await controller.setHifzLineHeight(1.8);
-    await controller.setHifzShowTajweedColors(false);
+      await controller.setHifzMushafVariant(QuranMushafVariant.qcfV2);
+      await controller.setHifzFontSize(48);
+      await controller.setHifzLineHeight(1.8);
+      await controller.setHifzShowTajweedColors(false);
 
-    final state = container.read(appPreferencesControllerProvider).value!;
-    expect(state.quranFont, QuranFontPreference.qpcHafs);
-    expect(state.hifzMushafVariant, QuranMushafVariant.qcfV2);
-    expect(state.hifzFontSize, 48);
-    expect(state.hifzLineHeight, 1.8);
-    expect(state.hifzShowTajweedColors, isFalse);
+      final state = container.read(appPreferencesControllerProvider).value!;
+      expect(state.quranFont, QuranFontPreference.qpcHafs);
+      expect(state.hifzMushafVariant, QuranMushafVariant.qcfV2);
+      expect(state.hifzFontSize, 48);
+      expect(state.hifzLineHeight, 1.8);
+      expect(state.hifzShowTajweedColors, isFalse);
 
-    await controller.setQuranFont(QuranFontPreference.indoPak);
-    final changed = container.read(appPreferencesControllerProvider).value!;
-    expect(changed.quranFont, QuranFontPreference.indoPak);
-    expect(changed.hifzMushafVariant, QuranMushafVariant.qcfV2);
-    expect(changed.hifzFontSize, 48);
-  });
+      await controller.setQuranFont(QuranFontPreference.indoPak);
+      final changed = container.read(appPreferencesControllerProvider).value!;
+      expect(changed.quranFont, QuranFontPreference.indoPak);
+      expect(changed.hifzMushafVariant, QuranMushafVariant.qcfV2);
+      expect(changed.hifzFontSize, 48);
+    },
+  );
 
   test('rejects invalid Hifz typography ranges', () async {
     final repository = _MemoryRepository();
@@ -156,7 +187,6 @@ void main() {
     expect(() => controller.setHifzLineHeight(1.19), throwsArgumentError);
     expect(() => controller.setHifzLineHeight(2.41), throwsArgumentError);
   });
-
 
   test('Hifz reader behavior preferences update independently', () async {
     final repository = _MemoryRepository();
@@ -186,7 +216,10 @@ void main() {
       appPreferencesControllerProvider.notifier,
     );
 
-    expect(() => controller.setHifzAutoScrollSpeed(double.nan), throwsArgumentError);
+    expect(
+      () => controller.setHifzAutoScrollSpeed(double.nan),
+      throwsArgumentError,
+    );
     expect(() => controller.setHifzAutoScrollSpeed(-0.01), throwsArgumentError);
     expect(() => controller.setHifzAutoScrollSpeed(1.01), throwsArgumentError);
   });

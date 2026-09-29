@@ -15,7 +15,8 @@ void main() {
 
     await repository.save(
       const AppPreferences.defaults().copyWith(
-        theme: AppThemePreference.green,
+        theme: AppThemePreference.dark,
+        accent: AppAccentPreference.lavender,
         quranFont: QuranFontPreference.qpcHafs,
         arabicFontSize: 34,
         arabicLineHeight: 1.7,
@@ -44,7 +45,8 @@ void main() {
     );
 
     final restored = await repository.load();
-    expect(restored.theme, AppThemePreference.green);
+    expect(restored.theme, AppThemePreference.dark);
+    expect(restored.accent, AppAccentPreference.lavender);
     expect(restored.quranFont, QuranFontPreference.qpcHafs);
     expect(restored.quranScript, QuranScriptPreference.uthmaniMadani);
     expect(restored.arabicFontSize, 34);
@@ -70,6 +72,27 @@ void main() {
     expect(restored.hifzReaderMode, HifzReaderMode.continuous);
     expect(restored.hifzContinuousAutoScrollEnabled, isTrue);
     expect(restored.hifzAutoScrollSpeed, 0.173);
+  });
+
+  test('legacy theme names migrate to appearance and accent', () async {
+    for (final entry in <String, (AppThemePreference, AppAccentPreference)>{
+      'light': (AppThemePreference.light, AppAccentPreference.sky),
+      'green': (AppThemePreference.light, AppAccentPreference.mint),
+      'women': (AppThemePreference.light, AppAccentPreference.rose),
+      'dark': (AppThemePreference.dark, AppAccentPreference.graphite),
+    }.entries) {
+      final database = UserDatabase.forTesting(NativeDatabase.memory());
+      final repository = UserDatabaseAppPreferencesRepository(database);
+      await database.saveSetting(
+        UserDatabaseAppPreferencesRepository.themeKey,
+        entry.key,
+      );
+
+      final restored = await repository.load();
+      expect(restored.theme, entry.value.$1, reason: entry.key);
+      expect(restored.accent, entry.value.$2, reason: entry.key);
+      await database.close();
+    }
   });
 
   test('unknown Quran font falls back safely', () async {
@@ -141,24 +164,27 @@ void main() {
     expect(restored.prayerCityId, isNull);
   });
 
-  test('legacy global QCF font normalizes without overriding Hifz skin', () async {
-    final database = UserDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(database.close);
-    final repository = UserDatabaseAppPreferencesRepository(database);
+  test(
+    'legacy global QCF font normalizes without overriding Hifz skin',
+    () async {
+      final database = UserDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(database.close);
+      final repository = UserDatabaseAppPreferencesRepository(database);
 
-    await database.saveSetting(
-      UserDatabaseAppPreferencesRepository.quranFontKey,
-      'qcfV2',
-    );
-    await database.saveSetting(
-      UserDatabaseAppPreferencesRepository.hifzMushafVariantKey,
-      QuranMushafVariant.qcfV4Tajweed.name,
-    );
+      await database.saveSetting(
+        UserDatabaseAppPreferencesRepository.quranFontKey,
+        'qcfV2',
+      );
+      await database.saveSetting(
+        UserDatabaseAppPreferencesRepository.hifzMushafVariantKey,
+        QuranMushafVariant.qcfV4Tajweed.name,
+      );
 
-    final restored = await repository.load();
-    expect(restored.quranFont, QuranFontPreference.qpcHafs);
-    expect(restored.hifzMushafVariant, QuranMushafVariant.qcfV4Tajweed);
-  });
+      final restored = await repository.load();
+      expect(restored.quranFont, QuranFontPreference.qpcHafs);
+      expect(restored.hifzMushafVariant, QuranMushafVariant.qcfV4Tajweed);
+    },
+  );
 
   test('malformed Hifz appearance falls back to safe defaults', () async {
     final database = UserDatabase.forTesting(NativeDatabase.memory());
@@ -212,5 +238,4 @@ void main() {
     );
     expect(restored.hifzAutoScrollSpeed, 0.35);
   });
-
 }

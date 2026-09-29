@@ -86,14 +86,14 @@ void main() {
 
   testWidgets('source metadata uses theme variant text color', (tester) async {
     final theme = appTheme(
-      AppThemePreference.green,
+      AppThemePreference.light,
       language: AppLanguage.english,
     );
     await _pump(
       tester,
       AppLanguage.english,
       _hadithDua,
-      theme: AppThemePreference.green,
+      theme: AppThemePreference.light,
     );
 
     final metadata = tester.widget<Text>(

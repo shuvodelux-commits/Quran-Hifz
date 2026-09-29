@@ -59,7 +59,7 @@ void main() {
     final today = DateTime(now.year, now.month, now.day);
     final schedule = _scheduleFor(today);
     final theme = appTheme(
-      AppThemePreference.green,
+      AppThemePreference.light,
       language: AppLanguage.english,
     );
 

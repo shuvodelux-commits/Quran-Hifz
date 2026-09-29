@@ -16,13 +16,14 @@ import 'package:quran_hifz/features/settings/application/app_preferences_control
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences_repository.dart';
 import 'package:quran_hifz/app/app_theme.dart';
+import 'package:quran_hifz/core/theme/app_accent_colors.dart';
 
 void main() {
-  for (final preference in AppThemePreference.values) {
+  for (final accent in AppAccentPreference.values) {
     testWidgets(
-      'active word highlight is a brighter matching ${preference.name} accent',
+      'active word highlight follows the ${accent.name} strong accent',
       (tester) async {
-        final theme = appTheme(preference);
+        final theme = appTheme(AppThemePreference.light, accent: accent);
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
@@ -43,23 +44,11 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final activeColor =
-            DefaultTextStyle.of(
-              tester.element(find.text('اللَّه')),
-            ).style.color!;
-        final baseColor = theme.colorScheme.primary;
-        final activeHsv = HSVColor.fromColor(activeColor);
-        final baseHsv = HSVColor.fromColor(baseColor);
+        final activeColor = DefaultTextStyle.of(
+          tester.element(find.text('اللَّه')),
+        ).style.color!;
 
-        expect(activeColor, isNot(baseColor));
-        expect((activeHsv.hue - baseHsv.hue).abs(), lessThan(1));
-        expect(activeHsv.value, greaterThanOrEqualTo(baseHsv.value));
-        expect(activeHsv.saturation, greaterThanOrEqualTo(baseHsv.saturation));
-        expect(
-          activeHsv.value > baseHsv.value ||
-              activeHsv.saturation > baseHsv.saturation,
-          isTrue,
-        );
+        expect(activeColor, appAccentColors(accent).wordHighlight);
       },
     );
   }

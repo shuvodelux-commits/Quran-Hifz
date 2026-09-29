@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_hifz/app/app_theme.dart';
+import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_page.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_palette.dart';
 import 'package:quran_hifz/features/quran/domain/quran_ayah.dart';
@@ -13,17 +15,17 @@ import 'package:quran_hifz/features/quran/presentation/widgets/bismillah_v4_glyp
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_variant.dart';
 
 void main() {
-
-  testWidgets('surface ignores stale renderer events after generation changes', (
+  testWidgets('surface forwards selected app accent to renderer', (
     tester,
   ) async {
-    final metricEvents = <MushafPageMetricsEvent>[];
-    ValueChanged<MushafRendererEvent>? firstEventSink;
-    ValueChanged<MushafRendererEvent>? latestEventSink;
-    ValueChanged<MushafWebViewDriver>? latestDriverReady;
+    ValueChanged<MushafWebViewDriver>? driverReady;
 
-    Widget buildSurface(int generation) {
-      return MaterialApp(
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: appTheme(
+          AppThemePreference.light,
+          accent: AppAccentPreference.mint,
+        ),
         home: QuranStrictMushafSurface(
           page: const QcfMushafPage(
             page: 2,
@@ -31,7 +33,7 @@ void main() {
             lines: [],
           ),
           palette: QuranMushafPalette.light,
-          generation: generation,
+          generation: 1,
           fontSize: 32,
           lineHeight: 1.35,
           showTajweedColors: true,
@@ -43,62 +45,110 @@ void main() {
             endMarkerFontBytes: [4],
           ),
           webViewBuilder: (key, onEvent, onDriverReady, onDiagnostic) {
-            firstEventSink ??= onEvent;
-            latestEventSink = onEvent;
-            latestDriverReady = onDriverReady;
+            driverReady = onDriverReady;
             return SizedBox(key: key);
           },
-          onPageMetrics: metricEvents.add,
           onRetry: () {},
           onWordTap: (_, __) {},
           onWordLongPress: (_, __) {},
           onAyahTap: (_) {},
         ),
-      );
-    }
-
-    await tester.pumpWidget(buildSurface(7));
+      ),
+    );
     await tester.pump();
     await tester.pump();
 
     final driver = _RecordingMushafDriver();
-    latestDriverReady!(driver);
-    await tester.pump();
-    expect(driver.renderedGenerations, [7]);
-
-    firstEventSink!(
-      const MushafPageMetricsEvent(
-        page: 2,
-        generation: 7,
-        contentHeight: 700,
-      ),
-    );
-    expect(metricEvents, hasLength(1));
-
-    await tester.pumpWidget(buildSurface(8));
-    await tester.pump();
+    driverReady!(driver);
     await tester.pump();
 
-    firstEventSink!(
-      const MushafPageMetricsEvent(
-        page: 2,
-        generation: 7,
-        contentHeight: 999,
-      ),
-    );
-    expect(metricEvents, hasLength(1));
-
-    latestEventSink!(
-      const MushafPageMetricsEvent(
-        page: 2,
-        generation: 8,
-        contentHeight: 820,
-      ),
-    );
-    expect(metricEvents.last.contentHeight, 820);
+    expect(driver.playbackAccents, [('#54b89b', '#2e806b')]);
   });
 
+  testWidgets(
+    'surface ignores stale renderer events after generation changes',
+    (tester) async {
+      final metricEvents = <MushafPageMetricsEvent>[];
+      ValueChanged<MushafRendererEvent>? firstEventSink;
+      ValueChanged<MushafRendererEvent>? latestEventSink;
+      ValueChanged<MushafWebViewDriver>? latestDriverReady;
 
+      Widget buildSurface(int generation) {
+        return MaterialApp(
+          home: QuranStrictMushafSurface(
+            page: const QcfMushafPage(
+              page: 2,
+              variant: QuranMushafVariant.qcfV4Tajweed,
+              lines: [],
+            ),
+            palette: QuranMushafPalette.light,
+            generation: generation,
+            fontSize: 32,
+            lineHeight: 1.35,
+            showTajweedColors: true,
+            pageFontUri: Uri.parse('asset:///page.woff2'),
+            fontLoader: (_) async => const QuranStrictMushafFonts(
+              pageFontBytes: [1],
+              surahFontBytes: [2],
+              bismillahFontBytes: [3],
+              endMarkerFontBytes: [4],
+            ),
+            webViewBuilder: (key, onEvent, onDriverReady, onDiagnostic) {
+              firstEventSink ??= onEvent;
+              latestEventSink = onEvent;
+              latestDriverReady = onDriverReady;
+              return SizedBox(key: key);
+            },
+            onPageMetrics: metricEvents.add,
+            onRetry: () {},
+            onWordTap: (_, __) {},
+            onWordLongPress: (_, __) {},
+            onAyahTap: (_) {},
+          ),
+        );
+      }
+
+      await tester.pumpWidget(buildSurface(7));
+      await tester.pump();
+      await tester.pump();
+
+      final driver = _RecordingMushafDriver();
+      latestDriverReady!(driver);
+      await tester.pump();
+      expect(driver.renderedGenerations, [7]);
+
+      firstEventSink!(
+        const MushafPageMetricsEvent(
+          page: 2,
+          generation: 7,
+          contentHeight: 700,
+        ),
+      );
+      expect(metricEvents, hasLength(1));
+
+      await tester.pumpWidget(buildSurface(8));
+      await tester.pump();
+      await tester.pump();
+
+      firstEventSink!(
+        const MushafPageMetricsEvent(
+          page: 2,
+          generation: 7,
+          contentHeight: 999,
+        ),
+      );
+      expect(metricEvents, hasLength(1));
+
+      latestEventSink!(
+        const MushafPageMetricsEvent(
+          page: 2,
+          generation: 8,
+          contentHeight: 820,
+        ),
+      );
+      expect(metricEvents.last.contentHeight, 820);
+    },
+  );
 
   testWidgets('surface keeps a loading indicator until current page is ready', (
     tester,
@@ -150,9 +200,7 @@ void main() {
       findsOneWidget,
     );
 
-    eventSink!(
-      const MushafPageReadyEvent(page: 2, generation: 10),
-    );
+    eventSink!(const MushafPageReadyEvent(page: 2, generation: 10));
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(
@@ -160,9 +208,7 @@ void main() {
       findsOneWidget,
     );
 
-    eventSink!(
-      const MushafPageReadyEvent(page: 2, generation: 11),
-    );
+    eventSink!(const MushafPageReadyEvent(page: 2, generation: 11));
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsNothing);
     expect(
@@ -171,55 +217,56 @@ void main() {
     );
   });
 
-  testWidgets('surface forwards continuous layout in the initial render payload', (
-    tester,
-  ) async {
-    ValueChanged<MushafWebViewDriver>? driverReady;
+  testWidgets(
+    'surface forwards continuous layout in the initial render payload',
+    (tester) async {
+      ValueChanged<MushafWebViewDriver>? driverReady;
 
-    await tester.pumpWidget(
-      MaterialApp(
-        home: QuranStrictMushafSurface(
-          page: const QcfMushafPage(
-            page: 2,
-            variant: QuranMushafVariant.qcfV4Tajweed,
-            lines: [],
+      await tester.pumpWidget(
+        MaterialApp(
+          home: QuranStrictMushafSurface(
+            page: const QcfMushafPage(
+              page: 2,
+              variant: QuranMushafVariant.qcfV4Tajweed,
+              lines: [],
+            ),
+            palette: QuranMushafPalette.light,
+            generation: 9,
+            fontSize: 48,
+            lineHeight: 1.8,
+            showTajweedColors: true,
+            continuousLayout: true,
+            pageFontUri: Uri.parse('asset:///page.woff2'),
+            fontLoader: (_) async => const QuranStrictMushafFonts(
+              pageFontBytes: [1],
+              surahFontBytes: [2],
+              bismillahFontBytes: [3],
+              endMarkerFontBytes: [4],
+            ),
+            webViewBuilder: (key, onEvent, onDriverReady, onDiagnostic) {
+              driverReady = onDriverReady;
+              return SizedBox(key: key);
+            },
+            onRetry: () {},
+            onWordTap: (_, __) {},
+            onWordLongPress: (_, __) {},
+            onAyahTap: (_) {},
           ),
-          palette: QuranMushafPalette.light,
-          generation: 9,
-          fontSize: 48,
-          lineHeight: 1.8,
-          showTajweedColors: true,
-          continuousLayout: true,
-          pageFontUri: Uri.parse('asset:///page.woff2'),
-          fontLoader: (_) async => const QuranStrictMushafFonts(
-            pageFontBytes: [1],
-            surahFontBytes: [2],
-            bismillahFontBytes: [3],
-            endMarkerFontBytes: [4],
-          ),
-          webViewBuilder: (key, onEvent, onDriverReady, onDiagnostic) {
-            driverReady = onDriverReady;
-            return SizedBox(key: key);
-          },
-          onRetry: () {},
-          onWordTap: (_, __) {},
-          onWordLongPress: (_, __) {},
-          onAyahTap: (_) {},
         ),
-      ),
-    );
-    await tester.pump();
-    await tester.pump();
+      );
+      await tester.pump();
+      await tester.pump();
 
-    final driver = _RecordingMushafDriver();
-    driverReady!(driver);
-    await tester.pump();
+      final driver = _RecordingMushafDriver();
+      driverReady!(driver);
+      await tester.pump();
 
-    expect(driver.payloads, hasLength(1));
-    expect(driver.payloads.single.continuousLayout, isTrue);
-    expect(driver.payloads.single.fontSize, 48);
-    expect(driver.payloads.single.lineHeight, 1.8);
-  });
+      expect(driver.payloads, hasLength(1));
+      expect(driver.payloads.single.continuousLayout, isTrue);
+      expect(driver.payloads.single.fontSize, 48);
+      expect(driver.payloads.single.lineHeight, 1.8);
+    },
+  );
 
   testWidgets(
     'font failure falls back to readable Unicode page with identity and retry',
@@ -301,10 +348,10 @@ QuranPageWindow _page440() => QuranPageWindow(
   ],
 );
 
-
 class _RecordingMushafDriver implements MushafWebViewDriver {
   final renderedGenerations = <int>[];
   final payloads = <MushafRenderPayload>[];
+  final playbackAccents = <(String, String)>[];
 
   @override
   Future<void> loadRenderer() async {}
@@ -324,6 +371,14 @@ class _RecordingMushafDriver implements MushafWebViewDriver {
     required double lineHeight,
     required bool showTajweedColors,
   }) async {}
+
+  @override
+  Future<void> setPlaybackAccent({
+    required String ayahColor,
+    required String wordColor,
+  }) async {
+    playbackAccents.add((ayahColor, wordColor));
+  }
 
   @override
   Future<void> setActiveWord(
