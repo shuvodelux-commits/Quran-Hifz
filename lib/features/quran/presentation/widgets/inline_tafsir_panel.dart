@@ -26,19 +26,54 @@ class _InlineTafsirPanelState extends ConsumerState<InlineTafsirPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final ayahKey = '${widget.surahNumber}:${widget.ayahNumber}';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.menu_book_outlined),
-          title: const Text('Tafsir'),
-          trailing: AnimatedRotation(
-            turns: _expanded ? 0.5 : 0,
-            duration: const Duration(milliseconds: 180),
-            child: const Icon(Icons.expand_more_rounded),
-          ),
+        Divider(
+          key: ValueKey('ayah-footer-divider-$ayahKey'),
+          height: 1,
+          thickness: 1,
+          color: scheme.outlineVariant.withValues(alpha: 0.72),
+        ),
+        InkWell(
+          key: ValueKey('inline-tafsir-trigger-$ayahKey'),
           onTap: _toggleExpanded,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 11),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.menu_book_outlined,
+                  size: 21,
+                  color: scheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Text(
+                    'Tafsir',
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+                AnimatedRotation(
+                  turns: _expanded ? 0.25 : 0,
+                  duration: const Duration(milliseconds: 180),
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    size: 22,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
         AnimatedSize(
           duration: const Duration(milliseconds: 180),

@@ -184,6 +184,29 @@ void main() {
     expect(find.text('Fixture meaning'), findsOneWidget);
   });
 
+  testWidgets('ayah card uses the approved clean neutral layout', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_readerApp());
+    await tester.pumpAndSettle();
+
+    final card = tester.widget<Card>(find.byKey(const ValueKey('ayah-1:1')));
+    expect(card.elevation, 0);
+    final shape = card.shape! as RoundedRectangleBorder;
+    expect(shape.borderRadius, BorderRadius.circular(22));
+    expect(find.text('1:1'), findsOneWidget);
+    expect(find.byKey(const ValueKey('ayah-action-row-1:1')), findsOneWidget);
+    expect(find.byIcon(Icons.more_horiz_rounded), findsWidgets);
+    expect(
+      find.byKey(const ValueKey('ayah-footer-divider-1:1')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('inline-tafsir-trigger-1:1')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets(
     'ayah playback shows active Bangla word meaning as a bubble and keeps translation',
     (tester) async {
@@ -200,9 +223,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final bubble = find.byKey(
-        const ValueKey('playback-word-meaning-bubble'),
-      );
+      final bubble = find.byKey(const ValueKey('playback-word-meaning-bubble'));
       expect(bubble, findsOneWidget);
       expect(
         find.descendant(of: bubble, matching: find.text('Fixture meaning')),
@@ -220,12 +241,14 @@ void main() {
       expect(
         bubbleRect.bottom,
         lessThan(wordRect.top),
-        reason: 'The live Bangla meaning must float above the active Arabic word.',
+        reason:
+            'The live Bangla meaning must float above the active Arabic word.',
       );
       expect(
         (bubbleRect.center.dx - wordRect.center.dx).abs(),
         lessThan(24),
-        reason: 'The meaning bubble must stay horizontally anchored to the active word.',
+        reason:
+            'The meaning bubble must stay horizontally anchored to the active word.',
       );
     },
   );
@@ -539,41 +562,38 @@ void main() {
     expect(_wordColor(tester, 'B'), isNot(QuranReadingColors.activeWord));
   });
 
-  testWidgets(
-    'Hifz Mushaf selection never switches the normal Quran reader',
-    (tester) async {
-      final preferences = _MemoryPreferencesRepository();
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: _overrides(preferences: preferences),
-          child: const MaterialApp(home: QuranReaderPage(surah: _surah)),
-        ),
-      );
-      await tester.pumpAndSettle();
+  testWidgets('Hifz Mushaf selection never switches the normal Quran reader', (
+    tester,
+  ) async {
+    final preferences = _MemoryPreferencesRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: _overrides(preferences: preferences),
+        child: const MaterialApp(home: QuranReaderPage(surah: _surah)),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      final container = ProviderScope.containerOf(
-        tester.element(find.byType(QuranReaderPage)),
-      );
-      await container
-          .read(readerControllerProvider.notifier)
-          .openPage(2, preferredSurahNumber: 1, firstPage: 1, lastPage: 2);
-      await tester.pumpAndSettle();
-      expect(find.text('C'), findsOneWidget);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(QuranReaderPage)),
+    );
+    await container
+        .read(readerControllerProvider.notifier)
+        .openPage(2, preferredSurahNumber: 1, firstPage: 1, lastPage: 2);
+    await tester.pumpAndSettle();
+    expect(find.text('C'), findsOneWidget);
 
-      await container
-          .read(appPreferencesControllerProvider.notifier)
-          .setHifzMushafVariant(QuranMushafVariant.qcfV2);
-      await tester.pumpAndSettle();
+    await container
+        .read(appPreferencesControllerProvider.notifier)
+        .setHifzMushafVariant(QuranMushafVariant.qcfV2);
+    await tester.pumpAndSettle();
 
-      expect(find.byType(QuranStrictMushafSurface), findsNothing);
-      expect(find.text('C'), findsOneWidget);
-      expect(container.read(readerControllerProvider).value?.currentPage, 2);
-      expect(
-        container.read(quranFontProvider),
-        QuranFontPreference.qpcHafs,
-      );
-    },
-  );}
+    expect(find.byType(QuranStrictMushafSurface), findsNothing);
+    expect(find.text('C'), findsOneWidget);
+    expect(container.read(readerControllerProvider).value?.currentPage, 2);
+    expect(container.read(quranFontProvider), QuranFontPreference.qpcHafs);
+  });
+}
 
 Color? _wordColor(WidgetTester tester, String text) =>
     DefaultTextStyle.of(tester.element(find.text(text))).style.color;

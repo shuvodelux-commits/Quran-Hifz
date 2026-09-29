@@ -80,19 +80,23 @@ class _AyahCardState extends ConsumerState<AyahCard> {
     return Card(
       key: ValueKey('ayah-${widget.ayah.key}'),
       clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.1),
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      color: theme.colorScheme.surfaceContainerLow,
+      shadowColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(22),
+        side: BorderSide(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.72),
+        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _AyahPlayerControls(
-              ayahNumber: widget.ayah.ayahNumber,
+              ayahKey: widget.ayah.key,
               onPlay: widget.onPlay == null
                   ? null
                   : () {
@@ -113,7 +117,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
               onShare: _shareAyah,
               onCopy: _copyAyah,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 22),
             if (isFatihahBismillah)
               SizedBox(
                 key: const ValueKey('fatihah-bismillah-v4'),
@@ -167,15 +171,18 @@ class _AyahCardState extends ConsumerState<AyahCard> {
                 ),
               ),
             if (translationVisible && widget.ayah.translation != null) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               Text(
                 widget.ayah.translation!,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontSize: banglaFontSize,
                   height: banglaLineHeight,
+                  fontWeight: FontWeight.w400,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ],
+            const SizedBox(height: 18),
             InlineTafsirPanel(
               surahNumber: widget.ayah.surahNumber,
               ayahNumber: widget.ayah.ayahNumber,
@@ -286,10 +293,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
 }
 
 class _PlaybackWordMeaningAnchor extends StatelessWidget {
-  const _PlaybackWordMeaningAnchor({
-    required this.child,
-    this.meaning,
-  });
+  const _PlaybackWordMeaningAnchor({required this.child, this.meaning});
 
   final Widget child;
   final String? meaning;
@@ -369,7 +373,7 @@ class _PlaybackWordMeaningBubble extends StatelessWidget {
 
 class _AyahPlayerControls extends StatelessWidget {
   const _AyahPlayerControls({
-    required this.ayahNumber,
+    required this.ayahKey,
     required this.onPlay,
     required this.onPlaybackOptions,
     required this.onStop,
@@ -381,7 +385,7 @@ class _AyahPlayerControls extends StatelessWidget {
     required this.onCopy,
   });
 
-  final int ayahNumber;
+  final String ayahKey;
   final VoidCallback? onPlay;
   final VoidCallback onPlaybackOptions;
   final VoidCallback? onStop;
@@ -394,73 +398,76 @@ class _AyahPlayerControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: IconButtonTheme(
-        data: IconButtonThemeData(
-          style: IconButton.styleFrom(
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            minimumSize: const Size(34, 34),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            padding: EdgeInsets.zero,
-            iconSize: 19,
+    final scheme = Theme.of(context).colorScheme;
+    final neutral = scheme.onSurfaceVariant;
+    final commonStyle = IconButton.styleFrom(
+      foregroundColor: neutral,
+      minimumSize: const Size(34, 34),
+      maximumSize: const Size(38, 38),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: EdgeInsets.zero,
+      iconSize: 20,
+    );
+
+    return IconButtonTheme(
+      data: IconButtonThemeData(style: commonStyle),
+      child: Row(
+        key: ValueKey('ayah-action-row-$ayahKey'),
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            ayahKey,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: neutral,
+              fontWeight: FontWeight.w400,
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '$ayahNumber',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimary,
-                fontWeight: FontWeight.w500,
-                fontSize: 16,
+          IconButton(
+            tooltip: isPlaying ? 'Stop ayah' : 'Play ayah',
+            onPressed: isPlaying ? onStop : onPlay,
+            style: commonStyle.copyWith(
+              backgroundColor: WidgetStatePropertyAll(scheme.surfaceContainer),
+              foregroundColor: WidgetStatePropertyAll(
+                isPlaying ? scheme.primary : neutral,
               ),
             ),
-            IconButton(
-              tooltip: isPlaying ? 'Stop ayah' : 'Play ayah',
-              onPressed: isPlaying ? onStop : onPlay,
-              icon: Icon(
-                isPlaying
-                    ? Icons.stop_circle_outlined
-                    : Icons.play_circle_outline_rounded,
+            icon: Icon(
+              isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
+            ),
+          ),
+          IconButton(
+            tooltip: 'Favorite ayah',
+            onPressed: onFavorite,
+            style: commonStyle.copyWith(
+              foregroundColor: WidgetStatePropertyAll(
+                favorite ? scheme.primary : neutral,
               ),
             ),
-            IconButton(
-              tooltip: 'Favorite ayah',
-              onPressed: onFavorite,
-              icon: Icon(
-                favorite
-                    ? Icons.favorite_rounded
-                    : Icons.favorite_border_rounded,
-              ),
+            icon: Icon(
+              favorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
             ),
-            IconButton(
-              tooltip: 'Bookmark ayah',
-              onPressed: onBookmark,
-              icon: const Icon(Icons.bookmark_border_rounded),
-            ),
-            IconButton(
-              tooltip: 'Share ayah',
-              onPressed: onShare,
-              icon: const Icon(Icons.share_outlined),
-            ),
-            IconButton(
-              tooltip: 'Copy ayah',
-              onPressed: onCopy,
-              icon: const Icon(Icons.copy_outlined),
-            ),
-            IconButton(
-              tooltip: 'Playback options',
-              onPressed: onPlaybackOptions,
-              icon: const Icon(Icons.tune_rounded),
-            ),
-          ],
-        ),
+          ),
+          IconButton(
+            tooltip: 'Bookmark ayah',
+            onPressed: onBookmark,
+            icon: const Icon(Icons.bookmark_border_rounded),
+          ),
+          IconButton(
+            tooltip: 'Copy ayah',
+            onPressed: onCopy,
+            icon: const Icon(Icons.copy_outlined),
+          ),
+          IconButton(
+            tooltip: 'Share ayah',
+            onPressed: onShare,
+            icon: const Icon(Icons.share_outlined),
+          ),
+          IconButton(
+            tooltip: 'Playback options',
+            onPressed: onPlaybackOptions,
+            icon: const Icon(Icons.more_horiz_rounded),
+          ),
+        ],
       ),
     );
   }
