@@ -185,6 +185,19 @@ void main() {
     },
   );
 
+  test('active ayah can defer viewport follow to the active word', () async {
+    await driver.setActiveAyah(
+      '2:255',
+      deferFollowToWord: true,
+    );
+
+    expect(controller.lastScript, contains('setActiveAyah'));
+    expect(
+      _decodeFirstArgumentList(controller.lastScript!),
+      ['2:255', true],
+    );
+  });
+
   test('ignores unknown bridge events without state callbacks', () {
     channel.onMessage('{"type":"openUrl","url":"https://example.com"}');
 
