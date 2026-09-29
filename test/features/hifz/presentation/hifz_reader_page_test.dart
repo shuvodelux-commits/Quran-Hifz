@@ -192,6 +192,41 @@ void main() {
     expect(mushaf.activeWordBanglaMeaning, 'সকল প্রশংসা');
   });
 
+  testWidgets('word playback follows the target page and exposes its Bangla meaning', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_readerApp());
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(HifzReaderPage)),
+    );
+    final audio = container.read(quranAudioControllerProvider.notifier)
+        as _FixtureAudioController;
+
+    audio.setPlayback(
+      const QuranAudioState(
+        mode: QuranAudioMode.word,
+        status: QuranAudioStatus.playing,
+        speed: 1,
+        repeatIndex: 1,
+        repeatTotal: 1,
+        ayahKey: '1:2',
+        activeWordPosition: 1,
+      ),
+    );
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    final mushaf = tester.widget<QuranStrictReaderBody>(
+      find.byType(QuranStrictReaderBody),
+    );
+    expect(mushaf.state.currentPage, 2);
+    expect(mushaf.activeAyahKey, '1:2');
+    expect(mushaf.activeWordPosition, 1);
+    expect(mushaf.activeWordBanglaMeaning, 'সকল প্রশংসা');
+  });
+
   testWidgets('repeat button edits and keeps the current Hifz pattern', (
     tester,
   ) async {
