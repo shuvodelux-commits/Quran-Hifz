@@ -161,6 +161,10 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader>
             key: const ValueKey('hifz-continuous-reader'),
             controller: _scrollController,
             itemCount: widget.state.lastPage - widget.state.firstPage + 1,
+            itemExtentBuilder: (index, dimensions) {
+              final page = widget.state.firstPage + index;
+              return _pageHeights[page] ?? extent;
+            },
             itemBuilder: (context, index) {
               final page = widget.state.firstPage + index;
               final pageKey = _pageKeys.putIfAbsent(page, () => GlobalKey());
