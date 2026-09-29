@@ -250,15 +250,10 @@ class _FakeResolver implements HifzPlaybackRequestResolver {
 }
 
 class _FakeAudioSync implements QuranAudioSync {
-  _FakeAudioSync(
-    this.database, {
-    this.includeTiming = true,
-    this.includeWordTiming = true,
-  });
+  _FakeAudioSync(this.database, {this.includeTiming = true});
 
   final UserDatabase database;
   final bool includeTiming;
-  final bool includeWordTiming;
   final chapterCalls = <({int reciterId, int surahNumber})>[];
 
   @override
@@ -285,11 +280,9 @@ class _FakeAudioSync implements QuranAudioSync {
             'verse_key': '67:1',
             'timestamp_from': 100,
             'timestamp_to': 900,
-            'segments': includeWordTiming
-                ? <List<int>>[
-                    [1, 100, 400],
-                  ]
-                : <List<int>>[],
+            'segments': <List<int>>[
+              [1, 100, 400],
+            ],
           },
         ],
       );
