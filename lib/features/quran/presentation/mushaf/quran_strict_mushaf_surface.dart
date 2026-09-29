@@ -190,8 +190,14 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
               ),
             ),
             if (!_pageReady)
-              const IgnorePointer(
-                child: Center(child: CircularProgressIndicator()),
+              const Positioned.fill(
+                child: IgnorePointer(
+                  child: ColoredBox(
+                    key: ValueKey('quran-strict-mushaf-loading-cover'),
+                    color: Colors.white,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ),
               ),
           ],
         );
