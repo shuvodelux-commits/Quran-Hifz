@@ -75,7 +75,14 @@ void main() {
       ),
     );
 
-    expect(find.text('Monthly reminders'), findsOneWidget);
+    final heading = tester.widget<Text>(find.text('Monthly reminders'));
+    final title = tester.widget<Text>(
+      find.text('Odd night to seek Laylat al-Qadr'),
+    );
+    expect(heading.style?.fontSize, lessThanOrEqualTo(14));
+    expect(heading.style?.fontWeight, FontWeight.w400);
+    expect(title.style?.fontSize, lessThanOrEqualTo(13));
+    expect(title.style?.fontWeight, FontWeight.w400);
     expect(find.textContaining('Sahih al-Bukhari'), findsNothing);
     expect(find.textContaining('Sahih'), findsNothing);
     expect(tester.takeException(), isNull);

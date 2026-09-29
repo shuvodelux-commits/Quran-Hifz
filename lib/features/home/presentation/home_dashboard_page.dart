@@ -283,9 +283,13 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                                   language == AppLanguage.bangla
                                       ? 'সলাতের নিষিদ্ধ সময়'
                                       : 'Prohibited prayer times',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
+                                  style: TextStyle(
+                                    fontWeight: language == AppLanguage.english
+                                        ? FontWeight.w400
+                                        : FontWeight.w600,
+                                    fontSize: language == AppLanguage.english
+                                        ? 13
+                                        : 14,
                                   ),
                                 ),
                               ),
@@ -304,6 +308,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                           ),
                           const Divider(height: 10),
                           _ProhibitedTimeRow(
+                            language: language,
                             label: appText(language, 'সকাল', 'Morning'),
                             value: _range(
                               schedule?.sunrise,
@@ -313,6 +318,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                             ),
                           ),
                           _ProhibitedTimeRow(
+                            language: language,
                             label: appText(language, 'দুপুর', 'Noon'),
                             value: _range(
                               schedule?.times['Dhuhr'],
@@ -321,6 +327,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                             ),
                           ),
                           _ProhibitedTimeRow(
+                            language: language,
                             label: appText(language, 'সন্ধ্যা', 'Evening'),
                             value: _range(schedule?.sunset, 15, language),
                           ),
@@ -348,9 +355,13 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                                       ? 'আজকের রোজা'
                                       : 'Fasting today',
                                   maxLines: 2,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 12,
+                                  style: TextStyle(
+                                    fontWeight: language == AppLanguage.english
+                                        ? FontWeight.w400
+                                        : FontWeight.w500,
+                                    fontSize: language == AppLanguage.english
+                                        ? 11
+                                        : 12,
                                   ),
                                 ),
                               ),
@@ -368,7 +379,14 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                           ),
                           Text(
                             localClock(schedule?.times['Fajr'], language),
-                            style: const TextStyle(fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              fontSize: language == AppLanguage.english
+                                  ? 12
+                                  : null,
+                              fontWeight: language == AppLanguage.english
+                                  ? FontWeight.w400
+                                  : FontWeight.w500,
+                            ),
                           ),
                           const Divider(height: 14),
                           Text(
@@ -382,7 +400,14 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                           ),
                           Text(
                             localClock(schedule?.times['Maghrib'], language),
-                            style: const TextStyle(fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              fontSize: language == AppLanguage.english
+                                  ? 12
+                                  : null,
+                              fontWeight: language == AppLanguage.english
+                                  ? FontWeight.w400
+                                  : FontWeight.w500,
+                            ),
                           ),
                         ],
                       ),
@@ -416,9 +441,13 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                             language == AppLanguage.bangla
                                 ? 'আজকের আয়াত'
                                 : 'Today’s ayah',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                            style: TextStyle(
+                              fontSize: language == AppLanguage.english
+                                  ? 14
+                                  : 16,
+                              fontWeight: language == AppLanguage.english
+                                  ? FontWeight.w400
+                                  : FontWeight.w500,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -440,7 +469,9 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                                   )
                                 : '${todaysAyah.translation ?? ''} · ${appText(language, 'সূরা', 'Surah')} ${localDigits('${todaysAyah.surahNumber}:${todaysAyah.ayahNumber}', language)}',
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: language == AppLanguage.english
+                                  ? 14
+                                  : 15,
                               height: 1.35,
                               fontWeight: FontWeight.w400,
                               color: Theme.of(
@@ -849,8 +880,10 @@ class _CurrentPrayerCard extends StatelessWidget {
                   title,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
-                    fontSize: language == AppLanguage.english ? 14 : 12,
-                    fontWeight: FontWeight.w500,
+                    fontSize: language == AppLanguage.english ? 13 : 12,
+                    fontWeight: language == AppLanguage.english
+                        ? FontWeight.w400
+                        : FontWeight.w500,
                   ),
                 ),
                 Text(
@@ -859,8 +892,10 @@ class _CurrentPrayerCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    fontSize: language == AppLanguage.english ? 15 : 16,
+                    fontWeight: language == AppLanguage.english
+                        ? FontWeight.w400
+                        : FontWeight.w500,
                   ),
                 ),
                 Text(
@@ -894,8 +929,10 @@ class _CurrentPrayerCard extends StatelessWidget {
                 remaining == null ? '—' : localCountdown(remaining, language),
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontSize: language == AppLanguage.english ? 15 : 16,
+                  fontWeight: language == AppLanguage.english
+                      ? FontWeight.w400
+                      : FontWeight.w500,
                 ),
               ),
             ],
@@ -954,10 +991,8 @@ class _PrayerRow extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: foreground,
-                fontSize: 14,
-                fontWeight: language == AppLanguage.english
-                    ? FontWeight.w500
-                    : FontWeight.w400,
+                fontSize: language == AppLanguage.english ? 13 : 14,
+                fontWeight: FontWeight.w400,
               ),
             ),
           ),
@@ -1032,7 +1067,7 @@ class _PrayerTimeCell extends StatelessWidget {
           maxLines: 1,
           style: TextStyle(
             color: valueColor,
-            fontSize: language == AppLanguage.english ? 14 : 15,
+            fontSize: language == AppLanguage.english ? 13 : 15,
             height: 1,
             fontWeight: FontWeight.w400,
           ),
@@ -1052,10 +1087,8 @@ class _MosqueTimesHeader extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final style = TextStyle(
       color: scheme.onSurfaceVariant,
-      fontSize: language == AppLanguage.english ? 12 : 11,
-      fontWeight: language == AppLanguage.english
-          ? FontWeight.w500
-          : FontWeight.w400,
+      fontSize: 11,
+      fontWeight: FontWeight.w400,
     );
 
     return Container(
@@ -1144,10 +1177,8 @@ class _MosquePrayerRow extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: foreground,
-                fontSize: 14,
-                fontWeight: language == AppLanguage.english
-                    ? FontWeight.w500
-                    : FontWeight.w400,
+                fontSize: language == AppLanguage.english ? 13 : 14,
+                fontWeight: FontWeight.w400,
               ),
             ),
           ),
@@ -1211,7 +1242,7 @@ class _MosqueTimeCell extends StatelessWidget {
             maxLines: 1,
             style: TextStyle(
               color: foreground,
-              fontSize: 14,
+              fontSize: language == AppLanguage.english ? 13 : 14,
               height: 1,
               fontWeight: FontWeight.w400,
             ),
@@ -1247,8 +1278,13 @@ class _Panel extends StatelessWidget {
 }
 
 class _ProhibitedTimeRow extends StatelessWidget {
-  const _ProhibitedTimeRow({required this.label, required this.value});
+  const _ProhibitedTimeRow({
+    required this.language,
+    required this.label,
+    required this.value,
+  });
 
+  final AppLanguage language;
   final String label;
   final String value;
 
@@ -1261,14 +1297,16 @@ class _ProhibitedTimeRow extends StatelessWidget {
           label,
           style: TextStyle(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontSize: 12,
+            fontSize: language == AppLanguage.english ? 11 : 12,
+            fontWeight: FontWeight.w400,
           ),
         ),
         Text(
           ':',
           style: TextStyle(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontSize: 12,
+            fontSize: language == AppLanguage.english ? 11 : 12,
+            fontWeight: FontWeight.w400,
           ),
         ),
         const SizedBox(width: 4),
@@ -1280,7 +1318,12 @@ class _ProhibitedTimeRow extends StatelessWidget {
               value,
               maxLines: 1,
               textAlign: TextAlign.end,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontSize: language == AppLanguage.english ? 11 : 12,
+                fontWeight: language == AppLanguage.english
+                    ? FontWeight.w400
+                    : FontWeight.w500,
+              ),
             ),
           ),
         ),

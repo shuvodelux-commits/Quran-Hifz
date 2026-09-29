@@ -34,7 +34,12 @@ class CalendarEventList extends StatelessWidget {
       children: [
         Text(
           appText(language, 'এই মাসের গুরুত্বপূর্ণ দিন', 'Monthly reminders'),
-          style: Theme.of(context).textTheme.titleSmall,
+          style: language == AppLanguage.english
+              ? Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                )
+              : Theme.of(context).textTheme.titleSmall,
         ),
         const SizedBox(height: 3),
         Column(
@@ -111,7 +116,10 @@ class CalendarEventRow extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleSmall?.copyWith(
                   color: scheme.primary,
-                  fontWeight: FontWeight.w500,
+                  fontSize: language == AppLanguage.english ? 13 : null,
+                  fontWeight: language == AppLanguage.english
+                      ? FontWeight.w400
+                      : FontWeight.w500,
                 ),
               ),
             ),
@@ -123,9 +131,18 @@ class CalendarEventRow extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style:
+                      (language == AppLanguage.english
+                              ? theme.textTheme.bodySmall
+                              : theme.textTheme.bodyMedium)
+                          ?.copyWith(
+                            fontSize: language == AppLanguage.english
+                                ? 13
+                                : null,
+                            fontWeight: language == AppLanguage.english
+                                ? FontWeight.w400
+                                : FontWeight.w500,
+                          ),
                 ),
                 if (showSource) ...[
                   const SizedBox(height: 1),
@@ -133,6 +150,8 @@ class CalendarEventRow extends StatelessWidget {
                     subtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: scheme.onSurfaceVariant,
+                      fontSize: language == AppLanguage.english ? 12 : null,
+                      fontWeight: FontWeight.w400,
                       height: 1.2,
                     ),
                   ),
@@ -141,6 +160,8 @@ class CalendarEventRow extends StatelessWidget {
                     event.source + ' · ' + grade,
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: scheme.onSurfaceVariant,
+                      fontSize: language == AppLanguage.english ? 11 : null,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],

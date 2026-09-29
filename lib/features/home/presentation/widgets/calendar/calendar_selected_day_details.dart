@@ -44,13 +44,20 @@ class CalendarSelectedDayDetails extends StatelessWidget {
                 children: [
                   Text(
                     localHijriDate(schedule.hijriDate, language),
-                    style: theme.textTheme.titleMedium,
+                    style: language == AppLanguage.english
+                        ? theme.textTheme.bodyLarge?.copyWith(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          )
+                        : theme.textTheme.titleMedium,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     weekday + ', ' + localGregorianDate(date, language),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: scheme.onSurfaceVariant,
+                      fontSize: language == AppLanguage.english ? 12 : null,
+                      fontWeight: FontWeight.w400,
                       height: 1.2,
                     ),
                   ),
@@ -64,6 +71,10 @@ class CalendarSelectedDayDetails extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: scheme.onSurfaceVariant,
+                            fontSize: language == AppLanguage.english
+                                ? 12
+                                : null,
+                            fontWeight: FontWeight.w400,
                             height: 1.2,
                           ),
                         ),
@@ -82,6 +93,10 @@ class CalendarSelectedDayDetails extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: scheme.onSurfaceVariant,
+                            fontSize: language == AppLanguage.english
+                                ? 12
+                                : null,
+                            fontWeight: FontWeight.w400,
                             height: 1.2,
                           ),
                         ),
@@ -117,7 +132,12 @@ class CalendarSelectedDayDetails extends StatelessWidget {
                   'আজকের আমল ও গুরুত্বপূর্ণ দিন',
                   'This day’s reminders',
                 ),
-                style: theme.textTheme.titleSmall,
+                style: language == AppLanguage.english
+                    ? theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                      )
+                    : theme.textTheme.titleSmall,
               ),
               const SizedBox(height: 6),
               DecoratedBox(
@@ -165,6 +185,7 @@ class _SuhurIftarStrip extends StatelessWidget {
             children: [
               Expanded(
                 child: _InlineTimeValue(
+                  language: language,
                   label: appText(language, 'সেহরির শেষ', 'Suhur ends'),
                   value: localClock(schedule.times['Fajr'], language),
                 ),
@@ -175,6 +196,7 @@ class _SuhurIftarStrip extends StatelessWidget {
               ),
               Expanded(
                 child: _InlineTimeValue(
+                  language: language,
                   label: appText(language, 'ইফতার', 'Iftar'),
                   value: localClock(schedule.sunset, language),
                 ),
@@ -189,8 +211,13 @@ class _SuhurIftarStrip extends StatelessWidget {
 }
 
 class _InlineTimeValue extends StatelessWidget {
-  const _InlineTimeValue({required this.label, required this.value});
+  const _InlineTimeValue({
+    required this.language,
+    required this.label,
+    required this.value,
+  });
 
+  final AppLanguage language;
   final String label;
   final String value;
 
@@ -207,6 +234,8 @@ class _InlineTimeValue extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.labelSmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
+              fontSize: language == AppLanguage.english ? 11 : null,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ),
@@ -214,7 +243,10 @@ class _InlineTimeValue extends StatelessWidget {
         Text(
           value,
           style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
+            fontSize: language == AppLanguage.english ? 12 : null,
+            fontWeight: language == AppLanguage.english
+                ? FontWeight.w400
+                : FontWeight.w500,
           ),
         ),
       ],
@@ -237,6 +269,7 @@ class _PrayerTimes extends StatelessWidget {
           for (final name in prayerNames)
             Expanded(
               child: _TimeValue(
+                language: language,
                 label: localPrayerName(name, language),
                 value: localClock(schedule.times[name], language),
                 compact: true,
@@ -257,6 +290,7 @@ class _PrayerTimes extends StatelessWidget {
               SizedBox(
                 width: width,
                 child: _TimeValue(
+                  language: language,
                   label: localPrayerName(name, language),
                   value: localClock(schedule.times[name], language),
                   compact: true,
@@ -309,7 +343,12 @@ class _ProhibitedTimes extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           appText(language, 'নিষিদ্ধ সময়', 'Prohibited times'),
-          style: theme.textTheme.labelLarge,
+          style: language == AppLanguage.english
+              ? theme.textTheme.labelSmall?.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                )
+              : theme.textTheme.labelLarge,
         ),
       ],
     );
@@ -326,6 +365,7 @@ class _ProhibitedTimes extends StatelessWidget {
               if (index > 0) const SizedBox(width: 6),
               Expanded(
                 child: _AvoidTime(
+                  language: language,
                   label: items[index].$1,
                   value: items[index].$2,
                 ),
@@ -339,8 +379,13 @@ class _ProhibitedTimes extends StatelessWidget {
 }
 
 class _AvoidTime extends StatelessWidget {
-  const _AvoidTime({required this.label, required this.value});
+  const _AvoidTime({
+    required this.language,
+    required this.label,
+    required this.value,
+  });
 
+  final AppLanguage language;
   final String label;
   final String value;
 
@@ -357,6 +402,8 @@ class _AvoidTime extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: theme.textTheme.labelSmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
+            fontSize: language == AppLanguage.english ? 11 : null,
+            fontWeight: FontWeight.w400,
           ),
         ),
         FittedBox(
@@ -365,7 +412,10 @@ class _AvoidTime extends StatelessWidget {
             value,
             textAlign: TextAlign.center,
             maxLines: 1,
-            style: theme.textTheme.labelSmall,
+            style: theme.textTheme.labelSmall?.copyWith(
+              fontSize: language == AppLanguage.english ? 11 : null,
+              fontWeight: FontWeight.w400,
+            ),
           ),
         ),
       ],
@@ -375,11 +425,13 @@ class _AvoidTime extends StatelessWidget {
 
 class _TimeValue extends StatelessWidget {
   const _TimeValue({
+    required this.language,
     required this.label,
     required this.value,
     this.compact = false,
   });
 
+  final AppLanguage language;
   final String label;
   final String value;
   final bool compact;
@@ -401,7 +453,11 @@ class _TimeValue extends StatelessWidget {
                 (compact
                         ? theme.textTheme.labelSmall
                         : theme.textTheme.labelMedium)
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    ?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontSize: language == AppLanguage.english ? 11 : null,
+                      fontWeight: FontWeight.w400,
+                    ),
           ),
           Text(
             value,
@@ -411,7 +467,12 @@ class _TimeValue extends StatelessWidget {
                 (compact
                         ? theme.textTheme.bodySmall
                         : theme.textTheme.bodyMedium)
-                    ?.copyWith(fontWeight: FontWeight.w500),
+                    ?.copyWith(
+                      fontSize: language == AppLanguage.english ? 12 : null,
+                      fontWeight: language == AppLanguage.english
+                          ? FontWeight.w400
+                          : FontWeight.w500,
+                    ),
           ),
         ],
       ),

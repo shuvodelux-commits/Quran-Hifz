@@ -164,7 +164,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Calendar'), findsOneWidget);
-    expect(find.text('Rabi al-Thani 1448'), findsOneWidget);
+    final monthTitle = tester.widget<Text>(find.text('Rabi al-Thani 1448'));
+    final selectedTitle = tester.widget<Text>(
+      find.text('18 Rabi al-Thani 1448 AH'),
+    );
+    expect(monthTitle.style?.fontSize, lessThanOrEqualTo(14));
+    expect(monthTitle.style?.fontWeight, FontWeight.w400);
+    expect(selectedTitle.style?.fontSize, lessThanOrEqualTo(14));
+    expect(selectedTitle.style?.fontWeight, FontWeight.w400);
     expect(find.text('Monthly reminders'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

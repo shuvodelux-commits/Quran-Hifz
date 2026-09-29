@@ -173,7 +173,12 @@ class _PrayerCalendarPageState extends ConsumerState<PrayerCalendarPage> {
     toolbarHeight: 44,
     title: Text(
       appText(language, 'দিনপঞ্জিকা', 'Calendar'),
-      style: Theme.of(context).textTheme.titleMedium,
+      style: language == AppLanguage.english
+          ? Theme.of(context).textTheme.bodyLarge?.copyWith(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+            )
+          : Theme.of(context).textTheme.titleMedium,
     ),
     centerTitle: true,
   );
@@ -394,7 +399,10 @@ class _MonthNavigationHeader extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: scheme.onSurface,
-                    fontWeight: FontWeight.w500,
+                    fontSize: language == AppLanguage.english ? 14 : null,
+                    fontWeight: language == AppLanguage.english
+                        ? FontWeight.w400
+                        : FontWeight.w500,
                   ),
                 ),
               ),
@@ -419,6 +427,8 @@ class _MonthNavigationHeader extends StatelessWidget {
             textAlign: TextAlign.center,
             style: theme.textTheme.bodySmall?.copyWith(
               color: scheme.onSurfaceVariant,
+              fontSize: language == AppLanguage.english ? 12 : null,
+              fontWeight: FontWeight.w400,
               height: 1.15,
             ),
           ),
@@ -432,6 +442,8 @@ class _MonthNavigationHeader extends StatelessWidget {
             textAlign: TextAlign.center,
             style: theme.textTheme.bodySmall?.copyWith(
               color: scheme.onSurfaceVariant,
+              fontSize: language == AppLanguage.english ? 12 : null,
+              fontWeight: FontWeight.w400,
               height: 1.15,
             ),
           ),

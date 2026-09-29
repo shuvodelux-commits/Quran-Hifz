@@ -126,7 +126,10 @@ class _CalendarDayCell extends StatelessWidget {
                       localDigits('${day.hijri.day}', language),
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: primaryText,
-                        fontWeight: selected
+                        fontSize: language == AppLanguage.english ? 15 : null,
+                        fontWeight: language == AppLanguage.english
+                            ? FontWeight.w400
+                            : selected
                             ? FontWeight.w500
                             : FontWeight.w400,
                         height: 1,

@@ -206,8 +206,8 @@ void main() {
     final countdownLabel = tester.widget<Text>(
       find.text(activePrayer == null ? 'Starts in' : 'Ends in'),
     );
-    expect(currentTitle.style?.fontSize, 14);
-    expect(currentTitle.style?.fontWeight, FontWeight.w500);
+    expect(currentTitle.style?.fontSize, 13);
+    expect(currentTitle.style?.fontWeight, FontWeight.w400);
     expect(currentTimeLine.style?.fontSize, 12);
     expect(currentTimeLine.style?.fontWeight, FontWeight.w400);
     expect(countdownLabel.style?.fontSize, 12);
@@ -243,9 +243,9 @@ void main() {
       ),
     );
     final fajrStart = tester.widget<Text>(start);
-    expect(fajrName.style?.fontSize, 14);
-    expect(fajrName.style?.fontWeight, FontWeight.w500);
-    expect(fajrStart.style?.fontSize, 14);
+    expect(fajrName.style?.fontSize, 13);
+    expect(fajrName.style?.fontWeight, FontWeight.w400);
+    expect(fajrStart.style?.fontSize, 13);
     expect(fajrStart.style?.fontWeight, FontWeight.w400);
 
     await tester.dragUntilVisible(
@@ -268,6 +268,8 @@ void main() {
         isNot(TextOverflow.ellipsis),
         reason: '$range must remain fully visible in English',
       );
+      expect(rangeText.style?.fontSize, lessThanOrEqualTo(11));
+      expect(rangeText.style?.fontWeight, FontWeight.w400);
     }
 
     final expectedSurfaceText = appTheme(
@@ -353,13 +355,13 @@ void main() {
       ),
     );
 
-    expect(azanHeader.style?.fontSize, 12);
-    expect(azanHeader.style?.fontWeight, FontWeight.w500);
-    expect(jamaatHeader.style?.fontSize, 12);
-    expect(jamaatHeader.style?.fontWeight, FontWeight.w500);
-    expect(fajrName.style?.fontSize, 14);
-    expect(fajrName.style?.fontWeight, FontWeight.w500);
-    expect(azanTime.style?.fontSize, 14);
+    expect(azanHeader.style?.fontSize, 11);
+    expect(azanHeader.style?.fontWeight, FontWeight.w400);
+    expect(jamaatHeader.style?.fontSize, 11);
+    expect(jamaatHeader.style?.fontWeight, FontWeight.w400);
+    expect(fajrName.style?.fontSize, 13);
+    expect(fajrName.style?.fontWeight, FontWeight.w400);
+    expect(azanTime.style?.fontSize, 13);
     expect(azanTime.style?.fontWeight, FontWeight.w400);
   });
 
