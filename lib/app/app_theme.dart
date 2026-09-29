@@ -12,14 +12,46 @@ ThemeData appTheme(
 }) {
   final dark = preference == AppThemePreference.dark;
   final effectiveAccent =
-      accent ??
-      (dark ? AppAccentPreference.graphite : AppAccentPreference.sky);
+      accent ?? (dark ? AppAccentPreference.graphite : AppAccentPreference.sky);
   final accentColors = appAccentColors(effectiveAccent);
   var scheme = ColorScheme.fromSeed(
     seedColor: accentColors.main,
     brightness: dark ? Brightness.dark : Brightness.light,
   );
-  if (!dark) {
+  final darkSelectedSurface = Color.alphaBlend(
+    accentColors.main.withValues(alpha: 0.26),
+    const Color(0xFF1C2123),
+  );
+  if (dark) {
+    scheme = scheme.copyWith(
+      primary: accentColors.main,
+      onPrimary: Colors.white,
+      primaryContainer: darkSelectedSurface,
+      onPrimaryContainer: const Color(0xFFF1F4F4),
+      secondary: accentColors.main,
+      onSecondary: Colors.white,
+      secondaryContainer: darkSelectedSurface,
+      onSecondaryContainer: const Color(0xFFF1F4F4),
+      tertiary: accentColors.main,
+      onTertiary: Colors.white,
+      tertiaryContainer: darkSelectedSurface,
+      onTertiaryContainer: const Color(0xFFF1F4F4),
+      error: const Color(0xFFE77B82),
+      surface: const Color(0xFF111516),
+      onSurface: const Color(0xFFF1F4F4),
+      onSurfaceVariant: const Color(0xFFB5BDBF),
+      surfaceContainerLowest: const Color(0xFF0D1011),
+      surfaceContainerLow: const Color(0xFF171B1C),
+      surfaceContainer: const Color(0xFF1C2123),
+      surfaceContainerHigh: const Color(0xFF242A2C),
+      surfaceContainerHighest: const Color(0xFF2C3335),
+      outline: const Color(0xFF7A8588),
+      outlineVariant: const Color(0xFF343C3E),
+      inverseSurface: const Color(0xFFF1F4F4),
+      onInverseSurface: const Color(0xFF202526),
+      inversePrimary: accentColors.main,
+    );
+  } else {
     scheme = scheme.copyWith(
       primary: accentColors.main,
       onPrimary: Colors.white,
@@ -79,11 +111,11 @@ ThemeData appTheme(
       AppPalette(
         readerAccent: accentColors.ayahHighlight,
         accentPressed: accentColors.wordHighlight,
-        accentTint: accentColors.selectedSurface,
+        accentTint: dark ? darkSelectedSurface : accentColors.selectedSurface,
         cardSurface: scheme.surfaceContainerLow,
         secondaryText: scheme.onSurfaceVariant,
         subtleBorder: scheme.outlineVariant,
-        quranHeader: accentColors.strong,
+        quranHeader: dark ? accentColors.main : accentColors.strong,
         goldAccent: ReferenceColors.goldAccent,
       ),
     ],

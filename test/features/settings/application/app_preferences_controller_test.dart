@@ -51,12 +51,25 @@ void main() {
       await controller.setTheme(AppThemePreference.dark);
       var state = container.read(appPreferencesControllerProvider).value!;
       expect(state.theme, AppThemePreference.dark);
-      expect(state.accent, AppAccentPreference.graphite);
+      expect(
+        state.accent,
+        AppAccentPreference.rose,
+        reason:
+            'The Light-mode accent should be remembered while Dark is active.',
+      );
+      expect(
+        container.read(accentPreferenceProvider),
+        AppAccentPreference.graphite,
+      );
 
       await controller.setTheme(AppThemePreference.light);
       state = container.read(appPreferencesControllerProvider).value!;
       expect(state.theme, AppThemePreference.light);
-      expect(state.accent, AppAccentPreference.sky);
+      expect(state.accent, AppAccentPreference.rose);
+      expect(
+        container.read(accentPreferenceProvider),
+        AppAccentPreference.rose,
+      );
     },
   );
 

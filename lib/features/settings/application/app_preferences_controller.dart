@@ -28,14 +28,8 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
   @override
   Future<AppPreferences> build() => _repository.load();
 
-  Future<void> setTheme(AppThemePreference value) => _update(
-    (current) => current.copyWith(
-      theme: value,
-      accent: value == AppThemePreference.dark
-          ? AppAccentPreference.graphite
-          : AppAccentPreference.sky,
-    ),
-  );
+  Future<void> setTheme(AppThemePreference value) =>
+      _update((current) => current.copyWith(theme: value));
 
   Future<void> setAccent(AppAccentPreference value) =>
       _update((current) => current.copyWith(accent: value));
@@ -199,8 +193,11 @@ final themePreferenceProvider = Provider<AppThemePreference>((ref) {
 });
 
 final accentPreferenceProvider = Provider<AppAccentPreference>((ref) {
-  return ref.watch(appPreferencesControllerProvider).value?.accent ??
-      const AppPreferences.defaults().accent;
+  final preferences = ref.watch(appPreferencesControllerProvider).value;
+  if (preferences?.theme == AppThemePreference.dark) {
+    return AppAccentPreference.graphite;
+  }
+  return preferences?.accent ?? const AppPreferences.defaults().accent;
 });
 
 final tapToShowTranslationProvider = Provider<bool>(

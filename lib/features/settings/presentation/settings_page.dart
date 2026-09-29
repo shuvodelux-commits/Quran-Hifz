@@ -122,18 +122,36 @@ class SettingsPage extends ConsumerWidget {
                 ListTile(
                   key: const ValueKey('accent-color-row'),
                   contentPadding: EdgeInsets.zero,
-                  leading: _AccentDot(accent: value.accent, size: 22),
+                  leading: _AccentDot(
+                    accent: value.theme == AppThemePreference.dark
+                        ? AppAccentPreference.graphite
+                        : value.accent,
+                    size: 22,
+                  ),
                   title: Text(
                     appText(value.language, 'অ্যাকসেন্ট রং', 'Accent color'),
                   ),
-                  subtitle: Text(_accentLabel(value.accent, value.language)),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => _showAccentColorSheet(
-                    context,
-                    ref,
-                    value.language,
-                    value.accent,
+                  subtitle: Text(
+                    _accentLabel(
+                      value.theme == AppThemePreference.dark
+                          ? AppAccentPreference.graphite
+                          : value.accent,
+                      value.language,
+                    ),
                   ),
+                  trailing: Icon(
+                    value.theme == AppThemePreference.dark
+                        ? Icons.lock_outline_rounded
+                        : Icons.chevron_right_rounded,
+                  ),
+                  onTap: value.theme == AppThemePreference.dark
+                      ? null
+                      : () => _showAccentColorSheet(
+                          context,
+                          ref,
+                          value.language,
+                          value.accent,
+                        ),
                 ),
               ],
             ),

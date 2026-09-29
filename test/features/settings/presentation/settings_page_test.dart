@@ -63,7 +63,17 @@ void main() {
       await tester.tap(find.text('Dark'));
       await tester.pumpAndSettle();
       expect(preferences.value.theme, AppThemePreference.dark);
-      expect(preferences.value.accent, AppAccentPreference.graphite);
+      expect(
+        preferences.value.accent,
+        AppAccentPreference.mint,
+        reason: 'Dark mode must preserve the chosen Light accent for later.',
+      );
+      expect(find.text('Graphite'), findsOneWidget);
+      final accentRow = tester.widget<ListTile>(
+        find.byKey(const ValueKey('accent-color-row')),
+      );
+      expect(accentRow.onTap, isNull);
+      expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
 
       await tester.drag(find.byType(ListView), const Offset(0, -420));
       await tester.pumpAndSettle();

@@ -46,9 +46,23 @@ void main() {
     final palette = dark.extension<AppPalette>()!;
 
     expect(dark.brightness, Brightness.dark);
+    expect(dark.colorScheme.primary, graphite.main);
+    expect(dark.colorScheme.secondary, graphite.main);
+    expect(dark.colorScheme.tertiary, graphite.main);
+    expect(
+      dark.navigationBarTheme.indicatorColor,
+      dark.colorScheme.primaryContainer,
+    );
+    expect(dark.progressIndicatorTheme.color, graphite.main);
     expect(palette.readerAccent, graphite.ayahHighlight);
     expect(palette.accentPressed, graphite.wordHighlight);
-    expect(dark.scaffoldBackgroundColor, dark.colorScheme.surface);
+    expect(palette.accentTint, dark.colorScheme.primaryContainer);
+    expect(palette.quranHeader, graphite.main);
+    expect(dark.scaffoldBackgroundColor, const Color(0xFF111516));
+    expect(
+      dark.colorScheme.primary,
+      isNot(appAccentColors(AppAccentPreference.sky).main),
+    );
   });
 
   test('Bangla and English typography remain stable across accents', () {
