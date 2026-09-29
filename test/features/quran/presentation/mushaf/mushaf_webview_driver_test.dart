@@ -28,14 +28,25 @@ void main() {
   });
 
 
-  test('renderer readiness waits for page-finished and fires once', () {
+  test('renderer readiness ignores about:blank and fires once for renderer asset', () {
     final gate = MushafWebViewLoadGate();
 
-    expect(gate.onPageFinished(), isFalse);
+    expect(gate.onPageFinished('about:blank'), isFalse);
 
     gate.markRendererLoadRequested();
-    expect(gate.onPageFinished(), isTrue);
-    expect(gate.onPageFinished(), isFalse);
+    expect(gate.onPageFinished('about:blank'), isFalse);
+    expect(
+      gate.onPageFinished(
+        'file:///android_asset/flutter_assets/assets/mushaf/renderer/index.html',
+      ),
+      isTrue,
+    );
+    expect(
+      gate.onPageFinished(
+        'file:///android_asset/flutter_assets/assets/mushaf/renderer/index.html',
+      ),
+      isFalse,
+    );
   });
 
   test('loadRenderer loads only the bundled renderer asset', () async {
