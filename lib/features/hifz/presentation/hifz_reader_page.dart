@@ -480,7 +480,14 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
           ayahNumber: ayahNumber,
           translationResourceId: ref.read(quranTranslationResourceIdProvider),
         );
-    if (!mounted || token != _audioSyncToken || ayah == null) return;
+    if (!mounted || token != _audioSyncToken) return;
+    if (ayah == null) {
+      setState(() {
+        _activeWordBanglaMeaning = null;
+        _playbackPage = null;
+      });
+      return;
+    }
 
     String? meaning;
     final wordPosition = audio.activeWordPosition;
@@ -496,16 +503,13 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
       }
     }
 
-    int? playbackPage;
-    if (audio.mode == QuranAudioMode.ayah) {
-      playbackPage = ayah.pageNumber;
-      if (ref.read(hifzReaderModeProvider) == HifzReaderMode.page) {
-        await _ensurePageWindow(playbackPage, makeCurrent: true);
-      } else {
-        await _ensurePageWindow(playbackPage, makeCurrent: false);
-      }
-      if (!mounted || token != _audioSyncToken) return;
+    final playbackPage = ayah.pageNumber;
+    if (ref.read(hifzReaderModeProvider) == HifzReaderMode.page) {
+      await _ensurePageWindow(playbackPage, makeCurrent: true);
+    } else {
+      await _ensurePageWindow(playbackPage, makeCurrent: false);
     }
+    if (!mounted || token != _audioSyncToken) return;
 
     setState(() {
       _activeWordBanglaMeaning = meaning;
