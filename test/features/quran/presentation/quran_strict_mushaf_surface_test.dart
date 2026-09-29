@@ -145,18 +145,30 @@ void main() {
     driverReady!(driver);
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('quran-strict-mushaf-loading-cover')),
+      findsOneWidget,
+    );
 
     eventSink!(
       const MushafPageReadyEvent(page: 2, generation: 10),
     );
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('quran-strict-mushaf-loading-cover')),
+      findsOneWidget,
+    );
 
     eventSink!(
       const MushafPageReadyEvent(page: 2, generation: 11),
     );
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(
+      find.byKey(const ValueKey('quran-strict-mushaf-loading-cover')),
+      findsNothing,
+    );
   });
 
   testWidgets('surface forwards continuous layout in the initial render payload', (
