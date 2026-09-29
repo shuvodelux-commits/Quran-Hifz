@@ -244,8 +244,11 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
       await driver.clearPlaybackHighlight();
       return;
     }
-    await driver.setActiveAyah(ayahKey);
     final wordPosition = widget.activeWordPosition;
+    await driver.setActiveAyah(
+      ayahKey,
+      deferFollowToWord: wordPosition != null,
+    );
     if (wordPosition != null) {
       await driver.setActiveWord(
         ayahKey,
