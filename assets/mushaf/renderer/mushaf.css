@@ -2,6 +2,7 @@
   --page-bg: #fff;
   --page-fg: #111;
   --active-accent: #2563eb;
+  --active-word-accent: #f59e0b;
   --range-accent: #16a34a;
   --hifz-font-size: 32px;
   --hifz-line-height: 1.35;
@@ -124,9 +125,11 @@ body[data-tajweed-colors="off"] .mushaf-line.ayah {
 }
 
 .word.active-word {
-  background: color-mix(in srgb, var(--active-accent) 22%, transparent);
-  border-radius: .35em;
-  box-shadow: 0 0 0 .08em color-mix(in srgb, var(--active-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--active-word-accent) 34%, transparent);
+  border-radius: .38em;
+  box-shadow:
+    0 0 0 .09em color-mix(in srgb, var(--active-word-accent) 72%, transparent),
+    0 .05em .18em color-mix(in srgb, var(--active-word-accent) 28%, transparent);
 }
 
 .playback-meaning-bubble {
