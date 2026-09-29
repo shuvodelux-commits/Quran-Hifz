@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/app/app_theme.dart';
 import 'package:quran_hifz/core/localization/app_locale_text.dart';
+import 'package:quran_hifz/features/home/data/bangla_calendar.dart';
 import 'package:quran_hifz/features/home/data/prayer_schedule.dart';
 import 'package:quran_hifz/features/home/presentation/home_page.dart';
 import 'package:quran_hifz/features/home/presentation/prayer_calendar_page.dart';
@@ -10,94 +13,310 @@ import 'package:quran_hifz/features/settings/application/app_preferences_control
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 
 void main() {
-  testWidgets('current month opens on today so calendar matches home', (
+  testWidgets('calendar opens on current Hijri month and selects today', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(360, 780);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final days = [
-      for (var day = 1; day <= DateTime(now.year, now.month + 1, 0).day; day++)
-        _scheduleFor(DateTime(now.year, now.month, day)),
-    ];
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          appLanguageProvider.overrideWithValue(AppLanguage.bangla),
-          asrSchoolProvider.overrideWithValue(AsrSchool.hanafi),
-          prayerScheduleProvider.overrideWith(
-            (ref) async => _scheduleFor(today),
-          ),
-          prayerScheduleRepositoryProvider.overrideWithValue(
-            _CalendarRepository(days),
-          ),
-        ],
-        child: const MaterialApp(home: PrayerCalendarPage()),
-      ),
-    );
+    final fixture = _Fixture.current();
+    await _pumpCalendar(tester, fixture: fixture);
     await tester.pumpAndSettle();
 
+    expect(find.text('দিনপঞ্জিকা'), findsOneWidget);
+    expect(find.text('রবিউস সানি ১৪৪৮'), findsOneWidget);
     expect(
-      find.textContaining(localGregorianDate(today, AppLanguage.bangla)),
+      find.text(
+        localGregorianDateRange(
+          fixture.currentFirst,
+          fixture.currentLast,
+          AppLanguage.bangla,
+        ),
+      ),
       findsOneWidget,
     );
-    expect(find.text('০৫:৫৩–০৬:০৮'), findsOneWidget);
-  });
-
-  testWidgets('prohibited-time chips follow the selected theme color', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(360, 780);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final schedule = _scheduleFor(today);
-    final theme = appTheme(
-      AppThemePreference.light,
-      language: AppLanguage.english,
+    expect(
+      find.text(banglaCalendarRange(fixture.currentFirst, fixture.currentLast)),
+      findsOneWidget,
     );
 
+    final selected = tester.widget<Container>(
+      find.byKey(
+        ValueKey(
+          'calendar-day-${fixture.today.year}-${fixture.today.month}-${fixture.today.day}',
+        ),
+      ),
+    );
+    expect(
+      (selected.decoration! as BoxDecoration).color,
+      appTheme(
+        AppThemePreference.light,
+        accent: AppAccentPreference.sky,
+        language: AppLanguage.bangla,
+      ).colorScheme.primaryContainer,
+    );
+    expect(find.text('১৮ রবিউস সানি ১৪৪৮ হি.'), findsOneWidget);
+  });
+
+  testWidgets('tapping a grid date updates all selected-date information', (
+    tester,
+  ) async {
+    final fixture = _Fixture.current();
+    await _pumpCalendar(tester, fixture: fixture);
+    await tester.pumpAndSettle();
+
+    final target = fixture.currentFirst.add(const Duration(days: 12));
+    await tester.tap(
+      find.byKey(
+        ValueKey('calendar-day-${target.year}-${target.month}-${target.day}'),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('১৩ রবিউস সানি ১৪৪৮ হি.'), findsOneWidget);
+    expect(find.text('০৪:১৩'), findsWidgets);
+    expect(find.text('আইয়ামে বীয — ১ম দিন'), findsWidgets);
+    expect(find.text(banglaCalendarDate(target)), findsOneWidget);
+  });
+
+  testWidgets('previous and next arrows navigate by Hijri month', (
+    tester,
+  ) async {
+    final fixture = _Fixture.current();
+    await _pumpCalendar(tester, fixture: fixture);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('calendar-next-month')));
+    await tester.pumpAndSettle();
+    expect(find.text('জমাদিউল আউয়াল ১৪৪৮'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('calendar-previous-month')));
+    await tester.pumpAndSettle();
+    expect(find.text('রবিউস সানি ১৪৪৮'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('calendar-previous-month')));
+    await tester.pumpAndSettle();
+    expect(find.text('রবিউল আউয়াল ১৪৪৮'), findsOneWidget);
+  });
+
+  testWidgets('month title opens compact Hijri month and year picker', (
+    tester,
+  ) async {
+    final fixture = _Fixture.current();
+    await _pumpCalendar(tester, fixture: fixture);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('calendar-month-title')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('calendar-month-picker')), findsOneWidget);
+    expect(find.text('মুহাররম'), findsOneWidget);
+    expect(find.text('রমজান'), findsOneWidget);
+    expect(find.text('১৪৪৮'), findsWidgets);
+  });
+
+  testWidgets('rapid next then previous ignores stale month completion', (
+    tester,
+  ) async {
+    final fixture = _Fixture.current();
+    final repository = _DelayedCalendarRepository(fixture.schedules);
+    await _pumpCalendar(tester, fixture: fixture, repository: repository);
+    await tester.pumpAndSettle();
+
+    repository.delaySubsequentLoads = true;
+    await tester.tap(find.byKey(const ValueKey('calendar-next-month')));
+    await tester.pump(const Duration(milliseconds: 10));
+    await tester.tap(find.byKey(const ValueKey('calendar-previous-month')));
+    await tester.pumpAndSettle(const Duration(milliseconds: 250));
+
+    expect(find.text('রবিউস সানি ১৪৪৮'), findsOneWidget);
+  });
+
+  testWidgets('English title and no-location state remain localized', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           appLanguageProvider.overrideWithValue(AppLanguage.english),
           asrSchoolProvider.overrideWithValue(AsrSchool.hanafi),
-          prayerScheduleProvider.overrideWith((ref) async => schedule),
-          prayerScheduleRepositoryProvider.overrideWithValue(
-            _CalendarRepository([schedule]),
+          prayerScheduleProvider.overrideWith(
+            (ref) => Future<PrayerSchedule>.error(StateError('no location')),
           ),
         ],
-        child: MaterialApp(theme: theme, home: const PrayerCalendarPage()),
+        child: MaterialApp(
+          theme: appTheme(
+            AppThemePreference.light,
+            language: AppLanguage.english,
+          ),
+          home: const PrayerCalendarPage(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
 
-    final chipContainers = tester.widgetList<Container>(
-      find.ancestor(of: find.text('Morning'), matching: find.byType(Container)),
-    );
-    final chip = chipContainers.firstWhere(
-      (container) =>
-          container.decoration is BoxDecoration &&
-          (container.decoration! as BoxDecoration).borderRadius ==
-              BorderRadius.circular(10),
+    expect(find.text('Calendar'), findsOneWidget);
+    expect(find.text('Enable a location to use the calendar.'), findsOneWidget);
+  });
+
+  testWidgets('dark calendar selected state is Graphite', (tester) async {
+    final fixture = _Fixture.current();
+    final theme = appTheme(AppThemePreference.dark);
+    await _pumpCalendar(tester, fixture: fixture, theme: theme);
+    await tester.pumpAndSettle();
+
+    final selected = tester.widget<Container>(
+      find.byKey(
+        ValueKey(
+          'calendar-day-${fixture.today.year}-${fixture.today.month}-${fixture.today.day}',
+        ),
+      ),
     );
     expect(
-      (chip.decoration! as BoxDecoration).color,
+      (selected.decoration! as BoxDecoration).color,
       theme.colorScheme.primaryContainer,
     );
+    expect(theme.colorScheme.primary, const Color(0xFF68777B));
+  });
+
+  test('share text includes three dates and all five prayers', () {
+    final fixture = _Fixture.current();
+    final schedule = fixture.todaySchedule;
+    final text = calendarShareText(
+      day: fixture.today,
+      schedule: schedule,
+      language: AppLanguage.bangla,
+    );
+
+    expect(text, contains('১৮ রবিউস সানি ১৪৪৮ হি.'));
+    expect(
+      text,
+      contains(localGregorianDate(fixture.today, AppLanguage.bangla)),
+    );
+    expect(text, contains(banglaCalendarDate(fixture.today)));
+    for (final prayer in ['ফজর', 'যোহর', 'আসর', 'মাগরিব', 'ইশা']) {
+      expect(text, contains(prayer));
+    }
   });
 }
 
-class _CalendarRepository extends PrayerScheduleRepository {
-  const _CalendarRepository(this.days);
+Future<void> _pumpCalendar(
+  WidgetTester tester, {
+  required _Fixture fixture,
+  PrayerScheduleRepository? repository,
+  ThemeData? theme,
+}) async {
+  tester.view.physicalSize = const Size(360, 780);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
 
-  final List<PrayerSchedule> days;
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        appLanguageProvider.overrideWithValue(AppLanguage.bangla),
+        asrSchoolProvider.overrideWithValue(AsrSchool.hanafi),
+        prayerScheduleProvider.overrideWith(
+          (ref) async => fixture.todaySchedule,
+        ),
+        prayerScheduleRepositoryProvider.overrideWithValue(
+          repository ?? _CalendarRepository(fixture.schedules),
+        ),
+      ],
+      child: MaterialApp(
+        theme:
+            theme ??
+            appTheme(
+              AppThemePreference.light,
+              accent: AppAccentPreference.sky,
+              language: AppLanguage.bangla,
+            ),
+        home: const PrayerCalendarPage(),
+      ),
+    ),
+  );
+}
+
+class _Fixture {
+  _Fixture({
+    required this.today,
+    required this.currentFirst,
+    required this.schedules,
+  });
+
+  factory _Fixture.current() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final currentFirst = today.subtract(const Duration(days: 17));
+    final previousFirst = currentFirst.subtract(const Duration(days: 30));
+    final nextFirst = currentFirst.add(const Duration(days: 30));
+    final afterNextFirst = nextFirst.add(const Duration(days: 30));
+
+    final schedules = <PrayerSchedule>[
+      ..._hijriMonth(previousFirst, 'Rabi al-Awwal', 1448),
+      ..._hijriMonth(currentFirst, 'Rabi al-Thani', 1448),
+      ..._hijriMonth(nextFirst, 'Jumada al-Ula', 1448),
+      _schedule(
+        afterNextFirst,
+        hijriDay: 1,
+        hijriMonth: 'Jumada al-Akhirah',
+        hijriYear: 1448,
+      ),
+    ];
+
+    return _Fixture(
+      today: today,
+      currentFirst: currentFirst,
+      schedules: schedules,
+    );
+  }
+
+  final DateTime today;
+  final DateTime currentFirst;
+  final List<PrayerSchedule> schedules;
+
+  DateTime get currentLast => currentFirst.add(const Duration(days: 29));
+
+  PrayerSchedule get todaySchedule => schedules.firstWhere(
+    (schedule) => DateUtils.isSameDay(schedule.sunrise, today),
+  );
+}
+
+List<PrayerSchedule> _hijriMonth(DateTime first, String month, int year) => [
+  for (var day = 1; day <= 30; day++)
+    _schedule(
+      first.add(Duration(days: day - 1)),
+      hijriDay: day,
+      hijriMonth: month,
+      hijriYear: year,
+    ),
+];
+
+PrayerSchedule _schedule(
+  DateTime date, {
+  required int hijriDay,
+  required String hijriMonth,
+  required int hijriYear,
+}) {
+  return PrayerSchedule(
+    location: 'Natore, Bangladesh',
+    latitude: 24.42,
+    longitude: 88.99,
+    hijriDate: '$hijriDay $hijriMonth $hijriYear AH',
+    sunrise: DateTime(date.year, date.month, date.day, 5, 45),
+    sunset: DateTime(date.year, date.month, date.day, 17, 52),
+    times: {
+      'Fajr': DateTime(date.year, date.month, date.day, 4, hijriDay),
+      'Dhuhr': DateTime(date.year, date.month, date.day, 12, 7),
+      'Asr': DateTime(date.year, date.month, date.day, 15, 36),
+      'Maghrib': DateTime(date.year, date.month, date.day, 17, 52),
+      'Isha': DateTime(date.year, date.month, date.day, 19, 12),
+    },
+    tomorrowFajr: DateTime(date.year, date.month, date.day + 1, 4, 30),
+  );
+}
+
+class _CalendarRepository extends PrayerScheduleRepository {
+  const _CalendarRepository(this.schedules);
+
+  final List<PrayerSchedule> schedules;
 
   @override
   Future<List<PrayerSchedule>> loadMonth({
@@ -109,27 +328,40 @@ class _CalendarRepository extends PrayerScheduleRepository {
     int utcOffsetMinutes = 360,
     AsrSchool school = AsrSchool.hanafi,
   }) async {
-    return days;
+    return [
+      for (final schedule in schedules)
+        if (schedule.sunrise.year == year && schedule.sunrise.month == month)
+          schedule,
+    ];
   }
 }
 
-PrayerSchedule _scheduleFor(DateTime day) {
-  final isToday = DateUtils.isSameDay(day, DateTime.now());
-  final sunsetMinute = isToday ? 8 : 23;
-  return PrayerSchedule(
-    location: 'Natore, Bangladesh',
-    latitude: 24.42,
-    longitude: 88.99,
-    hijriDate: '19 Rabi al-Awwal 1448 AH',
-    sunrise: DateTime(day.year, day.month, day.day, 5, 45),
-    sunset: DateTime(day.year, day.month, day.day, 18, sunsetMinute),
-    times: {
-      'Fajr': DateTime(day.year, day.month, day.day, 4, 27),
-      'Dhuhr': DateTime(day.year, day.month, day.day, 12, 5),
-      'Asr': DateTime(day.year, day.month, day.day, 15, 23),
-      'Maghrib': DateTime(day.year, day.month, day.day, 18, sunsetMinute),
-      'Isha': DateTime(day.year, day.month, day.day, 19, 40),
-    },
-    tomorrowFajr: DateTime(day.year, day.month, day.day + 1, 4, 27),
-  );
+class _DelayedCalendarRepository extends _CalendarRepository {
+  _DelayedCalendarRepository(super.schedules);
+
+  bool delaySubsequentLoads = false;
+
+  @override
+  Future<List<PrayerSchedule>> loadMonth({
+    required int year,
+    required int month,
+    required String location,
+    required double latitude,
+    required double longitude,
+    int utcOffsetMinutes = 360,
+    AsrSchool school = AsrSchool.hanafi,
+  }) async {
+    if (delaySubsequentLoads) {
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+    }
+    return super.loadMonth(
+      year: year,
+      month: month,
+      location: location,
+      latitude: latitude,
+      longitude: longitude,
+      utcOffsetMinutes: utcOffsetMinutes,
+      school: school,
+    );
+  }
 }
