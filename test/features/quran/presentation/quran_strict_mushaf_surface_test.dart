@@ -321,7 +321,10 @@ class _RecordingMushafDriver implements MushafWebViewDriver {
   }) async {}
 
   @override
-  Future<void> setActiveAyah(String ayahKey) async {}
+  Future<void> setActiveAyah(
+    String ayahKey, {
+    bool deferFollowToWord = false,
+  }) async {}
 
   @override
   Future<void> setRange(String? startAyahKey, String? endAyahKey) async {}
