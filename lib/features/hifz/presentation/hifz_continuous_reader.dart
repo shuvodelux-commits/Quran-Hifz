@@ -214,7 +214,12 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader>
 
   void _syncAutoScrollTicker() {
     if (!mounted) return;
-    if (_shouldAutoScroll) {
+    final controller = _scrollController;
+    final atEnd =
+        controller != null &&
+        controller.hasClients &&
+        controller.offset >= controller.position.maxScrollExtent - 0.5;
+    if (_shouldAutoScroll && !atEnd) {
       if (!_autoScrollTicker.isActive) {
         _lastAutoScrollTick = Duration.zero;
         _autoScrollTicker.start();
@@ -251,6 +256,9 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader>
     if (next > controller.offset) {
       controller.jumpTo(next);
     }
+    if (next >= position.maxScrollExtent - 0.5) {
+      _syncAutoScrollTicker();
+    }
   }
 
   void _handlePageMetrics(MushafPageMetricsEvent event, double minimumHeight) {
@@ -273,22 +281,23 @@ class _HifzContinuousReaderState extends ConsumerState<HifzContinuousReader>
 
     setState(() => _pageHeights[event.page] = next);
 
-    if (shouldCompensate && delta != 0) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final currentController = _scrollController;
-        if (!mounted ||
-            currentController == null ||
-            !currentController.hasClients) {
-          return;
-        }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentController = _scrollController;
+      if (!mounted ||
+          currentController == null ||
+          !currentController.hasClients) {
+        return;
+      }
+      if (shouldCompensate && delta != 0) {
         final position = currentController.position;
         currentController.jumpTo(
           (currentController.offset + delta)
               .clamp(position.minScrollExtent, position.maxScrollExtent)
               .toDouble(),
         );
-      });
-    }
+      }
+      _syncAutoScrollTicker();
+    });
   }
 
   void _handlePlaybackTarget(MushafPlaybackTargetEvent event) {
