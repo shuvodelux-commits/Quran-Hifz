@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -156,6 +154,21 @@ void main() {
     expect(find.text('Enable a location to use the calendar.'), findsOneWidget);
   });
 
+  testWidgets('English loaded calendar stays clean at 360px', (tester) async {
+    final fixture = _Fixture.current();
+    await _pumpCalendar(
+      tester,
+      fixture: fixture,
+      language: AppLanguage.english,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Calendar'), findsOneWidget);
+    expect(find.text('Rabi al-Thani 1448'), findsOneWidget);
+    expect(find.text('Monthly reminders'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('dark calendar selected state is Graphite', (tester) async {
     final fixture = _Fixture.current();
     final theme = appTheme(AppThemePreference.dark);
@@ -174,6 +187,54 @@ void main() {
       theme.colorScheme.primaryContainer,
     );
     expect(theme.colorScheme.primary, const Color(0xFF68777B));
+  });
+
+  testWidgets('normal phone shows core day information without scrolling', (
+    tester,
+  ) async {
+    final fixture = _Fixture.current();
+    await _pumpCalendar(
+      tester,
+      fixture: fixture,
+      viewport: const Size(360, 600),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('calendar-month-grid')).hitTestable(),
+      findsOneWidget,
+    );
+    expect(find.text('সেহরির শেষ').hitTestable(), findsOneWidget);
+    expect(find.text('ইফতার').hitTestable(), findsOneWidget);
+    for (final prayer in ['ফজর', 'যোহর', 'আসর', 'মাগরিব', 'ইশা']) {
+      expect(find.text(prayer).hitTestable(), findsOneWidget);
+    }
+    expect(find.text('নিষিদ্ধ সময়').hitTestable(), findsOneWidget);
+  });
+
+  testWidgets('full calendar fits a narrow phone at enlarged text scale', (
+    tester,
+  ) async {
+    final fixture = _Fixture.current();
+    await _pumpCalendar(
+      tester,
+      fixture: fixture,
+      textScaler: const TextScaler.linear(1.3),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const ValueKey('calendar-month-grid')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('calendar-selected-details')),
+      findsOneWidget,
+    );
+
+    await tester.drag(find.byType(ListView).first, const Offset(0, -600));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('নিষিদ্ধ সময়'), findsOneWidget);
   });
 
   test('share text includes three dates and all five prayers', () {
@@ -202,8 +263,11 @@ Future<void> _pumpCalendar(
   required _Fixture fixture,
   PrayerScheduleRepository? repository,
   ThemeData? theme,
+  TextScaler textScaler = TextScaler.noScaling,
+  Size viewport = const Size(360, 780),
+  AppLanguage language = AppLanguage.bangla,
 }) async {
-  tester.view.physicalSize = const Size(360, 780);
+  tester.view.physicalSize = viewport;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
@@ -211,7 +275,7 @@ Future<void> _pumpCalendar(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        appLanguageProvider.overrideWithValue(AppLanguage.bangla),
+        appLanguageProvider.overrideWithValue(language),
         asrSchoolProvider.overrideWithValue(AsrSchool.hanafi),
         prayerScheduleProvider.overrideWith(
           (ref) async => fixture.todaySchedule,
@@ -226,9 +290,12 @@ Future<void> _pumpCalendar(
             appTheme(
               AppThemePreference.light,
               accent: AppAccentPreference.sky,
-              language: AppLanguage.bangla,
+              language: language,
             ),
-        home: const PrayerCalendarPage(),
+        home: MediaQuery(
+          data: MediaQueryData(textScaler: textScaler),
+          child: const PrayerCalendarPage(),
+        ),
       ),
     ),
   );

@@ -33,48 +33,37 @@ class CalendarEventList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          appText(
-            language,
-            'এই মাসের আমল ও গুরুত্বপূর্ণ দিন',
-            'This month’s reminders and important days',
-          ),
-          style: Theme.of(context).textTheme.titleMedium,
+          appText(language, 'এই মাসের গুরুত্বপূর্ণ দিন', 'Monthly reminders'),
+          style: Theme.of(context).textTheme.titleSmall,
         ),
-        const SizedBox(height: 8),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outlineVariant,
-            ),
-          ),
-          child: Column(
-            children: [
-              for (
-                var index = 0;
-                index < entries.length + monthWide.length;
-                index++
-              ) ...[
-                if (index > 0)
-                  Divider(
-                    height: 1,
-                    color: Theme.of(context).colorScheme.outlineVariant,
-                  ),
-                if (index < entries.length)
-                  CalendarEventRow(
-                    event: entries[index].event,
-                    language: language,
-                    day: entries[index].day,
-                  )
-                else
-                  CalendarEventRow(
-                    event: monthWide[index - entries.length],
-                    language: language,
-                  ),
-              ],
+        const SizedBox(height: 3),
+        Column(
+          children: [
+            for (
+              var index = 0;
+              index < entries.length + monthWide.length;
+              index++
+            ) ...[
+              if (index > 0)
+                Divider(
+                  height: 1,
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
+              if (index < entries.length)
+                CalendarEventRow(
+                  event: entries[index].event,
+                  language: language,
+                  day: entries[index].day,
+                  showSource: false,
+                )
+              else
+                CalendarEventRow(
+                  event: monthWide[index - entries.length],
+                  language: language,
+                  showSource: false,
+                ),
             ],
-          ),
+          ],
         ),
       ],
     );
@@ -87,11 +76,13 @@ class CalendarEventRow extends StatelessWidget {
     required this.event,
     required this.language,
     this.day,
+    this.showSource = true,
   });
 
   final IslamicCalendarEvent event;
   final AppLanguage language;
   final int? day;
+  final bool showSource;
 
   @override
   Widget build(BuildContext context) {
@@ -108,13 +99,13 @@ class CalendarEventRow extends StatelessWidget {
         : event.gradeEnglish;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (day != null) ...[
             SizedBox(
-              width: 30,
+              width: 26,
               child: Text(
                 localDigits('$day', language),
                 textAlign: TextAlign.center,
@@ -124,27 +115,35 @@ class CalendarEventRow extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
           ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: theme.textTheme.bodyLarge),
-                const SizedBox(height: 2),
                 Text(
-                  subtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
+                  title,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  event.source + ' · ' + grade,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
+                if (showSource) ...[
+                  const SizedBox(height: 1),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      height: 1.2,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 2),
+                  Text(
+                    event.source + ' · ' + grade,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

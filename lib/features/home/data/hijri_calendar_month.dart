@@ -17,6 +17,13 @@ const hijriMonthOrder = <String>[
   'Dhu al-Hijjah',
 ];
 
+const _hijriMonthAliases = <String, String>{
+  'Jumada al-Awwal': 'Jumada al-Ula',
+  'Jumada al-Thani': 'Jumada al-Akhirah',
+  'Shaban': "Sha'ban",
+  'Dhu al-Qadah': "Dhu al-Qi'dah",
+};
+
 class HijriDateParts {
   const HijriDateParts({
     required this.day,
@@ -82,7 +89,8 @@ HijriDateParts? parseHijriDate(String value) {
   if (match == null) return null;
 
   final day = int.tryParse(match.group(1)!);
-  final month = match.group(2)!;
+  final rawMonth = match.group(2)!;
+  final month = _hijriMonthAliases[rawMonth] ?? rawMonth;
   final year = int.tryParse(match.group(3)!);
   if (day == null ||
       day < 1 ||

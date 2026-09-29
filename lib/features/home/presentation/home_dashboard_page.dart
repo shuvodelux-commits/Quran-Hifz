@@ -271,6 +271,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
+                    flex: language == AppLanguage.english ? 3 : 1,
                     child: _Panel(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,6 +330,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
+                    flex: language == AppLanguage.english ? 2 : 1,
                     child: _Panel(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1271,12 +1273,15 @@ class _ProhibitedTimeRow extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Expanded(
-          child: Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.end,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              value,
+              maxLines: 1,
+              textAlign: TextAlign.end,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            ),
           ),
         ),
       ],

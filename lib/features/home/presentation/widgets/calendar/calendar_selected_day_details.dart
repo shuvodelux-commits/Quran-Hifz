@@ -44,21 +44,49 @@ class CalendarSelectedDayDetails extends StatelessWidget {
                 children: [
                   Text(
                     localHijriDate(schedule.hijriDate, language),
-                    style: theme.textTheme.titleLarge,
+                    style: theme.textTheme.titleMedium,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     weekday + ', ' + localGregorianDate(date, language),
-                    style: theme.textTheme.bodyMedium?.copyWith(
+                    style: theme.textTheme.bodySmall?.copyWith(
                       color: scheme.onSurfaceVariant,
+                      height: 1.2,
                     ),
                   ),
                   const SizedBox(height: 1),
-                  Text(
-                    banglaDate,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          banglaDate,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                            height: 1.2,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 2),
+                      Flexible(
+                        child: Text(
+                          schedule.location,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                            height: 1.2,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -71,38 +99,14 @@ class CalendarSelectedDayDetails extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 6),
         _SuhurIftarStrip(schedule: schedule, language: language),
-        const SizedBox(height: 14),
-        Text(
-          appText(language, 'সালাতের সময়', 'Prayer times'),
-          style: theme.textTheme.titleSmall,
-        ),
         const SizedBox(height: 8),
         _PrayerTimes(schedule: schedule, language: language),
         const SizedBox(height: 6),
-        Row(
-          children: [
-            Icon(
-              Icons.location_on_outlined,
-              size: 16,
-              color: scheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              child: Text(
-                schedule.location,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
         _ProhibitedTimes(schedule: schedule, language: language),
         if (day.events.isNotEmpty) ...[
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
           Column(
             key: const ValueKey('calendar-selected-event-section'),
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -152,32 +156,68 @@ class _SuhurIftarStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: scheme.outlineVariant),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _TimeValue(
-              label: appText(language, 'সেহরির শেষ', 'Suhur ends'),
-              value: localClock(schedule.times['Fajr'], language),
+    return Column(
+      children: [
+        Divider(height: 1, color: scheme.outlineVariant),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          child: Row(
+            children: [
+              Expanded(
+                child: _InlineTimeValue(
+                  label: appText(language, 'সেহরির শেষ', 'Suhur ends'),
+                  value: localClock(schedule.times['Fajr'], language),
+                ),
+              ),
+              SizedBox(
+                height: 24,
+                child: VerticalDivider(width: 1, color: scheme.outlineVariant),
+              ),
+              Expanded(
+                child: _InlineTimeValue(
+                  label: appText(language, 'ইফতার', 'Iftar'),
+                  value: localClock(schedule.sunset, language),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Divider(height: 1, color: scheme.outlineVariant),
+      ],
+    );
+  }
+}
+
+class _InlineTimeValue extends StatelessWidget {
+  const _InlineTimeValue({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
-          SizedBox(
-            height: 42,
-            child: VerticalDivider(width: 1, color: scheme.outlineVariant),
+        ),
+        const SizedBox(width: 5),
+        Text(
+          value,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
           ),
-          Expanded(
-            child: _TimeValue(
-              label: appText(language, 'ইফতার', 'Iftar'),
-              value: localClock(schedule.sunset, language),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -190,12 +230,28 @@ class _PrayerTimes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    if (textScale <= 1.15) {
+      return Row(
+        children: [
+          for (final name in prayerNames)
+            Expanded(
+              child: _TimeValue(
+                label: localPrayerName(name, language),
+                value: localClock(schedule.times[name], language),
+                compact: true,
+              ),
+            ),
+        ],
+      );
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width = (constraints.maxWidth - 32) / 5;
+        final width = (constraints.maxWidth - 16) / 3;
         return Wrap(
           spacing: 8,
-          runSpacing: 8,
+          runSpacing: 4,
           children: [
             for (final name in prayerNames)
               SizedBox(
@@ -224,56 +280,57 @@ class _ProhibitedTimes extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final dhuhr = schedule.times['Dhuhr']!;
+    final items = [
+      (
+        appText(language, 'সকাল', 'Morning'),
+        _range(
+          schedule.sunrise,
+          schedule.sunrise.add(const Duration(minutes: 15)),
+          language,
+        ),
+      ),
+      (
+        appText(language, 'দুপুর', 'Noon'),
+        _range(dhuhr.subtract(const Duration(minutes: 5)), dhuhr, language),
+      ),
+      (
+        appText(language, 'সন্ধ্যা', 'Evening'),
+        _range(
+          schedule.sunset.subtract(const Duration(minutes: 15)),
+          schedule.sunset,
+          language,
+        ),
+      ),
+    ];
+    final heading = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.block_rounded, size: 15, color: scheme.error),
+        const SizedBox(width: 4),
+        Text(
+          appText(language, 'নিষিদ্ধ সময়', 'Prohibited times'),
+          style: theme.textTheme.labelLarge,
+        ),
+      ],
+    );
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(Icons.block_rounded, size: 17, color: scheme.error),
-            const SizedBox(width: 6),
-            Text(
-              appText(language, 'নিষিদ্ধ সময়', 'Prohibited times'),
-              style: theme.textTheme.titleSmall,
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
+        heading,
+        const SizedBox(height: 2),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: _AvoidTime(
-                label: appText(language, 'সকাল', 'Morning'),
-                value: _range(
-                  schedule.sunrise,
-                  schedule.sunrise.add(const Duration(minutes: 15)),
-                  language,
+            for (var index = 0; index < items.length; index++) ...[
+              if (index > 0) const SizedBox(width: 6),
+              Expanded(
+                child: _AvoidTime(
+                  label: items[index].$1,
+                  value: items[index].$2,
                 ),
               ),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: _AvoidTime(
-                label: appText(language, 'দুপুর', 'Noon'),
-                value: _range(
-                  dhuhr.subtract(const Duration(minutes: 5)),
-                  dhuhr,
-                  language,
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: _AvoidTime(
-                label: appText(language, 'সন্ধ্যা', 'Evening'),
-                value: _range(
-                  schedule.sunset.subtract(const Duration(minutes: 15)),
-                  schedule.sunset,
-                  language,
-                ),
-              ),
-            ),
+            ],
           ],
         ),
       ],
@@ -291,19 +348,25 @@ class _AvoidTime extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           label,
           textAlign: TextAlign.center,
-          style: theme.textTheme.labelMedium?.copyWith(
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.labelSmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.labelSmall,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            style: theme.textTheme.labelSmall,
+          ),
         ),
       ],
     );
@@ -325,28 +388,30 @@ class _TimeValue extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 0 : 8,
-        vertical: compact ? 4 : 10,
-      ),
+      padding: EdgeInsets.symmetric(vertical: compact ? 1 : 4),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             label,
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+            style:
+                (compact
+                        ? theme.textTheme.labelSmall
+                        : theme.textTheme.labelMedium)
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),
-          const SizedBox(height: 2),
           Text(
             value,
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
+            maxLines: 1,
+            style:
+                (compact
+                        ? theme.textTheme.bodySmall
+                        : theme.textTheme.bodyMedium)
+                    ?.copyWith(fontWeight: FontWeight.w500),
           ),
         ],
       ),

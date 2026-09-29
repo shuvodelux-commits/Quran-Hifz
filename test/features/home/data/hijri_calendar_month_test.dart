@@ -11,6 +11,25 @@ void main() {
     );
   });
 
+  test('parseHijriDate normalizes offline calculator month aliases', () {
+    expect(
+      parseHijriDate('1 Jumada al-Awwal 1448 AH'),
+      const HijriDateParts(day: 1, month: 'Jumada al-Ula', year: 1448),
+    );
+    expect(
+      parseHijriDate('1 Jumada al-Thani 1448 AH'),
+      const HijriDateParts(day: 1, month: 'Jumada al-Akhirah', year: 1448),
+    );
+    expect(
+      parseHijriDate('1 Shaban 1448 AH'),
+      const HijriDateParts(day: 1, month: "Sha'ban", year: 1448),
+    );
+    expect(
+      parseHijriDate('1 Dhu al-Qadah 1448 AH'),
+      const HijriDateParts(day: 1, month: "Dhu al-Qi'dah", year: 1448),
+    );
+  });
+
   test(
     'parseHijriDate trims harmless whitespace but rejects malformed or unknown month names',
     () {

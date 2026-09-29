@@ -28,13 +28,17 @@ void main() {
         ),
       );
 
-      expect(find.text('এই মাসের আমল ও গুরুত্বপূর্ণ দিন'), findsOneWidget);
+      expect(find.text('এই মাসের গুরুত্বপূর্ণ দিন'), findsOneWidget);
       expect(find.byType(Card), findsNothing);
       expect(find.text('আইয়ামে বীয — ১ম দিন'), findsOneWidget);
       expect(find.text('আইয়ামে বীয — ২য় দিন'), findsOneWidget);
       expect(find.text('আইয়ামে বীয — ৩য় দিন'), findsOneWidget);
       expect(find.text('শাওয়ালের ছয় রোজা'), findsOneWidget);
-      expect(find.textContaining('নির্দিষ্ট ছয়টি তারিখ'), findsOneWidget);
+      expect(find.textContaining('নির্দিষ্ট ছয়টি তারিখ'), findsNothing);
+      expect(find.textContaining('Jamiʿ at-Tirmidhi'), findsNothing);
+      expect(find.textContaining('Sahih Muslim'), findsNothing);
+      expect(find.textContaining('হাসান'), findsNothing);
+      expect(find.textContaining('সহিহ'), findsNothing);
 
       final first = tester.getTopLeft(find.text('আইয়ামে বীয — ১ম দিন')).dy;
       final second = tester.getTopLeft(find.text('আইয়ামে বীয — ২য় দিন')).dy;
@@ -45,6 +49,37 @@ void main() {
       expect(third, lessThan(monthWide));
     },
   );
+
+  testWidgets('English monthly reminders stay compact at 360px', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 780);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final month = HijriCalendarMonth(
+      key: const HijriMonthKey(month: 'Ramadan', year: 1448),
+      days: [_ramadanQadrDay()],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: appTheme(
+          AppThemePreference.light,
+          language: AppLanguage.english,
+        ),
+        home: Scaffold(
+          body: CalendarEventList(month: month, language: AppLanguage.english),
+        ),
+      ),
+    );
+
+    expect(find.text('Monthly reminders'), findsOneWidget);
+    expect(find.textContaining('Sahih al-Bukhari'), findsNothing);
+    expect(find.textContaining('Sahih'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('long Bangla event rows fit a 360px phone', (tester) async {
     tester.view.physicalSize = const Size(360, 780);

@@ -24,6 +24,8 @@ class CalendarMonthGrid extends StatelessWidget {
         ? 0
         : month.days.first.gregorianDate.weekday % 7;
     final cellCount = leadingBlanks + month.days.length;
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final cellExtent = 36.0 + ((textScale - 1).clamp(0.0, 1.0) * 85.0);
 
     return Column(
       key: const ValueKey('calendar-month-grid'),
@@ -35,7 +37,7 @@ class CalendarMonthGrid extends StatelessWidget {
                 child: Center(
                   child: Text(
                     label,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
@@ -43,14 +45,14 @@ class CalendarMonthGrid extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         GridView.builder(
           shrinkWrap: true,
           primary: false,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 7,
-            childAspectRatio: 0.78,
+            mainAxisExtent: cellExtent,
             mainAxisSpacing: 2,
             crossAxisSpacing: 2,
           ),
@@ -105,51 +107,55 @@ class _CalendarDayCell extends StatelessWidget {
           '${date.day}/${date.month}/${date.year}',
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         child: Container(
           key: ValueKey('calendar-day-$key'),
-          constraints: const BoxConstraints(minHeight: 48),
           decoration: BoxDecoration(
             color: selected ? scheme.primaryContainer : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              Text(
-                localDigits('${day.hijri.day}', language),
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: primaryText,
-                  fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
-                  height: 1.05,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                localDigits('${date.day}', language),
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: secondaryText,
-                  height: 1.05,
-                ),
-              ),
-              const SizedBox(height: 3),
-              SizedBox(
-                height: 5,
-                child: day.events.isEmpty
-                    ? null
-                    : Center(
-                        child: Container(
-                          key: ValueKey('calendar-event-dot-$key'),
-                          width: 5,
-                          height: 5,
-                          decoration: BoxDecoration(
-                            color: scheme.primary,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      localDigits('${day.hijri.day}', language),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: primaryText,
+                        fontWeight: selected
+                            ? FontWeight.w500
+                            : FontWeight.w400,
+                        height: 1,
                       ),
+                    ),
+                    Text(
+                      localDigits('${date.day}', language),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: secondaryText,
+                        height: 1,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              if (day.events.isNotEmpty)
+                Positioned(
+                  right: 3,
+                  bottom: 3,
+                  child: Container(
+                    key: ValueKey('calendar-event-dot-$key'),
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: scheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

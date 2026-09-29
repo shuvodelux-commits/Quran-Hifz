@@ -255,6 +255,21 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    for (final range in [
+      '05:51 AM–06:06 AM',
+      '11:55 AM–12:00 PM',
+      '05:51 PM–06:06 PM',
+    ]) {
+      final rangeFinder = find.text(range);
+      expect(rangeFinder, findsOneWidget);
+      final rangeText = tester.widget<Text>(rangeFinder);
+      expect(
+        rangeText.overflow,
+        isNot(TextOverflow.ellipsis),
+        reason: '$range must remain fully visible in English',
+      );
+    }
+
     final expectedSurfaceText = appTheme(
       AppThemePreference.light,
       language: AppLanguage.english,

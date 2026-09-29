@@ -118,7 +118,7 @@ class _PrayerCalendarPageState extends ConsumerState<PrayerCalendarPage> {
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+          padding: const EdgeInsets.fromLTRB(14, 2, 14, 18),
           children: [
             _MonthNavigationHeader(
               target: target,
@@ -142,7 +142,7 @@ class _PrayerCalendarPageState extends ConsumerState<PrayerCalendarPage> {
                 language: language,
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 4),
             monthValue.when(
               loading: () => const Padding(
                 padding: EdgeInsets.symmetric(vertical: 48),
@@ -170,7 +170,11 @@ class _PrayerCalendarPageState extends ConsumerState<PrayerCalendarPage> {
   }
 
   AppBar _appBar(AppLanguage language) => AppBar(
-    title: Text(appText(language, 'দিনপঞ্জিকা', 'Calendar')),
+    toolbarHeight: 44,
+    title: Text(
+      appText(language, 'দিনপঞ্জিকা', 'Calendar'),
+      style: Theme.of(context).textTheme.titleMedium,
+    ),
     centerTitle: true,
   );
 
@@ -369,20 +373,26 @@ class _MonthNavigationHeader extends StatelessWidget {
             IconButton(
               key: const ValueKey('calendar-previous-month'),
               tooltip: appText(language, 'আগের মাস', 'Previous month'),
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+              padding: EdgeInsets.zero,
               onPressed: onPrevious,
               icon: const Icon(Icons.chevron_left_rounded),
             ),
             Expanded(
               child: TextButton(
                 key: const ValueKey('calendar-month-title'),
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(0, 40),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 onPressed: onPickMonth,
                 child: Text(
                   localHijriMonthName(target.month, language) +
                       ' ' +
                       localDigits(target.year.toString(), language),
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.titleLarge?.copyWith(
+                  style: theme.textTheme.titleSmall?.copyWith(
                     color: scheme.onSurface,
                     fontWeight: FontWeight.w500,
                   ),
@@ -392,7 +402,8 @@ class _MonthNavigationHeader extends StatelessWidget {
             IconButton(
               key: const ValueKey('calendar-next-month'),
               tooltip: appText(language, 'পরের মাস', 'Next month'),
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+              padding: EdgeInsets.zero,
               onPressed: onNext,
               icon: const Icon(Icons.chevron_right_rounded),
             ),
@@ -406,8 +417,9 @@ class _MonthNavigationHeader extends StatelessWidget {
               language,
             ),
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
+            style: theme.textTheme.bodySmall?.copyWith(
               color: scheme.onSurfaceVariant,
+              height: 1.15,
             ),
           ),
           const SizedBox(height: 1),
@@ -420,6 +432,7 @@ class _MonthNavigationHeader extends StatelessWidget {
             textAlign: TextAlign.center,
             style: theme.textTheme.bodySmall?.copyWith(
               color: scheme.onSurfaceVariant,
+              height: 1.15,
             ),
           ),
         ],
@@ -459,15 +472,15 @@ class _CalendarMonthContent extends StatelessWidget {
           language: language,
           onSelected: onSelected,
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 6),
         Divider(height: 1, color: Theme.of(context).colorScheme.outlineVariant),
-        const SizedBox(height: 16),
+        const SizedBox(height: 6),
         CalendarSelectedDayDetails(
           day: selectedDay,
           language: language,
           onShare: () => onShare(selectedDay),
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 14),
         CalendarEventList(month: month, language: language),
       ],
     );

@@ -143,7 +143,7 @@ void main() {
     final first = tester.getSize(
       find.byKey(const ValueKey('calendar-day-2026-9-14')),
     );
-    expect(first.height, greaterThanOrEqualTo(48));
+    expect(first.height, 36);
   });
 }
 

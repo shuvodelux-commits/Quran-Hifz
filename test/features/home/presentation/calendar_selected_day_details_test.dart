@@ -58,6 +58,41 @@ void main() {
     expect(shares, 1);
   });
 
+  testWidgets('English prohibited ranges remain fully readable at 360px', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 780);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: appTheme(
+          AppThemePreference.light,
+          language: AppLanguage.english,
+        ),
+        home: Scaffold(
+          body: CalendarSelectedDayDetails(
+            day: _day(),
+            language: AppLanguage.english,
+            onShare: () {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Prohibited times'), findsOneWidget);
+    for (final range in [
+      '05:45 AM–06:00 AM',
+      '12:02 PM–12:07 PM',
+      '05:37 PM–05:52 PM',
+    ]) {
+      expect(find.text(range), findsOneWidget);
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('selected-day event shows title description source and grade', (
     tester,
   ) async {
