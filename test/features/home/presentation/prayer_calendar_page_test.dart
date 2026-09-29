@@ -193,7 +193,7 @@ void main() {
       (selected.decoration! as BoxDecoration).color,
       theme.colorScheme.primaryContainer,
     );
-    expect(theme.colorScheme.primary, const Color(0xFF68777B));
+    expect(theme.colorScheme.primary, const Color(0xFF59686D));
   });
 
   testWidgets('normal phone shows core day information without scrolling', (

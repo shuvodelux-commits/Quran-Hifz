@@ -68,12 +68,22 @@ void main() {
         AppAccentPreference.mint,
         reason: 'Dark mode must preserve the chosen Light accent for later.',
       );
-      expect(find.text('Graphite'), findsOneWidget);
-      final accentRow = tester.widget<ListTile>(
+      expect(find.text('Mint'), findsOneWidget);
+      var accentRow = tester.widget<ListTile>(
         find.byKey(const ValueKey('accent-color-row')),
       );
-      expect(accentRow.onTap, isNull);
-      expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+      expect(accentRow.onTap, isNotNull);
+      expect(find.byIcon(Icons.lock_outline_rounded), findsNothing);
+
+      await tester.tap(find.byKey(const ValueKey('accent-color-row')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('accent-choice-lavender')));
+      await tester.pumpAndSettle();
+      expect(preferences.value.accent, AppAccentPreference.lavender);
+      accentRow = tester.widget<ListTile>(
+        find.byKey(const ValueKey('accent-color-row')),
+      );
+      expect(accentRow.onTap, isNotNull);
 
       await tester.drag(find.byType(ListView), const Offset(0, -420));
       await tester.pumpAndSettle();

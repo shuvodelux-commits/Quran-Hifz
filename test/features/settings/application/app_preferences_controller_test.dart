@@ -32,46 +32,37 @@ void main() {
     return container;
   }
 
-  test(
-    'appearance defaults accent to Sky for light and Graphite for dark',
-    () async {
-      final repository = _MemoryRepository();
-      final container = containerFor(repository);
-      await container.read(appPreferencesControllerProvider.future);
-      final controller = container.read(
-        appPreferencesControllerProvider.notifier,
-      );
+  test('appearance keeps the selected accent across light and dark', () async {
+    final repository = _MemoryRepository();
+    final container = containerFor(repository);
+    await container.read(appPreferencesControllerProvider.future);
+    final controller = container.read(
+      appPreferencesControllerProvider.notifier,
+    );
 
-      await controller.setAccent(AppAccentPreference.rose);
-      expect(
-        container.read(appPreferencesControllerProvider).value!.accent,
-        AppAccentPreference.rose,
-      );
+    await controller.setAccent(AppAccentPreference.rose);
+    expect(
+      container.read(appPreferencesControllerProvider).value!.accent,
+      AppAccentPreference.rose,
+    );
 
-      await controller.setTheme(AppThemePreference.dark);
-      var state = container.read(appPreferencesControllerProvider).value!;
-      expect(state.theme, AppThemePreference.dark);
-      expect(
-        state.accent,
-        AppAccentPreference.rose,
-        reason:
-            'The Light-mode accent should be remembered while Dark is active.',
-      );
-      expect(
-        container.read(accentPreferenceProvider),
-        AppAccentPreference.graphite,
-      );
+    await controller.setTheme(AppThemePreference.dark);
+    var state = container.read(appPreferencesControllerProvider).value!;
+    expect(state.theme, AppThemePreference.dark);
+    expect(
+      state.accent,
+      AppAccentPreference.rose,
+      reason:
+          'The Light-mode accent should be remembered while Dark is active.',
+    );
+    expect(container.read(accentPreferenceProvider), AppAccentPreference.rose);
 
-      await controller.setTheme(AppThemePreference.light);
-      state = container.read(appPreferencesControllerProvider).value!;
-      expect(state.theme, AppThemePreference.light);
-      expect(state.accent, AppAccentPreference.rose);
-      expect(
-        container.read(accentPreferenceProvider),
-        AppAccentPreference.rose,
-      );
-    },
-  );
+    await controller.setTheme(AppThemePreference.light);
+    state = container.read(appPreferencesControllerProvider).value!;
+    expect(state.theme, AppThemePreference.light);
+    expect(state.accent, AppAccentPreference.rose);
+    expect(container.read(accentPreferenceProvider), AppAccentPreference.rose);
+  });
 
   test('changing Tajweed preference preserves Quran typography', () async {
     final repository = _MemoryRepository();

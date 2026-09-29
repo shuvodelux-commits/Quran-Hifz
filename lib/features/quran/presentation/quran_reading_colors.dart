@@ -9,7 +9,7 @@ abstract final class QuranReadingColors {
   ///
   /// Both sentence playback and tap-to-play word audio use this same word-only
   /// emphasis. The surrounding ayah remains unchanged.
-  static const activeWord = Color(0xFF2E6F9D);
+  static const activeWord = Color(0xFF245D88);
 
   static Color activeWordFor(BuildContext context) {
     return Theme.of(context).extension<AppPalette>()?.accentPressed ??

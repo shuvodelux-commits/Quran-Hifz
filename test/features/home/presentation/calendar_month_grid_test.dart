@@ -115,7 +115,7 @@ void main() {
     final dot = tester.widget<Container>(
       find.byKey(const ValueKey('calendar-event-dot-2026-9-15')),
     );
-    expect((dot.decoration! as BoxDecoration).color, const Color(0xFF68777B));
+    expect((dot.decoration! as BoxDecoration).color, const Color(0xFF59686D));
   });
 
   testWidgets('grid fits a 360px phone without overflow', (tester) async {

@@ -122,36 +122,18 @@ class SettingsPage extends ConsumerWidget {
                 ListTile(
                   key: const ValueKey('accent-color-row'),
                   contentPadding: EdgeInsets.zero,
-                  leading: _AccentDot(
-                    accent: value.theme == AppThemePreference.dark
-                        ? AppAccentPreference.graphite
-                        : value.accent,
-                    size: 22,
-                  ),
+                  leading: _AccentDot(accent: value.accent, size: 22),
                   title: Text(
                     appText(value.language, 'অ্যাকসেন্ট রং', 'Accent color'),
                   ),
-                  subtitle: Text(
-                    _accentLabel(
-                      value.theme == AppThemePreference.dark
-                          ? AppAccentPreference.graphite
-                          : value.accent,
-                      value.language,
-                    ),
+                  subtitle: Text(_accentLabel(value.accent, value.language)),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => _showAccentColorSheet(
+                    context,
+                    ref,
+                    value.language,
+                    value.accent,
                   ),
-                  trailing: Icon(
-                    value.theme == AppThemePreference.dark
-                        ? Icons.lock_outline_rounded
-                        : Icons.chevron_right_rounded,
-                  ),
-                  onTap: value.theme == AppThemePreference.dark
-                      ? null
-                      : () => _showAccentColorSheet(
-                          context,
-                          ref,
-                          value.language,
-                          value.accent,
-                        ),
                 ),
               ],
             ),
@@ -754,8 +736,8 @@ Future<void> _showAccentColorSheet(
             Text(
               appText(
                 language,
-                'নির্বাচিত রং বাটন, ট্যাব, হাইলাইট ও সক্রিয় অবস্থায় ব্যবহার হবে।',
-                'The selected color is used for buttons, tabs, highlights, and active states.',
+                'নির্বাচিত রং বাটন, ট্যাব ও সক্রিয় UI অবস্থায় ব্যবহার হবে।',
+                'The selected color is used for buttons, tabs, and active UI states.',
               ),
               style: Theme.of(sheetContext).textTheme.bodySmall,
             ),

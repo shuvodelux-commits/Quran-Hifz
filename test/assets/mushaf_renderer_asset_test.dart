@@ -76,9 +76,9 @@ void main() {
     'Hifz playback styling distinguishes ayah, word, and meaning bubble',
     () {
       expect(css, contains('.word.active-word'));
-      expect(css, contains('--active-word-accent: #2e6f9d'));
-      expect(css, contains('--active-accent: #5aa3d6'));
-      expect(css, contains('--range-accent: #5aa3d6'));
+      expect(css, contains('--active-word-accent: #245d88'));
+      expect(css, contains('--active-accent: #2e78b0'));
+      expect(css, contains('--range-accent: #2e78b0'));
       expect(js, contains('setPlaybackAccent'));
       expect(js, contains("'--range-accent'"));
       expect(css, contains('var(--active-word-accent) 34%'));

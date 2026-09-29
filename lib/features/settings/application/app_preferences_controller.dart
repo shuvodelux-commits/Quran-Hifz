@@ -193,11 +193,8 @@ final themePreferenceProvider = Provider<AppThemePreference>((ref) {
 });
 
 final accentPreferenceProvider = Provider<AppAccentPreference>((ref) {
-  final preferences = ref.watch(appPreferencesControllerProvider).value;
-  if (preferences?.theme == AppThemePreference.dark) {
-    return AppAccentPreference.graphite;
-  }
-  return preferences?.accent ?? const AppPreferences.defaults().accent;
+  return ref.watch(appPreferencesControllerProvider).value?.accent ??
+      const AppPreferences.defaults().accent;
 });
 
 final tapToShowTranslationProvider = Provider<bool>(

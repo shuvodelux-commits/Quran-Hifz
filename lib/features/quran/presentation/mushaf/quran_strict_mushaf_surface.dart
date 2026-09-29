@@ -109,8 +109,8 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
   int _rendererFailures = 0;
   bool _rendererFallback = false;
   bool _pageReady = false;
-  Color _playbackAyahAccent = const Color(0xFF5AA3D6);
-  Color _playbackWordAccent = const Color(0xFF2E6F9D);
+  Color _playbackAyahAccent = const Color(0xFF2E78B0);
+  Color _playbackWordAccent = const Color(0xFF245D88);
 
   QuranStrictMushafFontLoader get _fontLoader =>
       widget.fontLoader ?? loadQuranStrictMushafFonts;
@@ -128,8 +128,8 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final palette = Theme.of(context).extension<AppPalette>();
-    final nextAyah = palette?.readerAccent ?? const Color(0xFF5AA3D6);
-    final nextWord = palette?.accentPressed ?? const Color(0xFF2E6F9D);
+    final nextAyah = palette?.readerAccent ?? const Color(0xFF2E78B0);
+    final nextWord = palette?.accentPressed ?? const Color(0xFF245D88);
     if (nextAyah == _playbackAyahAccent && nextWord == _playbackWordAccent) {
       return;
     }

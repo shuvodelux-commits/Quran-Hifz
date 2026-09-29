@@ -62,7 +62,7 @@ void main() {
     driverReady!(driver);
     await tester.pump();
 
-    expect(driver.playbackAccents, [('#54b89b', '#2e806b')]);
+    expect(driver.playbackAccents, [('#267c63', '#1c6551')]);
   });
 
   testWidgets(

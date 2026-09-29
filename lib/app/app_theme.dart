@@ -14,6 +14,9 @@ ThemeData appTheme(
   final effectiveAccent =
       accent ?? (dark ? AppAccentPreference.graphite : AppAccentPreference.sky);
   final accentColors = appAccentColors(effectiveAccent);
+  final playbackColors = appAccentColors(
+    dark ? AppAccentPreference.sky : effectiveAccent,
+  );
   var scheme = ColorScheme.fromSeed(
     seedColor: accentColors.main,
     brightness: dark ? Brightness.dark : Brightness.light,
@@ -109,8 +112,8 @@ ThemeData appTheme(
     colorScheme: scheme,
     extensions: [
       AppPalette(
-        readerAccent: accentColors.ayahHighlight,
-        accentPressed: accentColors.wordHighlight,
+        readerAccent: playbackColors.ayahHighlight,
+        accentPressed: playbackColors.wordHighlight,
         accentTint: dark ? darkSelectedSurface : accentColors.selectedSurface,
         cardSurface: scheme.surfaceContainerLow,
         secondaryText: scheme.onSurfaceVariant,

@@ -40,29 +40,40 @@ void main() {
     }
   });
 
-  test('dark appearance uses Graphite cleanly by default', () {
-    final dark = appTheme(AppThemePreference.dark);
-    final graphite = appAccentColors(AppAccentPreference.graphite);
-    final palette = dark.extension<AppPalette>()!;
+  test(
+    'dark appearance accepts every accent while playback stays Sky blue',
+    () {
+      final sky = appAccentColors(AppAccentPreference.sky);
 
-    expect(dark.brightness, Brightness.dark);
-    expect(dark.colorScheme.primary, graphite.main);
-    expect(dark.colorScheme.secondary, graphite.main);
-    expect(dark.colorScheme.tertiary, graphite.main);
-    expect(
-      dark.navigationBarTheme.indicatorColor,
-      dark.colorScheme.primaryContainer,
-    );
-    expect(dark.progressIndicatorTheme.color, graphite.main);
-    expect(palette.readerAccent, graphite.ayahHighlight);
-    expect(palette.accentPressed, graphite.wordHighlight);
-    expect(palette.accentTint, dark.colorScheme.primaryContainer);
-    expect(palette.quranHeader, graphite.main);
-    expect(dark.scaffoldBackgroundColor, const Color(0xFF111516));
-    expect(
-      dark.colorScheme.primary,
-      isNot(appAccentColors(AppAccentPreference.sky).main),
-    );
+      for (final accent in AppAccentPreference.values) {
+        final dark = appTheme(AppThemePreference.dark, accent: accent);
+        final tokens = appAccentColors(accent);
+        final palette = dark.extension<AppPalette>()!;
+
+        expect(dark.brightness, Brightness.dark);
+        expect(dark.colorScheme.primary, tokens.main);
+        expect(dark.colorScheme.secondary, tokens.main);
+        expect(dark.colorScheme.tertiary, tokens.main);
+        expect(dark.progressIndicatorTheme.color, tokens.main);
+        expect(palette.readerAccent, sky.ayahHighlight);
+        expect(palette.accentPressed, sky.wordHighlight);
+        expect(palette.accentTint, dark.colorScheme.primaryContainer);
+        expect(palette.quranHeader, tokens.main);
+        expect(dark.scaffoldBackgroundColor, const Color(0xFF111516));
+      }
+    },
+  );
+
+  test('main accents are deep enough for readable use on white', () {
+    for (final accent in AppAccentPreference.values) {
+      final color = appAccentColors(accent).main;
+      final contrast = (1.0 + 0.05) / (color.computeLuminance() + 0.05);
+      expect(
+        contrast,
+        greaterThanOrEqualTo(4.5),
+        reason: '$accent should remain readable against white',
+      );
+    }
   });
 
   test('Bangla and English typography remain stable across accents', () {
