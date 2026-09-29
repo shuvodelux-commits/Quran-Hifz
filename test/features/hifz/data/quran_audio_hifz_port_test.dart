@@ -280,12 +280,16 @@ class _FakeAudioSync implements QuranAudioSync {
       await database.replaceTimings(
         reciterId: reciterId,
         surahNumber: surahNumber,
-        timestamps: const [
+        timestamps: [
           {
             'verse_key': '67:1',
             'timestamp_from': 100,
             'timestamp_to': 900,
-            'segments': <List<int>>[],
+            'segments': includeWordTiming
+                ? <List<int>>[
+                    [1, 100, 400],
+                  ]
+                : <List<int>>[],
           },
         ],
       );
