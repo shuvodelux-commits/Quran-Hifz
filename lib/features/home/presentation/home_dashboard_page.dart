@@ -29,6 +29,7 @@ class HomeDashboardPage extends ConsumerStatefulWidget {
 class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
   Timer? _timer;
   DateTime _now = DateTime.now();
+  int _prayerPagerPage = 0;
 
   @override
   void initState() {
@@ -175,17 +176,22 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                 language: language,
               ),
               const SizedBox(height: 8),
-              SizedBox(
+              AnimatedContainer(
                 key: const ValueKey('prayer-card-pager'),
-                height: 298,
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                height: _prayerPagerPage == 0 ? 238 : 264,
                 child: PageView(
+                  onPageChanged: (page) {
+                    if (page == _prayerPagerPage) return;
+                    setState(() => _prayerPagerPage = page);
+                  },
                   children: [
                     _Panel(
                       child: Column(
                         children: [
                           for (final name in [
                             'Fajr',
-                            'Sunrise',
                             'Dhuhr',
                             'Asr',
                             'Maghrib',
@@ -211,34 +217,37 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                       ),
                     ),
                     _Panel(
-                      child: Column(
-                        children: [
-                          _MosqueTimesHeader(language: language),
-                          for (final name in mosquePrayerNames)
-                            _MosquePrayerRow(
-                              name: name,
-                              calculatedAzan: schedule?.times[name],
-                              savedTime: mosqueTimes[name],
-                              active: current?.name == name,
-                              language: language,
-                              onAzanTap: mosqueTimesReady
-                                  ? () => _editMosqueTime(
-                                      name,
-                                      mosqueTimes[name],
-                                      schedule?.times[name],
-                                      editAzan: true,
-                                    )
-                                  : null,
-                              onJamaatTap: mosqueTimesReady
-                                  ? () => _editMosqueTime(
-                                      name,
-                                      mosqueTimes[name],
-                                      schedule?.times[name],
-                                      editAzan: false,
-                                    )
-                                  : null,
-                            ),
-                        ],
+                      child: SingleChildScrollView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: Column(
+                          children: [
+                            _MosqueTimesHeader(language: language),
+                            for (final name in mosquePrayerNames)
+                              _MosquePrayerRow(
+                                name: name,
+                                calculatedAzan: schedule?.times[name],
+                                savedTime: mosqueTimes[name],
+                                active: current?.name == name,
+                                language: language,
+                                onAzanTap: mosqueTimesReady
+                                    ? () => _editMosqueTime(
+                                        name,
+                                        mosqueTimes[name],
+                                        schedule?.times[name],
+                                        editAzan: true,
+                                      )
+                                    : null,
+                                onJamaatTap: mosqueTimesReady
+                                    ? () => _editMosqueTime(
+                                        name,
+                                        mosqueTimes[name],
+                                        schedule?.times[name],
+                                        editAzan: false,
+                                      )
+                                    : null,
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -405,12 +414,20 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                             language == AppLanguage.bangla
                                 ? 'আজকের আয়াত'
                                 : 'Today’s ayah',
-                            style: const TextStyle(fontWeight: FontWeight.w500),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const SizedBox(height: 3),
                           Text(
                             todaysAyah?.arabicText ?? '…',
-                            style: TextStyle(fontSize: 21),
+                            style: const TextStyle(
+                              fontFamily: 'QPC Hafs',
+                              fontSize: 26,
+                              height: 1.35,
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
                           Text(
                             todaysAyah == null
@@ -421,7 +438,9 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                                   )
                                 : '${todaysAyah.translation ?? ''} · ${appText(language, 'সূরা', 'Surah')} ${localDigits('${todaysAyah.surahNumber}:${todaysAyah.ayahNumber}', language)}',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 15,
+                              height: 1.35,
+                              fontWeight: FontWeight.w400,
                               color: Theme.of(
                                 context,
                               ).colorScheme.onSurfaceVariant,
@@ -526,15 +545,15 @@ class _DateHero extends StatelessWidget {
 
     return Container(
       key: const ValueKey('home-date-summary'),
-      constraints: const BoxConstraints(minHeight: 116),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      constraints: const BoxConstraints(minHeight: 102),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [cardStart, cardEnd],
         ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: scheme.onPrimary.withValues(alpha: 0.18),
           width: 1.2,
@@ -542,8 +561,8 @@ class _DateHero extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: scheme.shadow.withValues(alpha: 0.12),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -626,9 +645,9 @@ class _ReferenceDateBlock extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: primaryText,
-            fontSize: wide ? 16 : 14,
-            height: 1.15,
-            fontWeight: FontWeight.w700,
+            fontSize: wide ? 16 : 15,
+            height: 1.12,
+            fontWeight: FontWeight.w500,
           ),
         ),
         SizedBox(height: wide ? 7 : 5),
@@ -639,8 +658,8 @@ class _ReferenceDateBlock extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: secondaryText,
-            fontSize: wide ? 16 : 14,
-            fontWeight: FontWeight.w600,
+            fontSize: wide ? 15 : 14,
+            fontWeight: FontWeight.w400,
           ),
         ),
         SizedBox(height: wide ? 7 : 5),
@@ -651,8 +670,8 @@ class _ReferenceDateBlock extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: primaryText,
-            fontSize: wide ? 16 : 14,
-            fontWeight: FontWeight.w600,
+            fontSize: wide ? 15 : 14,
+            fontWeight: FontWeight.w400,
           ),
         ),
       ],
@@ -698,9 +717,9 @@ class _ReferenceSunStat extends StatelessWidget {
             maxLines: 1,
             style: TextStyle(
               color: scheme.onPrimary,
-              fontSize: wide ? 22 : 17,
+              fontSize: wide ? 21 : 18,
               height: 1,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
@@ -712,9 +731,9 @@ class _ReferenceSunStat extends StatelessWidget {
             maxLines: 1,
             style: TextStyle(
               color: scheme.onPrimary.withValues(alpha: 0.76),
-              fontSize: wide ? 15 : 12,
+              fontSize: wide ? 14 : 13,
               height: 1,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ),
@@ -806,8 +825,8 @@ class _CurrentPrayerCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -816,10 +835,10 @@ class _CurrentPrayerCard extends StatelessWidget {
             child: Icon(
               hasCurrent ? Icons.mosque_rounded : Icons.schedule_rounded,
               color: Theme.of(context).colorScheme.primary,
-              size: 24,
+              size: 22,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -839,9 +858,7 @@ class _CurrentPrayerCard extends StatelessWidget {
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 16,
-                    fontWeight: language == AppLanguage.english
-                        ? FontWeight.w500
-                        : FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
@@ -849,9 +866,7 @@ class _CurrentPrayerCard extends StatelessWidget {
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
                     fontSize: language == AppLanguage.english ? 12 : 13,
-                    fontWeight: language == AppLanguage.english
-                        ? FontWeight.w400
-                        : FontWeight.w500,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
@@ -859,10 +874,10 @@ class _CurrentPrayerCard extends StatelessWidget {
           ),
           Container(
             width: 1,
-            height: 48,
+            height: 42,
             color: Theme.of(context).colorScheme.outlineVariant,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -877,10 +892,8 @@ class _CurrentPrayerCard extends StatelessWidget {
                 remaining == null ? '—' : localCountdown(remaining, language),
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
-                  fontSize: language == AppLanguage.english ? 16 : 17,
-                  fontWeight: language == AppLanguage.english
-                      ? FontWeight.w500
-                      : FontWeight.w600,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -913,8 +926,8 @@ class _PrayerRow extends StatelessWidget {
 
     return Container(
       key: ValueKey('prayer-row-$name'),
-      constraints: const BoxConstraints(minHeight: 46, maxHeight: 46),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      constraints: const BoxConstraints(minHeight: 44, maxHeight: 44),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
         color: active ? scheme.primaryContainer.withValues(alpha: 0.5) : null,
@@ -927,7 +940,7 @@ class _PrayerRow extends StatelessWidget {
                 : name == 'Sunrise'
                 ? Icons.wb_sunny_outlined
                 : Icons.mosque_outlined,
-            size: 18,
+            size: 17,
             color: muted,
           ),
           const SizedBox(width: 8),
@@ -942,7 +955,7 @@ class _PrayerRow extends StatelessWidget {
                 fontSize: 14,
                 fontWeight: language == AppLanguage.english
                     ? FontWeight.w500
-                    : FontWeight.w600,
+                    : FontWeight.w400,
               ),
             ),
           ),
@@ -968,13 +981,13 @@ class _PrayerRow extends StatelessWidget {
                           active: active,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 14),
                       Container(
                         width: 1,
-                        height: 24,
+                        height: 22,
                         color: scheme.outlineVariant,
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: _PrayerTimeCell(
                           key: ValueKey('prayer-end-$name'),
@@ -1019,9 +1032,7 @@ class _PrayerTimeCell extends StatelessWidget {
             color: valueColor,
             fontSize: language == AppLanguage.english ? 14 : 15,
             height: 1,
-            fontWeight: language == AppLanguage.english
-                ? FontWeight.w400
-                : FontWeight.w600,
+            fontWeight: FontWeight.w400,
           ),
         ),
       ),
@@ -1042,11 +1053,11 @@ class _MosqueTimesHeader extends StatelessWidget {
       fontSize: language == AppLanguage.english ? 12 : 11,
       fontWeight: language == AppLanguage.english
           ? FontWeight.w500
-          : FontWeight.w600,
+          : FontWeight.w400,
     );
 
     return Container(
-      height: 40,
+      height: 32,
       padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
@@ -1109,8 +1120,8 @@ class _MosquePrayerRow extends StatelessWidget {
 
     return Container(
       key: ValueKey('mosque-time-$name'),
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      height: 35,
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
         color: active ? scheme.primaryContainer.withValues(alpha: 0.5) : null,
@@ -1134,7 +1145,7 @@ class _MosquePrayerRow extends StatelessWidget {
                 fontSize: 14,
                 fontWeight: language == AppLanguage.english
                     ? FontWeight.w500
-                    : FontWeight.w600,
+                    : FontWeight.w400,
               ),
             ),
           ),
@@ -1198,11 +1209,9 @@ class _MosqueTimeCell extends StatelessWidget {
             maxLines: 1,
             style: TextStyle(
               color: foreground,
-              fontSize: language == AppLanguage.english ? 14 : 15,
+              fontSize: 14,
               height: 1,
-              fontWeight: language == AppLanguage.english
-                  ? FontWeight.w400
-                  : FontWeight.w600,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ),

@@ -89,7 +89,13 @@ void main() {
     expect(find.text('আজকের আয়াত'), findsOneWidget);
     expect(find.text('আজকের দোয়া'), findsNothing);
     expect(find.text(ayah.arabicText), findsOneWidget);
-    expect(find.textContaining(ayah.translation!), findsOneWidget);
+    final arabic = tester.widget<Text>(find.text(ayah.arabicText));
+    expect(arabic.style?.fontFamily, 'QPC Hafs');
+    expect(arabic.style?.fontSize, greaterThanOrEqualTo(24));
+    final translationFinder = find.textContaining(ayah.translation!);
+    expect(translationFinder, findsOneWidget);
+    final translation = tester.widget<Text>(translationFinder);
+    expect(translation.style?.fontSize, greaterThanOrEqualTo(14));
   });
 
   testWidgets('home background and date hero follow every selected palette', (
@@ -421,18 +427,24 @@ void main() {
       expect(list.padding, const EdgeInsets.fromLTRB(12, 8, 12, 16));
       expect(
         tester.getSize(find.byKey(const ValueKey('prayer-row-Fajr'))).height,
-        inInclusiveRange(45, 47),
+        inInclusiveRange(43, 45),
       );
+      expect(
+        tester.getSize(find.byKey(const ValueKey('prayer-card-pager'))).height,
+        lessThanOrEqualTo(240),
+      );
+      expect(find.byKey(const ValueKey('prayer-row-Sunrise')), findsNothing);
       final hero = tester.widget<Container>(
         find.byKey(const ValueKey('home-date-summary')),
       );
       final decoration = hero.decoration! as BoxDecoration;
       expect(decoration.gradient, isNotNull);
-      expect(decoration.borderRadius, BorderRadius.circular(18));
+      expect(decoration.borderRadius, BorderRadius.circular(14));
+      expect(hero.constraints?.minHeight, lessThanOrEqualTo(104));
       expect(decoration.border, isNotNull);
       final prayerTime = tester.widget<Text>(fajrStart);
       expect(prayerTime.style?.fontSize, greaterThanOrEqualTo(14));
-      expect(prayerTime.style?.fontWeight, FontWeight.w600);
+      expect(prayerTime.style?.fontWeight, FontWeight.w400);
       expect(find.byIcon(Icons.radio_button_unchecked_rounded), findsNothing);
       expect(find.byIcon(Icons.check_circle_rounded), findsNothing);
       await tester.dragUntilVisible(
