@@ -431,7 +431,7 @@
       postPlaybackTarget(ayahKey, wordPosition);
     });
   }
-  function setActiveAyah(ayahKey) {
+  function setActiveAyah(ayahKey, deferFollowToWord = false) {
     root.querySelectorAll('.word.active-word')
       .forEach((element) => element.classList.remove('active-word'));
     clearMeaningBubble();
@@ -442,8 +442,7 @@
       );
     });
     requestAnimationFrame(() => {
-      const activeWord = root.querySelector('.word.active-word');
-      if (activeWord && activeWord.dataset.ayahKey === ayahKey) return;
+      if (Boolean(deferFollowToWord)) return;
       ensurePlaybackTargetVisible(ayahKey);
       postPlaybackTarget(ayahKey);
     });
