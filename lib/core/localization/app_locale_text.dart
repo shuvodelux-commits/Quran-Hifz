@@ -69,6 +69,21 @@ String localGregorianDate(DateTime value, AppLanguage language) {
   );
 }
 
+String localGregorianDateRange(
+  DateTime start,
+  DateTime end,
+  AppLanguage language,
+) {
+  final months = language == AppLanguage.bangla
+      ? _gregorianBangla
+      : _gregorianEnglish;
+  final startText = start.year == end.year
+      ? '${start.day} ${months[start.month - 1]}'
+      : '${start.day} ${months[start.month - 1]} ${start.year}';
+  final endText = '${end.day} ${months[end.month - 1]} ${end.year}';
+  return localDigits('$startText – $endText', language);
+}
+
 const _hijriMonths = <String, String>{
   'Muharram': 'মুহাররম',
   'Safar': 'সফর',
@@ -91,6 +106,11 @@ String localHijriDate(String value, AppLanguage language) {
     localized = localized.replaceAll(entry.key, entry.value);
   }
   return localDigits(localized, language);
+}
+
+String localHijriMonthName(String canonicalMonth, AppLanguage language) {
+  if (language == AppLanguage.english) return canonicalMonth;
+  return _hijriMonths[canonicalMonth] ?? canonicalMonth;
 }
 
 String localPrayerName(String name, AppLanguage language) =>

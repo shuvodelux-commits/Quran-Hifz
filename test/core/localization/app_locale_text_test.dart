@@ -31,4 +31,46 @@ void main() {
       '৩ রবিউস সানি ১৪৪৮ হি.',
     );
   });
+
+  test(
+    'Gregorian ranges compact shared years and preserve cross-year identity',
+    () {
+      expect(
+        localGregorianDateRange(
+          DateTime(2026, 9, 12),
+          DateTime(2026, 10, 11),
+          AppLanguage.bangla,
+        ),
+        '১২ সেপ্টেম্বর – ১১ অক্টোবর ২০২৬',
+      );
+      expect(
+        localGregorianDateRange(
+          DateTime(2026, 9, 12),
+          DateTime(2026, 10, 11),
+          AppLanguage.english,
+        ),
+        '12 September – 11 October 2026',
+      );
+      expect(
+        localGregorianDateRange(
+          DateTime(2026, 12, 31),
+          DateTime(2027, 1, 2),
+          AppLanguage.english,
+        ),
+        '31 December 2026 – 2 January 2027',
+      );
+    },
+  );
+
+  test('Hijri month names localize independently of full dates', () {
+    expect(
+      localHijriMonthName('Rabi al-Thani', AppLanguage.bangla),
+      'রবিউস সানি',
+    );
+    expect(
+      localHijriMonthName('Rabi al-Thani', AppLanguage.english),
+      'Rabi al-Thani',
+    );
+    expect(localHijriMonthName('Unknown', AppLanguage.bangla), 'Unknown');
+  });
 }
