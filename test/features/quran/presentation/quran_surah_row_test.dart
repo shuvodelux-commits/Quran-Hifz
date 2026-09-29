@@ -39,7 +39,8 @@ void main() {
     final arabicName = tester.widget<Text>(find.text('surah002'));
     expect(arabicName.style?.fontFamily, 'SurahNameV4');
     final englishName = tester.widget<Text>(find.text('Al-Baqarah'));
-    expect(englishName.style?.fontSize, 18);
+    expect(englishName.style?.fontSize, 17);
+    expect(englishName.style?.fontWeight, FontWeight.w400);
     expect(find.byType(Card), findsNothing);
     expect(
       tester.getSize(find.byType(QuranSurahRow)).height,

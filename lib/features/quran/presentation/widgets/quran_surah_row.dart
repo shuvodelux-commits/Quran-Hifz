@@ -81,8 +81,8 @@ class QuranSurahRow extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w400,
                                   ),
                             ),
                             const SizedBox(height: 1),

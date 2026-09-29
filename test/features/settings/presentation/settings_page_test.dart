@@ -51,11 +51,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(preferences.value.theme, AppThemePreference.green);
 
-      await tester.scrollUntilVisible(
-        find.byKey(const ValueKey('settings-location-card')),
-        180,
-        scrollable: find.byType(Scrollable).first,
-      );
+      await tester.drag(find.byType(ListView), const Offset(0, -320));
+      await tester.pumpAndSettle();
       expect(
         find.byKey(const ValueKey('settings-location-card')),
         findsOneWidget,

@@ -70,13 +70,14 @@ void main() {
       englishDark.primaryTextTheme.titleLarge?.color,
       englishDark.colorScheme.onPrimary,
     );
-    expect(blue.textTheme.bodyLarge?.fontSize, 18);
-    expect(blue.textTheme.bodyMedium?.fontSize, 16);
-    expect(blue.textTheme.bodySmall?.fontSize, 15);
-    expect(blue.textTheme.titleLarge?.fontSize, 24);
-    expect(blue.textTheme.titleMedium?.fontSize, 20);
-    expect(blue.textTheme.labelLarge?.fontSize, 17);
-    expect(blue.textTheme.titleLarge?.fontWeight, FontWeight.w600);
+    expect(blue.textTheme.bodyLarge?.fontSize, 16);
+    expect(blue.textTheme.bodyMedium?.fontSize, 14);
+    expect(blue.textTheme.bodySmall?.fontSize, 13);
+    expect(blue.textTheme.titleLarge?.fontSize, 20);
+    expect(blue.textTheme.titleMedium?.fontSize, 17);
+    expect(blue.textTheme.titleSmall?.fontWeight, FontWeight.w400);
+    expect(blue.textTheme.labelLarge?.fontSize, 14);
+    expect(blue.textTheme.titleLarge?.fontWeight, FontWeight.w400);
     expect(blue.colorScheme.secondary, ReferenceColors.deepBlue);
     expect(blue.colorScheme.primaryContainer, ReferenceColors.blueTint);
     expect(blue.colorScheme.onPrimaryContainer, const Color(0xFF172126));
@@ -89,7 +90,7 @@ void main() {
     expect(palette.quranHeader, ReferenceColors.quranCardBlue);
     expect(palette.goldAccent, ReferenceColors.goldAccent);
     expect(ReferenceColors.cardSurface, Colors.white);
-    expect(blue.navigationBarTheme.height, inInclusiveRange(66, 70));
+    expect(blue.navigationBarTheme.height, inInclusiveRange(62, 66));
     expect(blue.scaffoldBackgroundColor, blue.colorScheme.surface);
     expect(green.scaffoldBackgroundColor, green.colorScheme.surface);
     expect(pink.scaffoldBackgroundColor, pink.colorScheme.surface);

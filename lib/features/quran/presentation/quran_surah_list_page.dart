@@ -258,9 +258,9 @@ class _QuranSurahListPageState extends ConsumerState<QuranSurahListPage> {
   }
 
   void _openHifz() {
-    Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(builder: (_) => const HifzHomePage()),
-    );
+    Navigator.of(
+      context,
+    ).push<void>(MaterialPageRoute<void>(builder: (_) => const HifzHomePage()));
   }
 
   Future<void> _openTafsirSelector(List<QuranSurahSummary> items) async {
@@ -342,7 +342,7 @@ class _JuzList extends ConsumerWidget {
                   ),
                   title: Text(
                     '${appText(language, 'পারা', 'Juz')} ${localDigits('${juz.number}', language)}',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: const TextStyle(fontWeight: FontWeight.w400),
                   ),
                   subtitle: Text(
                     '${_surahName(start, language)} ${localDigits('${juz.firstTarget.ayahNumber}', language)} — ${_surahName(end, language)} ${localDigits('${juz.lastTarget.ayahNumber}', language)}',

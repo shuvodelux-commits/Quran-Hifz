@@ -39,10 +39,9 @@ class SettingsPage extends ConsumerWidget {
           ),
         ),
         data: (value) => ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
           children: [
             _SettingsSectionHeader(
-              icon: Icons.palette_outlined,
               title: appText(
                 value.language,
                 'অ্যাপের রূপ ও ভাষা',
@@ -54,7 +53,7 @@ class SettingsPage extends ConsumerWidget {
                 'Choose app language and UI color',
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-language-card'),
               children: [
@@ -85,7 +84,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-theme-card'),
               children: [
@@ -93,7 +92,7 @@ class SettingsPage extends ConsumerWidget {
                   appText(value.language, 'UI রং', 'UI color'),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 _ThemePicker(
                   language: value.language,
                   selected: value.theme,
@@ -103,9 +102,8 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             _SettingsSectionHeader(
-              icon: Icons.mosque_outlined,
               title: appText(
                 value.language,
                 'সালাত ও অবস্থান',
@@ -117,7 +115,7 @@ class SettingsPage extends ConsumerWidget {
                 'Asr calculation and prayer location',
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-asr-card'),
               children: [
@@ -157,7 +155,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-location-card'),
               children: [
@@ -192,9 +190,8 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             _SettingsSectionHeader(
-              icon: Icons.menu_book_outlined,
               title: appText(value.language, 'কুরআন পড়া', 'Quran Reading'),
               subtitle: appText(
                 value.language,
@@ -202,7 +199,7 @@ class SettingsPage extends ConsumerWidget {
                 'Font, Tajweed and tap behavior',
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-quran-font-card'),
               children: [
@@ -244,7 +241,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-tajweed-card'),
               children: [
@@ -287,7 +284,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-tap-translation-card'),
               children: [
@@ -307,7 +304,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-tap-word-card'),
               children: [
@@ -327,9 +324,8 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             _SettingsSectionHeader(
-              icon: Icons.text_fields_rounded,
               title: appText(
                 value.language,
                 'লেখা ও পড়ার বিন্যাস',
@@ -341,7 +337,7 @@ class SettingsPage extends ConsumerWidget {
                 'Reading size, spacing and live preview',
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-typography-preview-card'),
               children: [
@@ -351,7 +347,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-reading-scale-card'),
               children: [
@@ -427,7 +423,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-show-translation-card'),
               children: [
@@ -443,7 +439,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-active-word-card'),
               children: [
@@ -470,7 +466,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-playback-meaning-card'),
               children: [
@@ -497,9 +493,8 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             _SettingsSectionHeader(
-              icon: Icons.graphic_eq_rounded,
               title: appText(
                 value.language,
                 'অডিও ও তিলাওয়াত',
@@ -511,7 +506,7 @@ class SettingsPage extends ConsumerWidget {
                 'Repeat, speed and reciter',
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-repeat-card'),
               children: [
@@ -531,7 +526,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-speed-card'),
               children: [
@@ -547,7 +542,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-repeat-pause-card'),
               children: [
@@ -571,7 +566,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-auto-next-card'),
               children: [
@@ -591,7 +586,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SettingsCard(
               key: const ValueKey('settings-reciter-card'),
               children: [
@@ -631,13 +626,8 @@ class SettingsPage extends ConsumerWidget {
 }
 
 class _SettingsSectionHeader extends StatelessWidget {
-  const _SettingsSectionHeader({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
+  const _SettingsSectionHeader({required this.title, required this.subtitle});
 
-  final IconData icon;
   final String title;
   final String subtitle;
 
@@ -649,22 +639,13 @@ class _SettingsSectionHeader extends StatelessWidget {
       container: true,
       label: '$title. $subtitle',
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(icon, size: 22, color: colors.primary),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                title,
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: colors.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+        padding: const EdgeInsets.fromLTRB(4, 2, 4, 0),
+        child: Text(
+          title,
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: colors.primary,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );
@@ -736,8 +717,8 @@ class _ThemeChoice extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            constraints: const BoxConstraints(minHeight: 72),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            constraints: const BoxConstraints(minHeight: 58),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
@@ -748,8 +729,8 @@ class _ThemeChoice extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  width: 22,
-                  height: 22,
+                  width: 18,
+                  height: 18,
                   decoration: BoxDecoration(
                     color: swatch,
                     shape: BoxShape.circle,
@@ -765,7 +746,7 @@ class _ThemeChoice extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
                     ),
                   ),
                 ),
@@ -773,7 +754,7 @@ class _ThemeChoice extends StatelessWidget {
                   const SizedBox(width: 4),
                   Icon(
                     Icons.check_circle_rounded,
-                    size: 18,
+                    size: 16,
                     color: colors.primary,
                   ),
                 ],
@@ -831,7 +812,7 @@ class _PlaybackChoiceGroup<T> extends StatelessWidget {
         Text(
           label,
           style: theme.textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 8),
@@ -864,24 +845,26 @@ class _SettingsCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: colors.shadow.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: colors.shadow.withValues(alpha: 0.035),
+            blurRadius: 5,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
       child: Material(
         color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         clipBehavior: Clip.antiAlias,
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            border: Border.all(color: colors.outlineVariant),
-            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: colors.outlineVariant.withValues(alpha: 0.75),
+            ),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
