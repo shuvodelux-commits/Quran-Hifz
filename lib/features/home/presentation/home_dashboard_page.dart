@@ -203,7 +203,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
               const SizedBox(height: 8),
               SizedBox(
                 key: const ValueKey('prayer-card-pager'),
-                height: 298,
+                height: 270,
                 child: PageView(
                   controller: _prayerCardController,
                   onPageChanged: (page) =>
@@ -837,9 +837,9 @@ class _ReferenceDateBlock extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: primaryText,
-            fontSize: wide ? 16 : 14,
+            fontSize: wide ? 15 : 13,
             height: 1.15,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w500,
           ),
         ),
         SizedBox(height: wide ? 7 : 5),
@@ -850,8 +850,8 @@ class _ReferenceDateBlock extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: secondaryText,
-            fontSize: wide ? 16 : 14,
-            fontWeight: FontWeight.w600,
+            fontSize: wide ? 14 : 13,
+            fontWeight: FontWeight.w400,
           ),
         ),
         SizedBox(height: wide ? 7 : 5),
@@ -862,8 +862,8 @@ class _ReferenceDateBlock extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: primaryText,
-            fontSize: wide ? 16 : 14,
-            fontWeight: FontWeight.w600,
+            fontSize: wide ? 14 : 13,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -909,9 +909,9 @@ class _ReferenceSunStat extends StatelessWidget {
             maxLines: 1,
             style: TextStyle(
               color: scheme.onPrimary,
-              fontSize: wide ? 22 : 17,
+              fontSize: wide ? 20 : 16,
               height: 1,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
@@ -923,9 +923,9 @@ class _ReferenceSunStat extends StatelessWidget {
             maxLines: 1,
             style: TextStyle(
               color: scheme.onPrimary.withValues(alpha: 0.76),
-              fontSize: wide ? 15 : 12,
+              fontSize: wide ? 13 : 11,
               height: 1,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ),
@@ -1024,8 +1024,8 @@ class _CurrentPrayerCard extends StatelessWidget {
                   title,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
-                    fontSize: language == AppLanguage.english ? 14 : 12,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
                 Text(
@@ -1034,20 +1034,16 @@ class _CurrentPrayerCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 16,
-                    fontWeight: language == AppLanguage.english
-                        ? FontWeight.w500
-                        : FontWeight.w600,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
                   '$timeLabel ${localClock(targetTime, language)}',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
-                    fontSize: language == AppLanguage.english ? 12 : 13,
-                    fontWeight: language == AppLanguage.english
-                        ? FontWeight.w400
-                        : FontWeight.w500,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
@@ -1064,19 +1060,14 @@ class _CurrentPrayerCard extends StatelessWidget {
             children: [
               Text(
                 countdownLabel,
-                style: TextStyle(
-                  fontSize: language == AppLanguage.english ? 12 : 11,
-                  fontWeight: FontWeight.w400,
-                ),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w400),
               ),
               Text(
                 remaining == null ? '—' : localCountdown(remaining, language),
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
-                  fontSize: language == AppLanguage.english ? 16 : 17,
-                  fontWeight: language == AppLanguage.english
-                      ? FontWeight.w500
-                      : FontWeight.w600,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -1111,8 +1102,8 @@ class _PrayerRow extends StatelessWidget {
 
     return Container(
       key: ValueKey('prayer-row-$name'),
-      constraints: const BoxConstraints(minHeight: 46, maxHeight: 46),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      constraints: const BoxConstraints(minHeight: 36, maxHeight: 36),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
         color: active ? scheme.primaryContainer.withValues(alpha: 0.5) : null,
@@ -1130,17 +1121,15 @@ class _PrayerRow extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           SizedBox(
-            width: 68,
+            width: 72,
             child: Text(
               localPrayerName(name, language),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: foreground,
-                fontSize: 14,
-                fontWeight: language == AppLanguage.english
-                    ? FontWeight.w500
-                    : FontWeight.w600,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -1166,13 +1155,13 @@ class _PrayerRow extends StatelessWidget {
                           active: active,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 12),
                       Container(
                         width: 1,
-                        height: 24,
+                        height: 22,
                         color: scheme.outlineVariant,
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: _PrayerTimeCell(
                           key: ValueKey('prayer-end-$name'),
@@ -1215,11 +1204,11 @@ class _PrayerTimeCell extends StatelessWidget {
           maxLines: 1,
           style: TextStyle(
             color: valueColor,
-            fontSize: language == AppLanguage.english ? 14 : 15,
+            fontSize: language == AppLanguage.english ? 13 : 14,
             height: 1,
             fontWeight: language == AppLanguage.english
                 ? FontWeight.w400
-                : FontWeight.w600,
+                : FontWeight.w500,
           ),
         ),
       ),
@@ -1237,14 +1226,12 @@ class _MosqueTimesHeader extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final style = TextStyle(
       color: scheme.onSurfaceVariant,
-      fontSize: language == AppLanguage.english ? 12 : 11,
-      fontWeight: language == AppLanguage.english
-          ? FontWeight.w500
-          : FontWeight.w600,
+      fontSize: 11,
+      fontWeight: FontWeight.w500,
     );
 
     return Container(
-      height: 40,
+      height: 32,
       padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
@@ -1262,9 +1249,9 @@ class _MosqueTimesHeader extends StatelessWidget {
               style: style,
             ),
           ),
-          const SizedBox(width: 16),
-          Container(width: 1, height: 24, color: scheme.outlineVariant),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
+          Container(width: 1, height: 22, color: scheme.outlineVariant),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               appText(language, 'জামাত', 'Jamaat'),
@@ -1309,7 +1296,7 @@ class _MosquePrayerRow extends StatelessWidget {
 
     return Container(
       key: ValueKey('mosque-time-$name'),
-      height: 40,
+      height: 36,
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: scheme.outlineVariant)),
@@ -1324,17 +1311,15 @@ class _MosquePrayerRow extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           SizedBox(
-            width: 68,
+            width: 72,
             child: Text(
               localPrayerName(name, language),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: foreground,
-                fontSize: 14,
-                fontWeight: language == AppLanguage.english
-                    ? FontWeight.w500
-                    : FontWeight.w600,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -1348,9 +1333,9 @@ class _MosquePrayerRow extends StatelessWidget {
               onTap: onAzanTap,
             ),
           ),
-          const SizedBox(width: 16),
-          Container(width: 1, height: 24, color: scheme.outlineVariant),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
+          Container(width: 1, height: 22, color: scheme.outlineVariant),
+          const SizedBox(width: 12),
           Expanded(
             child: _MosqueTimeCell(
               cellKey: ValueKey('mosque-jamaat-$name'),
@@ -1398,11 +1383,11 @@ class _MosqueTimeCell extends StatelessWidget {
             maxLines: 1,
             style: TextStyle(
               color: foreground,
-              fontSize: language == AppLanguage.english ? 14 : 15,
+              fontSize: language == AppLanguage.english ? 13 : 14,
               height: 1,
               fontWeight: language == AppLanguage.english
                   ? FontWeight.w400
-                  : FontWeight.w600,
+                  : FontWeight.w500,
             ),
           ),
         ),

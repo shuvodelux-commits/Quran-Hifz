@@ -275,11 +275,11 @@ void main() {
     final countdownLabel = tester.widget<Text>(
       find.text(activePrayer == null ? 'Starts in' : 'Ends in'),
     );
-    expect(currentTitle.style?.fontSize, 14);
-    expect(currentTitle.style?.fontWeight, FontWeight.w500);
+    expect(currentTitle.style?.fontSize, 12);
+    expect(currentTitle.style?.fontWeight, FontWeight.w400);
     expect(currentTimeLine.style?.fontSize, 12);
     expect(currentTimeLine.style?.fontWeight, FontWeight.w400);
-    expect(countdownLabel.style?.fontSize, 12);
+    expect(countdownLabel.style?.fontSize, 11);
     expect(countdownLabel.style?.fontWeight, FontWeight.w400);
 
     final gregorianParts = localGregorianDate(
@@ -312,9 +312,9 @@ void main() {
       ),
     );
     final fajrStart = tester.widget<Text>(start);
-    expect(fajrName.style?.fontSize, 14);
+    expect(fajrName.style?.fontSize, 13);
     expect(fajrName.style?.fontWeight, FontWeight.w500);
-    expect(fajrStart.style?.fontSize, 14);
+    expect(fajrStart.style?.fontSize, 13);
     expect(fajrStart.style?.fontWeight, FontWeight.w400);
 
     await tester.dragUntilVisible(
@@ -410,13 +410,13 @@ void main() {
       ),
     );
 
-    expect(azanHeader.style?.fontSize, 12);
+    expect(azanHeader.style?.fontSize, 11);
     expect(azanHeader.style?.fontWeight, FontWeight.w500);
-    expect(jamaatHeader.style?.fontSize, 12);
+    expect(jamaatHeader.style?.fontSize, 11);
     expect(jamaatHeader.style?.fontWeight, FontWeight.w500);
-    expect(fajrName.style?.fontSize, 14);
+    expect(fajrName.style?.fontSize, 13);
     expect(fajrName.style?.fontWeight, FontWeight.w500);
-    expect(azanTime.style?.fontSize, 14);
+    expect(azanTime.style?.fontSize, 13);
     expect(azanTime.style?.fontWeight, FontWeight.w400);
   });
 
@@ -505,7 +505,7 @@ void main() {
       expect(list.padding, const EdgeInsets.fromLTRB(12, 8, 12, 16));
       expect(
         tester.getSize(find.byKey(const ValueKey('prayer-row-Fajr'))).height,
-        inInclusiveRange(45, 47),
+        inInclusiveRange(35, 37),
       );
       final hero = tester.widget<Container>(
         find.byKey(const ValueKey('home-date-summary')),
@@ -516,7 +516,7 @@ void main() {
       expect(decoration.border, isNotNull);
       final prayerTime = tester.widget<Text>(fajrStart);
       expect(prayerTime.style?.fontSize, greaterThanOrEqualTo(14));
-      expect(prayerTime.style?.fontWeight, FontWeight.w600);
+      expect(prayerTime.style?.fontWeight, FontWeight.w500);
       expect(find.byIcon(Icons.radio_button_unchecked_rounded), findsNothing);
       expect(find.byIcon(Icons.check_circle_rounded), findsNothing);
       await tester.dragUntilVisible(
