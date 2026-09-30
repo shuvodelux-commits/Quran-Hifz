@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_variant.dart';
+import 'package:quran_hifz/features/hifz/domain/hifz_reader_mode.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 
 void main() {
@@ -29,6 +30,9 @@ void main() {
     expect(preferences.hifzFontSize, 32);
     expect(preferences.hifzLineHeight, 1.35);
     expect(preferences.hifzShowTajweedColors, isTrue);
+    expect(preferences.hifzReaderMode, HifzReaderMode.page);
+    expect(preferences.hifzContinuousAutoScrollEnabled, isFalse);
+    expect(preferences.hifzAutoScrollSpeed, 0.35);
   });
 
   test(
@@ -80,12 +84,18 @@ void main() {
       hifzFontSize: 48,
       hifzLineHeight: 1.8,
       hifzShowTajweedColors: false,
+      hifzReaderMode: HifzReaderMode.continuous,
+      hifzContinuousAutoScrollEnabled: true,
+      hifzAutoScrollSpeed: 0.173,
     );
     expect(hifzChanged.quranFont, QuranFontPreference.qpcHafs);
     expect(hifzChanged.hifzMushafVariant, QuranMushafVariant.qcfV2);
     expect(hifzChanged.hifzFontSize, 48);
     expect(hifzChanged.hifzLineHeight, 1.8);
     expect(hifzChanged.hifzShowTajweedColors, isFalse);
+    expect(hifzChanged.hifzReaderMode, HifzReaderMode.continuous);
+    expect(hifzChanged.hifzContinuousAutoScrollEnabled, isTrue);
+    expect(hifzChanged.hifzAutoScrollSpeed, 0.173);
 
     final quranChanged = hifzChanged.copyWith(
       quranFont: QuranFontPreference.indoPak,
@@ -93,6 +103,8 @@ void main() {
     expect(quranChanged.quranFont, QuranFontPreference.indoPak);
     expect(quranChanged.hifzMushafVariant, QuranMushafVariant.qcfV2);
     expect(quranChanged.hifzFontSize, 48);
+    expect(quranChanged.hifzReaderMode, HifzReaderMode.continuous);
+    expect(quranChanged.hifzAutoScrollSpeed, 0.173);
   });
 
 }

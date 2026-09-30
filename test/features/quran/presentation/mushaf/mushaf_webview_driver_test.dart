@@ -27,6 +27,28 @@ void main() {
     driver = ControllerMushafWebViewDriver(controller);
   });
 
+
+  test('renderer readiness ignores about:blank and fires once for renderer asset', () {
+    final gate = MushafWebViewLoadGate();
+
+    expect(gate.onPageFinished('about:blank'), isFalse);
+
+    gate.markRendererLoadRequested();
+    expect(gate.onPageFinished('about:blank'), isFalse);
+    expect(
+      gate.onPageFinished(
+        'file:///android_asset/flutter_assets/assets/mushaf/renderer/index.html',
+      ),
+      isTrue,
+    );
+    expect(
+      gate.onPageFinished(
+        'file:///android_asset/flutter_assets/assets/mushaf/renderer/index.html',
+      ),
+      isFalse,
+    );
+  });
+
   test('loadRenderer loads only the bundled renderer asset', () async {
     await driver.loadRenderer();
 
@@ -71,6 +93,20 @@ void main() {
     expect(v2['pageFontFamily'], 'QcfV2Page');
     expect(v4['pageFontFamily'], 'QcfV4TajweedPage');
     expect(v2['pageFontFamily'], isNot(v4['pageFontFamily']));
+  });
+
+
+  test('continuous Mushaf payload preserves typography and opts into natural height', () {
+    final payload = _fixture(
+      display: 'A',
+      fontSize: 48,
+      lineHeight: 1.8,
+      continuousLayout: true,
+    ).toRendererJson();
+
+    expect(payload['fontSize'], 48);
+    expect(payload['lineHeight'], 1.8);
+    expect(payload['continuousLayout'], isTrue);
   });
 
   test('ayah end carries Unicode Hafs fallback text', () {
@@ -128,15 +164,39 @@ void main() {
   });
 
   test(
-    'typed commands encode arguments instead of interpolating them',
+    'typed commands encode arguments and Bangla meaning without interpolation',
     () async {
-      await driver.setActiveWord("2:255');window.evil=true;//", 3);
+      await driver.setActiveWord(
+        "2:255');window.evil=true;//",
+        3,
+        banglaMeaning: "আল্লাহ');window.evil=true;//",
+      );
 
       final js = controller.lastScript!;
       expect(js, isNot(contains('window.evil=true')));
-      expect(_decodeFirstArgumentList(js), ["2:255');window.evil=true;//", 3]);
+      expect(
+        _decodeFirstArgumentList(js),
+        [
+          "2:255');window.evil=true;//",
+          3,
+          "আল্লাহ');window.evil=true;//",
+        ],
+      );
     },
   );
+
+  test('active ayah can defer viewport follow to the active word', () async {
+    await driver.setActiveAyah(
+      '2:255',
+      deferFollowToWord: true,
+    );
+
+    expect(controller.lastScript, contains('setActiveAyah'));
+    expect(
+      _decodeFirstArgumentList(controller.lastScript!),
+      ['2:255', true],
+    );
+  });
 
   test('ignores unknown bridge events without state callbacks', () {
     channel.onMessage('{"type":"openUrl","url":"https://example.com"}');
@@ -186,6 +246,7 @@ MushafRenderPayload _fixture({
   double fontSize = 32,
   double lineHeight = 1.35,
   bool showTajweedColors = true,
+  bool continuousLayout = false,
 }) {
   return MushafRenderPayload(
     page: QcfMushafPage(
@@ -217,6 +278,7 @@ MushafRenderPayload _fixture({
     fontSize: fontSize,
     lineHeight: lineHeight,
     showTajweedColors: showTajweedColors,
+    continuousLayout: continuousLayout,
   );
 }
 

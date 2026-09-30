@@ -34,6 +34,65 @@ void main() {
   });
 
   test(
+    'resolver refreshes stale ayah-only timing so active word timing is restored',
+    () async {
+      final database = UserDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(database.close);
+      await database.saveSetting(selectedReciterSettingKey, '7');
+      await database.registerAudioSource(
+        audioKey: 'chapter:7:67',
+        audioType: 'chapter',
+        remoteUrl: 'https://example.test/67.mp3',
+        reciterId: 7,
+        surahNumber: 67,
+        format: 'mp3',
+      );
+      await database.replaceTimings(
+        reciterId: 7,
+        surahNumber: 67,
+        timestamps: const [
+          {
+            'verse_key': '67:1',
+            'timestamp_from': 100,
+            'timestamp_to': 900,
+            'segments': <List<int>>[],
+          },
+        ],
+      );
+      expect(
+        await database.getWordTimings(
+          reciterId: 7,
+          surahNumber: 67,
+          ayahNumber: 1,
+        ),
+        isEmpty,
+      );
+
+      final sync = _FakeAudioSync(database);
+      final resolver = DriftHifzPlaybackRequestResolver(
+        database: database,
+        syncService: sync,
+      );
+
+      await resolver.resolve(
+        const AyahRef(surahNumber: 67, ayahNumber: 1),
+        repeatCount: 1,
+        pauseBetweenRepeats: Duration.zero,
+      );
+
+      expect(sync.chapterCalls, [(reciterId: 7, surahNumber: 67)]);
+      expect(
+        await database.getWordTimings(
+          reciterId: 7,
+          surahNumber: 67,
+          ayahNumber: 1,
+        ),
+        hasLength(1),
+      );
+    },
+  );
+
+  test(
     'resolver fails when sync still cannot provide verified timing',
     () async {
       final database = UserDatabase.forTesting(NativeDatabase.memory());
@@ -216,12 +275,14 @@ class _FakeAudioSync implements QuranAudioSync {
       await database.replaceTimings(
         reciterId: reciterId,
         surahNumber: surahNumber,
-        timestamps: const [
+        timestamps: [
           {
             'verse_key': '67:1',
             'timestamp_from': 100,
             'timestamp_to': 900,
-            'segments': <List<int>>[],
+            'segments': <List<int>>[
+              [1, 100, 400],
+            ],
           },
         ],
       );

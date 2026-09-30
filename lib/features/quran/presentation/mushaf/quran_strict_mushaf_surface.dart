@@ -53,11 +53,15 @@ class QuranStrictMushafSurface extends StatefulWidget {
     required this.onAyahTap,
     this.activeAyahKey,
     this.activeWordPosition,
+    this.activeWordBanglaMeaning,
+    this.continuousLayout = false,
     this.selectedStartAyahKey,
     this.selectedEndAyahKey,
     this.fallbackWindow,
     this.fontLoader,
     this.webViewBuilder,
+    this.onPageMetrics,
+    this.onPlaybackTarget,
     this.onDiagnostic,
     this.onTap,
     this.secondaryActionLabel,
@@ -74,6 +78,8 @@ class QuranStrictMushafSurface extends StatefulWidget {
   final Uri pageFontUri;
   final String? activeAyahKey;
   final int? activeWordPosition;
+  final String? activeWordBanglaMeaning;
+  final bool continuousLayout;
   final String? selectedStartAyahKey;
   final String? selectedEndAyahKey;
   final QuranPageWindow? fallbackWindow;
@@ -83,6 +89,8 @@ class QuranStrictMushafSurface extends StatefulWidget {
   final ValueChanged<String> onAyahTap;
   final QuranStrictMushafFontLoader? fontLoader;
   final QuranStrictMushafWebViewBuilder? webViewBuilder;
+  final ValueChanged<MushafPageMetricsEvent>? onPageMetrics;
+  final ValueChanged<MushafPlaybackTargetEvent>? onPlaybackTarget;
   final MushafRendererDiagnostic? onDiagnostic;
   final VoidCallback? onTap;
   final String? secondaryActionLabel;
@@ -99,6 +107,7 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
   int _webViewEpoch = 0;
   int _rendererFailures = 0;
   bool _rendererFallback = false;
+  bool _pageReady = false;
 
   QuranStrictMushafFontLoader get _fontLoader =>
       widget.fontLoader ?? loadQuranStrictMushafFonts;
@@ -117,7 +126,8 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pageFontUri != widget.pageFontUri ||
         oldWidget.generation != widget.generation ||
-        oldWidget.page.variant != widget.page.variant) {
+        oldWidget.page.variant != widget.page.variant ||
+        oldWidget.continuousLayout != widget.continuousLayout) {
       _resetAndReload();
       return;
     }
@@ -140,6 +150,7 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
     }
     if (oldWidget.activeAyahKey != widget.activeAyahKey ||
         oldWidget.activeWordPosition != widget.activeWordPosition ||
+        oldWidget.activeWordBanglaMeaning != widget.activeWordBanglaMeaning ||
         oldWidget.selectedStartAyahKey != widget.selectedStartAyahKey ||
         oldWidget.selectedEndAyahKey != widget.selectedEndAyahKey) {
       _syncHighlights(driver);
@@ -159,21 +170,36 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
         if (fonts == null) {
           return const Center(child: CircularProgressIndicator());
         }
-        return GestureDetector(
-          key: const ValueKey('quran-strict-mushaf-tap-target'),
-          behavior: HitTestBehavior.translucent,
-          onTap: widget.onTap,
-          child: _webViewBuilder(
-            ValueKey(
-              'quran-strict-mushaf-' +
-                  widget.generation.toString() +
-                  '-' +
-                  _webViewEpoch.toString(),
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            GestureDetector(
+              key: const ValueKey('quran-strict-mushaf-tap-target'),
+              behavior: HitTestBehavior.translucent,
+              onTap: widget.onTap,
+              child: _webViewBuilder(
+                ValueKey(
+                  'quran-strict-mushaf-' +
+                      widget.generation.toString() +
+                      '-' +
+                      _webViewEpoch.toString(),
+                ),
+                _handleEvent,
+                (driver) => _onDriverReady(driver, fonts),
+                _handleDiagnostic,
+              ),
             ),
-            _handleEvent,
-            (driver) => _onDriverReady(driver, fonts),
-            _handleDiagnostic,
-          ),
+            if (!_pageReady)
+              const Positioned.fill(
+                child: IgnorePointer(
+                  child: ColoredBox(
+                    key: ValueKey('quran-strict-mushaf-loading-cover'),
+                    color: Colors.white,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ),
+              ),
+          ],
         );
       },
     );
@@ -204,6 +230,7 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
           fontSize: widget.fontSize,
           lineHeight: widget.lineHeight,
           showTajweedColors: widget.showTajweedColors,
+          continuousLayout: widget.continuousLayout,
         ),
       );
       await _syncHighlights(driver);
@@ -223,10 +250,17 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
       await driver.clearPlaybackHighlight();
       return;
     }
-    await driver.setActiveAyah(ayahKey);
     final wordPosition = widget.activeWordPosition;
+    await driver.setActiveAyah(
+      ayahKey,
+      deferFollowToWord: wordPosition != null,
+    );
     if (wordPosition != null) {
-      await driver.setActiveWord(ayahKey, wordPosition);
+      await driver.setActiveWord(
+        ayahKey,
+        wordPosition,
+        banglaMeaning: widget.activeWordBanglaMeaning,
+      );
     }
   }
 
@@ -243,7 +277,20 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
         if (driver != null &&
             event.page == widget.page.page &&
             event.generation == widget.generation) {
+          if (!_pageReady && mounted) {
+            setState(() => _pageReady = true);
+          }
           _syncHighlights(driver);
+        }
+      case MushafPageMetricsEvent():
+        if (event.page == widget.page.page &&
+            event.generation == widget.generation) {
+          widget.onPageMetrics?.call(event);
+        }
+      case MushafPlaybackTargetEvent():
+        if (event.page == widget.page.page &&
+            event.generation == widget.generation) {
+          widget.onPlaybackTarget?.call(event);
         }
       case MushafRendererErrorEvent():
         _recoverRenderer();
@@ -253,6 +300,7 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
   void _recoverRenderer() {
     if (!mounted) return;
     _driver = null;
+    _pageReady = false;
     _rendererFailures++;
     if (_rendererFailures == 1) {
       setState(() => _webViewEpoch++);
@@ -265,6 +313,7 @@ class _QuranStrictMushafSurfaceState extends State<QuranStrictMushafSurface> {
     _driver = null;
     _rendererFailures = 0;
     _rendererFallback = false;
+    _pageReady = false;
     _webViewEpoch++;
     _fonts = _loadFonts();
     if (mounted) setState(() {});

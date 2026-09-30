@@ -24,9 +24,16 @@ abstract interface class MushafWebViewDriver {
     required bool showTajweedColors,
   });
 
-  Future<void> setActiveWord(String ayahKey, int wordPosition);
+  Future<void> setActiveWord(
+    String ayahKey,
+    int wordPosition, {
+    String? banglaMeaning,
+  });
 
-  Future<void> setActiveAyah(String ayahKey);
+  Future<void> setActiveAyah(
+    String ayahKey, {
+    bool deferFollowToWord = false,
+  });
 
   Future<void> setRange(String? startAyahKey, String? endAyahKey);
 
@@ -45,6 +52,7 @@ class MushafRenderPayload {
     required this.fontSize,
     required this.lineHeight,
     required this.showTajweedColors,
+    this.continuousLayout = false,
   });
 
   final QcfMushafPage page;
@@ -57,6 +65,7 @@ class MushafRenderPayload {
   final double fontSize;
   final double lineHeight;
   final bool showTajweedColors;
+  final bool continuousLayout;
 
   Map<String, Object?> toRendererJson() {
     if (generation < 0) {
@@ -76,6 +85,7 @@ class MushafRenderPayload {
       'fontSize': fontSize,
       'lineHeight': lineHeight,
       'showTajweedColors': showTajweedColors,
+      'continuousLayout': continuousLayout,
       'fontDataUrl': _fontDataUrl(pageFontBytes, 'woff2'),
       'surahFontDataUrl': _fontDataUrl(surahFontBytes, 'ttf'),
       'bismillahFontDataUrl': _fontDataUrl(bismillahFontBytes, 'ttf'),
@@ -153,13 +163,26 @@ class ControllerMushafWebViewDriver implements MushafWebViewDriver {
   }
 
   @override
-  Future<void> setActiveWord(String ayahKey, int wordPosition) {
-    return _runEncoded('setActiveWord', <Object?>[ayahKey, wordPosition]);
+  Future<void> setActiveWord(
+    String ayahKey,
+    int wordPosition, {
+    String? banglaMeaning,
+  }) {
+    return _runEncoded(
+      'setActiveWord',
+      <Object?>[ayahKey, wordPosition, banglaMeaning],
+    );
   }
 
   @override
-  Future<void> setActiveAyah(String ayahKey) {
-    return _runEncoded('setActiveAyah', <Object?>[ayahKey]);
+  Future<void> setActiveAyah(
+    String ayahKey, {
+    bool deferFollowToWord = false,
+  }) {
+    return _runEncoded(
+      'setActiveAyah',
+      <Object?>[ayahKey, deferFollowToWord],
+    );
   }
 
   @override

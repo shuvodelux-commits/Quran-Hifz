@@ -1,6 +1,7 @@
 import '../../quran/domain/quran_font_preference.dart';
 import '../../quran/domain/quran_mushaf_variant.dart';
 import '../../quran/domain/quran_script.dart';
+import '../../hifz/domain/hifz_reader_mode.dart';
 
 export '../../quran/domain/quran_script.dart';
 
@@ -36,6 +37,9 @@ class AppPreferences {
     required this.hifzFontSize,
     required this.hifzLineHeight,
     required this.hifzShowTajweedColors,
+    this.hifzReaderMode = HifzReaderMode.page,
+    this.hifzContinuousAutoScrollEnabled = false,
+    this.hifzAutoScrollSpeed = 0.35,
     required this.banglaLineHeight,
     required this.banglaFontSize,
     required this.showTranslation,
@@ -66,6 +70,9 @@ class AppPreferences {
       hifzFontSize = 32,
       hifzLineHeight = 1.35,
       hifzShowTajweedColors = true,
+      hifzReaderMode = HifzReaderMode.page,
+      hifzContinuousAutoScrollEnabled = false,
+      hifzAutoScrollSpeed = 0.35,
       banglaLineHeight = 1.2,
       banglaFontSize = 18,
       showTranslation = true,
@@ -94,6 +101,9 @@ class AppPreferences {
   final double hifzFontSize;
   final double hifzLineHeight;
   final bool hifzShowTajweedColors;
+  final HifzReaderMode hifzReaderMode;
+  final bool hifzContinuousAutoScrollEnabled;
+  final double hifzAutoScrollSpeed;
   final double banglaLineHeight;
   final double banglaFontSize;
   final bool showTranslation;
@@ -123,6 +133,9 @@ class AppPreferences {
     double? hifzFontSize,
     double? hifzLineHeight,
     bool? hifzShowTajweedColors,
+    HifzReaderMode? hifzReaderMode,
+    bool? hifzContinuousAutoScrollEnabled,
+    double? hifzAutoScrollSpeed,
     double? banglaLineHeight,
     double? banglaFontSize,
     bool? showTranslation,
@@ -162,6 +175,10 @@ class AppPreferences {
       hifzLineHeight: hifzLineHeight ?? this.hifzLineHeight,
       hifzShowTajweedColors:
           hifzShowTajweedColors ?? this.hifzShowTajweedColors,
+      hifzReaderMode: hifzReaderMode ?? this.hifzReaderMode,
+      hifzContinuousAutoScrollEnabled:
+          hifzContinuousAutoScrollEnabled ?? this.hifzContinuousAutoScrollEnabled,
+      hifzAutoScrollSpeed: hifzAutoScrollSpeed ?? this.hifzAutoScrollSpeed,
       banglaLineHeight: banglaLineHeight ?? this.banglaLineHeight,
       banglaFontSize: banglaFontSize ?? this.banglaFontSize,
       showTranslation: showTranslation ?? this.showTranslation,

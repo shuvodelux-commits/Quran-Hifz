@@ -2,6 +2,7 @@
   --page-bg: #fff;
   --page-fg: #111;
   --active-accent: #2563eb;
+  --active-word-accent: #f59e0b;
   --range-accent: #16a34a;
   --hifz-font-size: 32px;
   --hifz-line-height: 1.35;
@@ -35,6 +36,16 @@ body {
 #mushaf-root {
   width: 100%;
   min-height: 100%;
+}
+
+body[data-continuous-layout="on"] {
+  min-height: 0;
+  overflow-y: hidden;
+}
+
+body[data-continuous-layout="on"] #mushaf-root,
+body[data-continuous-layout="on"] .mushaf-page {
+  min-height: 0;
 }
 
 .mushaf-page {
@@ -114,14 +125,42 @@ body[data-tajweed-colors="off"] .mushaf-line.ayah {
 }
 
 .word.active-word {
-  background: color-mix(in srgb, var(--active-accent) 22%, transparent);
-  border-radius: .35em;
-  box-shadow: 0 0 0 .08em color-mix(in srgb, var(--active-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--active-word-accent) 34%, transparent);
+  border-radius: .38em;
+  box-shadow:
+    0 0 0 .09em color-mix(in srgb, var(--active-word-accent) 72%, transparent),
+    0 .05em .18em color-mix(in srgb, var(--active-word-accent) 28%, transparent);
+}
+
+.playback-meaning-bubble {
+  --meaning-shift-x: 0px;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + .32rem);
+  transform: translateX(calc(-50% + var(--meaning-shift-x)));
+  z-index: 20;
+  max-width: min(220px, calc(100vw - 16px));
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--active-accent) 44%, transparent);
+  border-radius: 12px;
+  background: rgba(32, 36, 40, .96);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .22);
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  direction: ltr;
+  unicode-bidi: isolate;
+  white-space: normal;
+  width: max-content;
+  text-align: center;
+  pointer-events: none;
 }
 
 .word.active-ayah:not(.active-word),
 .ayah-end.active-ayah {
-  background: color-mix(in srgb, var(--active-accent) 8%, transparent);
+  background: color-mix(in srgb, var(--active-accent) 13%, transparent);
   border-radius: .28em;
 }
 

@@ -21,6 +21,15 @@ sealed class MushafRendererEvent {
         page: _page(decoded['page']),
         generation: _generation(decoded['generation']),
       ),
+      'pageMetrics' => MushafPageMetricsEvent(
+        page: _page(decoded['page']),
+        generation: _generation(decoded['generation']),
+        contentHeight: _positiveFiniteDouble(
+          decoded['contentHeight'],
+          'contentHeight',
+        ),
+      ),
+      'playbackTarget' => _playbackTarget(decoded),
       'wordTap' => MushafWordTapEvent(
         _ayahKey(decoded['ayahKey']),
         _wordPosition(decoded['wordPosition']),
@@ -66,6 +75,48 @@ sealed class MushafRendererEvent {
     return position;
   }
 
+  static MushafPlaybackTargetEvent _playbackTarget(
+    Map<String, dynamic> decoded,
+  ) {
+    final top = _finiteDouble(decoded['top'], 'top');
+    final bottom = _finiteDouble(decoded['bottom'], 'bottom');
+    if (bottom < top) {
+      throw const FormatException(
+        'Mushaf playback target bottom must be >= top.',
+      );
+    }
+    final rawWordPosition = decoded['wordPosition'];
+    return MushafPlaybackTargetEvent(
+      page: _page(decoded['page']),
+      generation: _generation(decoded['generation']),
+      ayahKey: _ayahKey(decoded['ayahKey']),
+      wordPosition: rawWordPosition == null
+          ? null
+          : _wordPosition(rawWordPosition),
+      top: top,
+      bottom: bottom,
+    );
+  }
+
+  static double _positiveFiniteDouble(Object? value, String name) {
+    final number = _finiteDouble(value, name);
+    if (number <= 0) {
+      throw FormatException('Mushaf renderer $name must be positive.');
+    }
+    return number;
+  }
+
+  static double _finiteDouble(Object? value, String name) {
+    if (value is! num) {
+      throw FormatException('Mushaf renderer $name must be numeric.');
+    }
+    final number = value.toDouble();
+    if (!number.isFinite) {
+      throw FormatException('Mushaf renderer $name must be finite.');
+    }
+    return number;
+  }
+
   static String _ayahKey(Object? value) {
     if (value is! String ||
         !RegExp(r'^[1-9][0-9]{0,2}:[1-9][0-9]{0,2}$').hasMatch(value)) {
@@ -107,6 +158,60 @@ final class MushafPageReadyEvent extends MushafRendererEvent {
 
   @override
   int get hashCode => Object.hash(page, generation);
+}
+
+final class MushafPageMetricsEvent extends MushafRendererEvent {
+  const MushafPageMetricsEvent({
+    required this.page,
+    required this.generation,
+    required this.contentHeight,
+  });
+
+  final int page;
+  final int generation;
+  final double contentHeight;
+
+  @override
+  bool operator ==(Object other) =>
+      other is MushafPageMetricsEvent &&
+      page == other.page &&
+      generation == other.generation &&
+      contentHeight == other.contentHeight;
+
+  @override
+  int get hashCode => Object.hash(page, generation, contentHeight);
+}
+
+final class MushafPlaybackTargetEvent extends MushafRendererEvent {
+  const MushafPlaybackTargetEvent({
+    required this.page,
+    required this.generation,
+    required this.ayahKey,
+    this.wordPosition,
+    required this.top,
+    required this.bottom,
+  });
+
+  final int page;
+  final int generation;
+  final String ayahKey;
+  final int? wordPosition;
+  final double top;
+  final double bottom;
+
+  @override
+  bool operator ==(Object other) =>
+      other is MushafPlaybackTargetEvent &&
+      page == other.page &&
+      generation == other.generation &&
+      ayahKey == other.ayahKey &&
+      wordPosition == other.wordPosition &&
+      top == other.top &&
+      bottom == other.bottom;
+
+  @override
+  int get hashCode =>
+      Object.hash(page, generation, ayahKey, wordPosition, top, bottom);
 }
 
 final class MushafWordTapEvent extends MushafRendererEvent {

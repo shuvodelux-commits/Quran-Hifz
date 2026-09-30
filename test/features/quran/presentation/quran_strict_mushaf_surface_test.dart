@@ -6,11 +6,221 @@ import 'package:quran_hifz/features/quran/domain/quran_ayah.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_line.dart';
 import 'package:quran_hifz/features/quran/domain/quran_page_window.dart';
 import 'package:quran_hifz/features/quran/domain/quran_word.dart';
+import 'package:quran_hifz/features/quran/presentation/mushaf/mushaf_renderer_message.dart';
+import 'package:quran_hifz/features/quran/presentation/mushaf/mushaf_webview_driver.dart';
 import 'package:quran_hifz/features/quran/presentation/mushaf/quran_strict_mushaf_surface.dart';
 import 'package:quran_hifz/features/quran/presentation/widgets/bismillah_v4_glyph.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_variant.dart';
 
 void main() {
+
+  testWidgets('surface ignores stale renderer events after generation changes', (
+    tester,
+  ) async {
+    final metricEvents = <MushafPageMetricsEvent>[];
+    ValueChanged<MushafRendererEvent>? firstEventSink;
+    ValueChanged<MushafRendererEvent>? latestEventSink;
+    ValueChanged<MushafWebViewDriver>? latestDriverReady;
+
+    Widget buildSurface(int generation) {
+      return MaterialApp(
+        home: QuranStrictMushafSurface(
+          page: const QcfMushafPage(
+            page: 2,
+            variant: QuranMushafVariant.qcfV4Tajweed,
+            lines: [],
+          ),
+          palette: QuranMushafPalette.light,
+          generation: generation,
+          fontSize: 32,
+          lineHeight: 1.35,
+          showTajweedColors: true,
+          pageFontUri: Uri.parse('asset:///page.woff2'),
+          fontLoader: (_) async => const QuranStrictMushafFonts(
+            pageFontBytes: [1],
+            surahFontBytes: [2],
+            bismillahFontBytes: [3],
+            endMarkerFontBytes: [4],
+          ),
+          webViewBuilder: (key, onEvent, onDriverReady, onDiagnostic) {
+            firstEventSink ??= onEvent;
+            latestEventSink = onEvent;
+            latestDriverReady = onDriverReady;
+            return SizedBox(key: key);
+          },
+          onPageMetrics: metricEvents.add,
+          onRetry: () {},
+          onWordTap: (_, __) {},
+          onWordLongPress: (_, __) {},
+          onAyahTap: (_) {},
+        ),
+      );
+    }
+
+    await tester.pumpWidget(buildSurface(7));
+    await tester.pump();
+    await tester.pump();
+
+    final driver = _RecordingMushafDriver();
+    latestDriverReady!(driver);
+    await tester.pump();
+    expect(driver.renderedGenerations, [7]);
+
+    firstEventSink!(
+      const MushafPageMetricsEvent(
+        page: 2,
+        generation: 7,
+        contentHeight: 700,
+      ),
+    );
+    expect(metricEvents, hasLength(1));
+
+    await tester.pumpWidget(buildSurface(8));
+    await tester.pump();
+    await tester.pump();
+
+    firstEventSink!(
+      const MushafPageMetricsEvent(
+        page: 2,
+        generation: 7,
+        contentHeight: 999,
+      ),
+    );
+    expect(metricEvents, hasLength(1));
+
+    latestEventSink!(
+      const MushafPageMetricsEvent(
+        page: 2,
+        generation: 8,
+        contentHeight: 820,
+      ),
+    );
+    expect(metricEvents.last.contentHeight, 820);
+  });
+
+
+
+  testWidgets('surface keeps a loading indicator until current page is ready', (
+    tester,
+  ) async {
+    ValueChanged<MushafRendererEvent>? eventSink;
+    ValueChanged<MushafWebViewDriver>? driverReady;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: QuranStrictMushafSurface(
+          page: const QcfMushafPage(
+            page: 2,
+            variant: QuranMushafVariant.qcfV4Tajweed,
+            lines: [],
+          ),
+          palette: QuranMushafPalette.light,
+          generation: 11,
+          fontSize: 32,
+          lineHeight: 1.35,
+          showTajweedColors: true,
+          pageFontUri: Uri.parse('asset:///page.woff2'),
+          fontLoader: (_) async => const QuranStrictMushafFonts(
+            pageFontBytes: [1],
+            surahFontBytes: [2],
+            bismillahFontBytes: [3],
+            endMarkerFontBytes: [4],
+          ),
+          webViewBuilder: (key, onEvent, onDriverReady, onDiagnostic) {
+            eventSink = onEvent;
+            driverReady = onDriverReady;
+            return SizedBox(key: key);
+          },
+          onRetry: () {},
+          onWordTap: (_, __) {},
+          onWordLongPress: (_, __) {},
+          onAyahTap: (_) {},
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final driver = _RecordingMushafDriver();
+    driverReady!(driver);
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('quran-strict-mushaf-loading-cover')),
+      findsOneWidget,
+    );
+
+    eventSink!(
+      const MushafPageReadyEvent(page: 2, generation: 10),
+    );
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('quran-strict-mushaf-loading-cover')),
+      findsOneWidget,
+    );
+
+    eventSink!(
+      const MushafPageReadyEvent(page: 2, generation: 11),
+    );
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(
+      find.byKey(const ValueKey('quran-strict-mushaf-loading-cover')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('surface forwards continuous layout in the initial render payload', (
+    tester,
+  ) async {
+    ValueChanged<MushafWebViewDriver>? driverReady;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: QuranStrictMushafSurface(
+          page: const QcfMushafPage(
+            page: 2,
+            variant: QuranMushafVariant.qcfV4Tajweed,
+            lines: [],
+          ),
+          palette: QuranMushafPalette.light,
+          generation: 9,
+          fontSize: 48,
+          lineHeight: 1.8,
+          showTajweedColors: true,
+          continuousLayout: true,
+          pageFontUri: Uri.parse('asset:///page.woff2'),
+          fontLoader: (_) async => const QuranStrictMushafFonts(
+            pageFontBytes: [1],
+            surahFontBytes: [2],
+            bismillahFontBytes: [3],
+            endMarkerFontBytes: [4],
+          ),
+          webViewBuilder: (key, onEvent, onDriverReady, onDiagnostic) {
+            driverReady = onDriverReady;
+            return SizedBox(key: key);
+          },
+          onRetry: () {},
+          onWordTap: (_, __) {},
+          onWordLongPress: (_, __) {},
+          onAyahTap: (_) {},
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final driver = _RecordingMushafDriver();
+    driverReady!(driver);
+    await tester.pump();
+
+    expect(driver.payloads, hasLength(1));
+    expect(driver.payloads.single.continuousLayout, isTrue);
+    expect(driver.payloads.single.fontSize, 48);
+    expect(driver.payloads.single.lineHeight, 1.8);
+  });
+
   testWidgets(
     'font failure falls back to readable Unicode page with identity and retry',
     (tester) async {
@@ -90,3 +300,47 @@ QuranPageWindow _page440() => QuranPageWindow(
     ),
   ],
 );
+
+
+class _RecordingMushafDriver implements MushafWebViewDriver {
+  final renderedGenerations = <int>[];
+  final payloads = <MushafRenderPayload>[];
+
+  @override
+  Future<void> loadRenderer() async {}
+
+  @override
+  Future<void> renderPage(MushafRenderPayload payload) async {
+    renderedGenerations.add(payload.generation);
+    payloads.add(payload);
+  }
+
+  @override
+  Future<void> setPalette(QuranMushafPalette palette) async {}
+
+  @override
+  Future<void> setTypography({
+    required double fontSize,
+    required double lineHeight,
+    required bool showTajweedColors,
+  }) async {}
+
+  @override
+  Future<void> setActiveWord(
+    String ayahKey,
+    int wordPosition, {
+    String? banglaMeaning,
+  }) async {}
+
+  @override
+  Future<void> setActiveAyah(
+    String ayahKey, {
+    bool deferFollowToWord = false,
+  }) async {}
+
+  @override
+  Future<void> setRange(String? startAyahKey, String? endAyahKey) async {}
+
+  @override
+  Future<void> clearPlaybackHighlight() async {}
+}

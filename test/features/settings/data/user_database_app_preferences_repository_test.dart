@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/core/database/user_database.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_variant.dart';
+import 'package:quran_hifz/features/hifz/domain/hifz_reader_mode.dart';
 import 'package:quran_hifz/features/settings/data/user_database_app_preferences_repository.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 
@@ -39,6 +40,9 @@ void main() {
         hifzFontSize: 46,
         hifzLineHeight: 1.75,
         hifzShowTajweedColors: false,
+        hifzReaderMode: HifzReaderMode.continuous,
+        hifzContinuousAutoScrollEnabled: true,
+        hifzAutoScrollSpeed: 0.173,
       ),
     );
 
@@ -69,6 +73,9 @@ void main() {
     expect(restored.hifzFontSize, 46);
     expect(restored.hifzLineHeight, 1.75);
     expect(restored.hifzShowTajweedColors, isFalse);
+    expect(restored.hifzReaderMode, HifzReaderMode.continuous);
+    expect(restored.hifzContinuousAutoScrollEnabled, isTrue);
+    expect(restored.hifzAutoScrollSpeed, 0.173);
   });
 
   test('Hijri preferences have Bangladesh-safe defaults', () {
@@ -192,5 +199,33 @@ void main() {
     expect(restored.hifzMushafVariant, defaults.hifzMushafVariant);
     expect(restored.hifzFontSize, defaults.hifzFontSize);
     expect(restored.hifzLineHeight, defaults.hifzLineHeight);
+  });
+
+  test("malformed Hifz reader behavior falls back to safe defaults", () async {
+    final database = UserDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final repository = UserDatabaseAppPreferencesRepository(database);
+
+    await database.saveSetting(
+      UserDatabaseAppPreferencesRepository.hifzReaderModeKey,
+      "not-a-mode",
+    );
+    await database.saveSetting(
+      UserDatabaseAppPreferencesRepository.hifzContinuousAutoScrollKey,
+      "not-a-bool",
+    );
+    await database.saveSetting(
+      UserDatabaseAppPreferencesRepository.hifzAutoScrollSpeedKey,
+      "NaN",
+    );
+
+    final restored = await repository.load();
+    const defaults = AppPreferences.defaults();
+    expect(restored.hifzReaderMode, HifzReaderMode.page);
+    expect(
+      restored.hifzContinuousAutoScrollEnabled,
+      defaults.hifzContinuousAutoScrollEnabled,
+    );
+    expect(restored.hifzAutoScrollSpeed, 0.35);
   });
 }

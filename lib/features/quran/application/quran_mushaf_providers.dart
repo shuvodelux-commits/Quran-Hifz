@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart' show FlutterError;
+import 'package:flutter/foundation.dart' show FlutterError, visibleForTesting;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
@@ -25,12 +25,31 @@ final quranPageFontRepositoryProvider =
       return QuranFoundationPageFontRepository(variant: variant);
     });
 
+typedef MushafAssetPaths = ({String layout, String script});
+
+@visibleForTesting
+MushafAssetPaths mushafAssetPathsForVariant(QuranMushafVariant variant) {
+  return switch (variant) {
+    QuranMushafVariant.qcfV4Tajweed => (
+      layout: 'assets/mushaf/layouts/qpc-v4-tajweed-15-lines.sqlite',
+      script: 'assets/mushaf/scripts/qpc-v4-words.sqlite',
+    ),
+    QuranMushafVariant.qcfV2 => (
+      layout: 'assets/mushaf/layouts/qcf-v2-15-lines.sqlite',
+      script: 'assets/mushaf/scripts/qcf-v2-words.sqlite',
+    ),
+  };
+}
+
 class _MaterializedMushafPageRepository implements QuranMushafPageRepository {
-  Future<BundledQuranMushafPageRepository>? _delegate;
+  final Map<
+    QuranMushafVariant,
+    Future<BundledQuranMushafPageRepository>
+  > _delegates = {};
 
   @override
   Future<bool> isVariantAvailable(QuranMushafVariant variant) async {
-    return (await _repository()).isVariantAvailable(variant);
+    return (await _repository(variant)).isVariantAvailable(variant);
   }
 
   @override
@@ -38,41 +57,55 @@ class _MaterializedMushafPageRepository implements QuranMushafPageRepository {
     required QuranMushafVariant variant,
     required int page,
   }) async {
-    return (await _repository()).loadPage(variant: variant, page: page);
+    return (await _repository(variant)).loadPage(variant: variant, page: page);
   }
 
-  Future<BundledQuranMushafPageRepository> _repository() {
-    return _delegate ??= _buildRepository();
+  Future<BundledQuranMushafPageRepository> _repository(
+    QuranMushafVariant variant,
+  ) {
+    return _delegates.putIfAbsent(variant, () => _buildRepository(variant));
   }
 
-  Future<BundledQuranMushafPageRepository> _buildRepository() async {
+  Future<BundledQuranMushafPageRepository> _buildRepository(
+    QuranMushafVariant variant,
+  ) async {
     final support = await getApplicationSupportDirectory();
     final directory = Directory(p.join(support.path, 'mushaf', 'data'));
     await directory.create(recursive: true);
+    final assets = mushafAssetPathsForVariant(variant);
 
-    final qcfV4Layout = await _materialize(
-      assetPath: 'assets/mushaf/layouts/qpc-v4-tajweed-15-lines.sqlite',
-      directory: directory,
-    );
-    final qcfV4Script = await _materialize(
-      assetPath: 'assets/mushaf/scripts/qpc-v4-words.sqlite',
-      directory: directory,
-    );
-    final qcfV2Layout = await _materializeOptional(
-      assetPath: 'assets/mushaf/layouts/qcf-v2-15-lines.sqlite',
-      directory: directory,
-    );
-    final qcfV2Script = await _materializeOptional(
-      assetPath: 'assets/mushaf/scripts/qcf-v2-words.sqlite',
-      directory: directory,
-    );
-
-    return BundledQuranMushafPageRepository.forFiles(
-      qcfV4LayoutPath: qcfV4Layout.path,
-      qcfV4ScriptPath: qcfV4Script.path,
-      qcfV2LayoutPath: qcfV2Layout?.path ?? '',
-      qcfV2ScriptPath: qcfV2Script?.path ?? '',
-    );
+    switch (variant) {
+      case QuranMushafVariant.qcfV4Tajweed:
+        final layout = await _materialize(
+          assetPath: assets.layout,
+          directory: directory,
+        );
+        final script = await _materialize(
+          assetPath: assets.script,
+          directory: directory,
+        );
+        return BundledQuranMushafPageRepository.forFiles(
+          qcfV4LayoutPath: layout.path,
+          qcfV4ScriptPath: script.path,
+          qcfV2LayoutPath: '',
+          qcfV2ScriptPath: '',
+        );
+      case QuranMushafVariant.qcfV2:
+        final layout = await _materializeOptional(
+          assetPath: assets.layout,
+          directory: directory,
+        );
+        final script = await _materializeOptional(
+          assetPath: assets.script,
+          directory: directory,
+        );
+        return BundledQuranMushafPageRepository.forFiles(
+          qcfV4LayoutPath: '',
+          qcfV4ScriptPath: '',
+          qcfV2LayoutPath: layout?.path ?? '',
+          qcfV2ScriptPath: script?.path ?? '',
+        );
+    }
   }
 
   Future<File> _materialize({

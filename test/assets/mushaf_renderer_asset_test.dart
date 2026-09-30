@@ -72,6 +72,30 @@ void main() {
     },
   );
 
+
+  test('Hifz playback styling distinguishes ayah, word, and meaning bubble', () {
+    expect(css, contains('.word.active-word'));
+    expect(css, contains('--active-word-accent: #f59e0b'));
+    expect(css, contains('var(--active-word-accent) 34%'));
+    expect(css, contains('.word.active-ayah:not(.active-word)'));
+    expect(css, contains('var(--active-accent) 13%'));
+    expect(css, contains('.playback-meaning-bubble'));
+    expect(js, contains('showMeaningBubble'));
+    expect(js, contains('postPlaybackTarget'));
+    expect(js, contains("querySelectorAll('.word.active-word')"));
+    expect(js, contains('clearMeaningBubble();'));
+    expect(js, contains('deferFollowToWord'));
+    expect(js, contains('if (Boolean(deferFollowToWord)) return;'));
+  });
+
+  test('continuous layout disables nested scrolling without changing page styles', () {
+    expect(css, contains('body[data-continuous-layout="on"]'));
+    expect(css, contains('overflow-y: hidden'));
+    expect(js, contains('continuousLayout'));
+    expect(js, contains('postPageMetrics'));
+    expect(js, contains('if (state.continuousLayout) return;'));
+  });
+
   test('renderer publishes the complete Flutter command surface', () {
     expect(js, contains('renderPage'));
     expect(js, contains('setPalette'));

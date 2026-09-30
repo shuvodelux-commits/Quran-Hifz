@@ -13,6 +13,7 @@
     fontSize: 32,
     lineHeight: 1.35,
     showTajweedColors: true,
+    continuousLayout: false,
     rangeStart: null,
     rangeEnd: null,
   };
@@ -126,6 +127,115 @@
     const end = startFirst ? state.rangeEnd : state.rangeStart;
     return compareVerseKeys(ayahKey, start) >= 0 &&
       compareVerseKeys(ayahKey, end) <= 0;
+  }
+
+  function pageElement() {
+    return root.querySelector('.mushaf-page');
+  }
+
+  function postPageMetrics() {
+    const pageNode = pageElement();
+    if (!pageNode || !state.page) return;
+    const rect = pageNode.getBoundingClientRect();
+    const contentHeight = state.continuousLayout
+      ? Math.max(pageNode.scrollHeight, rect.height)
+      : Math.max(
+          pageNode.scrollHeight,
+          rect.height,
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight,
+        );
+    if (!Number.isFinite(contentHeight) || contentHeight <= 0) return;
+    post('pageMetrics', {
+      page: state.page,
+      generation: state.generation,
+      contentHeight,
+    });
+  }
+
+  function postPlaybackTarget(ayahKey, wordPosition = null) {
+    if (!state.page || !ayahKey) return;
+    let elements = [];
+    if (Number(wordPosition) > 0) {
+      const element = root.querySelector(
+        '.word[data-ayah-key="' + CSS.escape(ayahKey) +
+        '"][data-word-position="' + Number(wordPosition) + '"]',
+      );
+      if (element) elements = [element];
+    } else {
+      elements = [...root.querySelectorAll('.word, .ayah-end')]
+        .filter((element) => element.dataset.ayahKey === ayahKey);
+    }
+    if (elements.length === 0) return;
+    const pageNode = pageElement();
+    if (!pageNode) return;
+    const pageRect = pageNode.getBoundingClientRect();
+    const rects = elements.map((element) => element.getBoundingClientRect());
+    const top = Math.min(...rects.map((rect) => rect.top)) - pageRect.top;
+    const bottom = Math.max(...rects.map((rect) => rect.bottom)) - pageRect.top;
+    post('playbackTarget', {
+      page: state.page,
+      generation: state.generation,
+      ayahKey,
+      ...(Number(wordPosition) > 0 ? { wordPosition: Number(wordPosition) } : {}),
+      top,
+      bottom,
+    });
+  }
+
+  function playbackElements(ayahKey, wordPosition = null) {
+    if (!ayahKey) return [];
+    if (Number(wordPosition) > 0) {
+      const element = root.querySelector(
+        '.word[data-ayah-key="' + CSS.escape(ayahKey) +
+        '"][data-word-position="' + Number(wordPosition) + '"]',
+      );
+      return element ? [element] : [];
+    }
+    return [...root.querySelectorAll('.word, .ayah-end')]
+      .filter((element) => element.dataset.ayahKey === ayahKey);
+  }
+
+  function ensurePlaybackTargetVisible(ayahKey, wordPosition = null) {
+    if (state.continuousLayout) return;
+    const elements = playbackElements(ayahKey, wordPosition);
+    if (elements.length === 0) return;
+    const rects = elements.map((element) => element.getBoundingClientRect());
+    const top = Math.min(...rects.map((rect) => rect.top));
+    const bottom = Math.max(...rects.map((rect) => rect.bottom));
+    const safeTop = 48;
+    const safeBottom = Math.max(safeTop + 1, window.innerHeight - 88);
+    if (top >= safeTop && bottom <= safeBottom) return;
+    const target = Math.max(
+      0,
+      window.scrollY + top - window.innerHeight * 0.34,
+    );
+    window.scrollTo({ top: target, behavior: 'smooth' });
+  }
+
+  function clearMeaningBubble() {
+    root.querySelectorAll('.playback-meaning-bubble')
+      .forEach((element) => element.remove());
+  }
+
+  function showMeaningBubble(wordElement, meaning) {
+    clearMeaningBubble();
+    const text = String(meaning || '').trim();
+    if (!wordElement || !text) return;
+    const bubble = document.createElement('span');
+    bubble.className = 'playback-meaning-bubble';
+    bubble.textContent = text;
+    wordElement.appendChild(bubble);
+    requestAnimationFrame(() => {
+      const rect = bubble.getBoundingClientRect();
+      let correction = 0;
+      const margin = 8;
+      if (rect.left < margin) correction += margin - rect.left;
+      if (rect.right > window.innerWidth - margin) {
+        correction -= rect.right - (window.innerWidth - margin);
+      }
+      bubble.style.setProperty('--meaning-shift-x', correction + 'px');
+    });
   }
 
   function refreshRangeClasses() {
@@ -247,6 +357,9 @@
       installFonts(payload);
       state.page = page;
       state.generation = generation;
+      state.continuousLayout = Boolean(payload.continuousLayout);
+      document.body.dataset.continuousLayout =
+        state.continuousLayout ? 'on' : 'off';
       setPalette(payload.palette || state.palette);
       setTypography(
         payload.fontSize ?? state.fontSize,
@@ -266,6 +379,7 @@
       refreshRangeClasses();
       await document.fonts.ready;
       post('pageReady', { page, generation });
+      requestAnimationFrame(postPageMetrics);
     } catch (error) {
       rendererError('RENDER_PAGE', error);
     }
@@ -296,23 +410,41 @@
     document.documentElement.style.setProperty('--hifz-line-height', String(height));
     document.body.dataset.tajweedColors =
       state.showTajweedColors ? 'on' : 'off';
+    requestAnimationFrame(postPageMetrics);
   }
 
-  function setActiveWord(ayahKey, wordPosition) {
+  function setActiveWord(ayahKey, wordPosition, banglaMeaning = null) {
     root.querySelectorAll('.word.active-word')
       .forEach((element) => element.classList.remove('active-word'));
+    let activeWord = null;
     root.querySelectorAll('.word').forEach((element) => {
       const matches = element.dataset.ayahKey === ayahKey &&
         Number(element.dataset.wordPosition) === Number(wordPosition);
-      if (matches) element.classList.add('active-word');
+      if (matches) {
+        element.classList.add('active-word');
+        activeWord = element;
+      }
+    });
+    showMeaningBubble(activeWord, banglaMeaning);
+    requestAnimationFrame(() => {
+      ensurePlaybackTargetVisible(ayahKey, wordPosition);
+      postPlaybackTarget(ayahKey, wordPosition);
     });
   }
-  function setActiveAyah(ayahKey) {
+  function setActiveAyah(ayahKey, deferFollowToWord = false) {
+    root.querySelectorAll('.word.active-word')
+      .forEach((element) => element.classList.remove('active-word'));
+    clearMeaningBubble();
     root.querySelectorAll('.word, .ayah-end').forEach((element) => {
       element.classList.toggle(
         'active-ayah',
         element.dataset.ayahKey === ayahKey,
       );
+    });
+    requestAnimationFrame(() => {
+      if (Boolean(deferFollowToWord)) return;
+      ensurePlaybackTargetVisible(ayahKey);
+      postPlaybackTarget(ayahKey);
     });
   }
 
@@ -326,6 +458,7 @@
     root.querySelectorAll('.active-word, .active-ayah').forEach((element) => {
       element.classList.remove('active-word', 'active-ayah');
     });
+    clearMeaningBubble();
   }
 
   window.mushaf = Object.freeze({

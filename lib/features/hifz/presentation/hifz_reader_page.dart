@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../audio/application/audio_providers.dart';
+import '../../audio/domain/quran_audio_state.dart';
 import '../../quran/application/quran_providers.dart';
 import '../../quran/application/reader_audio_actions.dart';
 import '../../quran/application/reader_state.dart';
@@ -21,8 +22,10 @@ import '../application/hifz_plan_providers.dart';
 import '../application/hifz_session_controller.dart';
 import '../application/hifz_start_defaults.dart';
 import '../domain/hifz_preset.dart';
+import '../domain/hifz_reader_mode.dart';
 import '../domain/hifz_session.dart';
 import 'hifz_appearance_sheet.dart';
+import 'hifz_continuous_reader.dart';
 import 'hifz_controls_bar.dart';
 import 'hifz_pattern_editor_sheet.dart';
 import 'hifz_setup_sheet.dart';
@@ -50,7 +53,10 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
   ReaderState? _readerState;
   Object? _loadError;
   bool _hidden = false;
-  bool _loadingPage = false;
+  final Set<int> _loadingPages = <int>{};
+  String? _activeWordBanglaMeaning;
+  int? _playbackPage;
+  int _audioSyncToken = 0;
   late HifzSessionConfig _config;
   late String _planTitle;
   late int _initialPage;
@@ -86,6 +92,9 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
         );
         _loadError = null;
       });
+      unawaited(
+        _syncPlaybackTarget(ref.read(quranAudioControllerProvider)),
+      );
     } on Object catch (error) {
       if (!mounted) return;
       setState(() => _loadError = error);
@@ -108,36 +117,62 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
     return page;
   }
 
-  Future<void> _openPage(int page) async {
+  Future<void> _openPage(int page) =>
+      _ensurePageWindow(page, makeCurrent: true);
+
+  Future<void> _ensurePageWindow(
+    int page, {
+    required bool makeCurrent,
+  }) async {
     final current = _readerState;
     if (current == null ||
         page < current.firstPage ||
-        page > current.lastPage ||
-        _loadingPage) {
+        page > current.lastPage) {
       return;
     }
 
-    final existing = current.windows[page];
-    if (existing != null) {
-      setState(() => _readerState = current.copyWith(currentPage: page));
+    if (current.windows.containsKey(page)) {
+      if (makeCurrent && current.currentPage != page && mounted) {
+        setState(() => _readerState = current.copyWith(currentPage: page));
+      }
       return;
     }
+    if (!_loadingPages.add(page)) return;
 
-    _loadingPage = true;
     try {
       final window = await ref.read(quranRepositoryProvider).loadPageWindow(
         page: page,
         translationResourceId: current.translationResourceId,
       );
       if (!mounted) return;
-      final windows = Map<int, QuranPageWindow>.from(current.windows)
+      final latest = _readerState;
+      if (latest == null ||
+          page < latest.firstPage ||
+          page > latest.lastPage) {
+        return;
+      }
+      final windows = Map<int, QuranPageWindow>.from(latest.windows)
         ..[page] = window;
       setState(() {
-        _readerState = current.copyWith(currentPage: page, windows: windows);
+        _readerState = latest.copyWith(
+          currentPage: makeCurrent ? page : latest.currentPage,
+          windows: windows,
+        );
       });
     } finally {
-      _loadingPage = false;
+      _loadingPages.remove(page);
     }
+  }
+
+  void _setContinuousCurrentPage(int page) {
+    final current = _readerState;
+    if (current == null ||
+        page < current.firstPage ||
+        page > current.lastPage ||
+        page == current.currentPage) {
+      return;
+    }
+    setState(() => _readerState = current.copyWith(currentPage: page));
   }
 
   @override
@@ -147,8 +182,43 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
     final fontSize = ref.watch(hifzFontSizeProvider);
     final lineHeight = ref.watch(hifzLineHeightProvider);
     final tajweed = ref.watch(hifzShowTajweedColorsProvider);
+    final readerMode = ref.watch(hifzReaderModeProvider);
+    final continuousAutoScrollEnabled = ref.watch(
+      hifzContinuousAutoScrollEnabledProvider,
+    );
+    final autoScrollSpeed = ref.watch(hifzAutoScrollSpeedProvider);
+    final showPlaybackMeaning = ref.watch(
+      showPlaybackBanglaWordMeaningProvider,
+    );
     final session = ref.watch(hifzSessionControllerProvider);
     final audio = ref.watch(quranAudioControllerProvider);
+
+    ref.listen<QuranAudioState>(quranAudioControllerProvider, (previous, next) {
+      if (_audioTargetSignature(previous) != _audioTargetSignature(next)) {
+        unawaited(_syncPlaybackTarget(next));
+      }
+      if (readerMode == HifzReaderMode.page &&
+          !_isAudioRunning(previous) &&
+          _isAudioRunning(next) &&
+          ref.read(hifzContinuousAutoScrollEnabledProvider)) {
+        unawaited(
+          ref
+              .read(appPreferencesControllerProvider.notifier)
+              .setHifzContinuousAutoScrollEnabled(false),
+        );
+      }
+    });
+
+    final audioVisible =
+        (audio.status == QuranAudioStatus.loading ||
+            audio.status == QuranAudioStatus.playing ||
+            audio.status == QuranAudioStatus.paused) &&
+        (audio.mode == QuranAudioMode.ayah || audio.mode == QuranAudioMode.word);
+    final activeAyahKey = audioVisible ? audio.ayahKey : null;
+    final activeWordPosition = audioVisible ? audio.activeWordPosition : null;
+    final audioPlaying =
+        audio.status == QuranAudioStatus.loading ||
+        audio.status == QuranAudioStatus.playing;
 
     return Scaffold(
       appBar: AppBar(
@@ -195,8 +265,15 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
               fontSize: fontSize,
               lineHeight: lineHeight,
               tajweed: tajweed,
-              activeAyahKey: audio.ayahKey,
-              activeWordPosition: audio.activeWordPosition,
+              readerMode: readerMode,
+              continuousAutoScrollEnabled: continuousAutoScrollEnabled,
+              autoScrollSpeed: autoScrollSpeed,
+              audioPlaying: audioPlaying,
+              activeAyahKey: activeAyahKey,
+              activeWordPosition: activeWordPosition,
+              activeWordBanglaMeaning: showPlaybackMeaning
+                  ? _activeWordBanglaMeaning
+                  : null,
             ),
           ),
           SafeArea(
@@ -225,8 +302,13 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
     required double fontSize,
     required double lineHeight,
     required bool tajweed,
+    required HifzReaderMode readerMode,
+    required bool continuousAutoScrollEnabled,
+    required double autoScrollSpeed,
+    required bool audioPlaying,
     required String? activeAyahKey,
     required int? activeWordPosition,
+    required String? activeWordBanglaMeaning,
   }) {
     if (_loadError != null) {
       return Center(
@@ -257,24 +339,56 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final mushaf = QuranStrictReaderBody(
-      key: const ValueKey('hifz-reader-quran'),
-      state: state,
-      variant: variant,
-      fontSize: fontSize,
-      lineHeight: lineHeight,
-      showTajweedColors: tajweed,
-      activeAyahKey: activeAyahKey,
-      activeWordPosition: activeWordPosition,
-      selectedStartAyahKey: _config.start.verseKey,
-      selectedEndAyahKey: _config.end.verseKey,
-      onPageChanged: (page) => unawaited(_openPage(page)),
-      onWordTap: (ayahKey, wordPosition) =>
-          unawaited(_playMushafWord(ayahKey, wordPosition)),
-      onWordLongPress: (ayahKey, wordPosition) =>
-          unawaited(_showMushafWordDetails(ayahKey, wordPosition)),
-      onAyahTap: (_) {},
-    );
+    final Widget mushaf = readerMode == HifzReaderMode.page
+        ? QuranStrictReaderBody(
+            key: const ValueKey('hifz-reader-quran'),
+            state: state,
+            variant: variant,
+            fontSize: fontSize,
+            lineHeight: lineHeight,
+            showTajweedColors: tajweed,
+            activeAyahKey: activeAyahKey,
+            activeWordPosition: activeWordPosition,
+            activeWordBanglaMeaning: activeWordBanglaMeaning,
+            selectedStartAyahKey: _config.start.verseKey,
+            selectedEndAyahKey: _config.end.verseKey,
+            onPageChanged: (page) => unawaited(_openPage(page)),
+            onWordTap: (ayahKey, wordPosition) =>
+                unawaited(_playMushafWord(ayahKey, wordPosition)),
+            onWordLongPress: (ayahKey, wordPosition) =>
+                unawaited(_showMushafWordDetails(ayahKey, wordPosition)),
+            onAyahTap: (_) {},
+          )
+        : HifzContinuousReader(
+            key: const ValueKey('hifz-reader-quran'),
+            state: state,
+            variant: variant,
+            fontSize: fontSize,
+            lineHeight: lineHeight,
+            showTajweedColors: tajweed,
+            activeAyahKey: activeAyahKey,
+            activeWordPosition: activeWordPosition,
+            activeWordBanglaMeaning: activeWordBanglaMeaning,
+            selectedStartAyahKey: _config.start.verseKey,
+            selectedEndAyahKey: _config.end.verseKey,
+            playbackPage: _playbackPage,
+            autoScrollEnabled: continuousAutoScrollEnabled,
+            autoScrollSpeed: autoScrollSpeed,
+            audioPlaying: audioPlaying,
+            onDisableAutoScroll: () => unawaited(
+              ref
+                  .read(appPreferencesControllerProvider.notifier)
+                  .setHifzContinuousAutoScrollEnabled(false),
+            ),
+            onPageNeeded: (page) =>
+                unawaited(_ensurePageWindow(page, makeCurrent: false)),
+            onCurrentPageChanged: _setContinuousCurrentPage,
+            onWordTap: (ayahKey, wordPosition) =>
+                unawaited(_playMushafWord(ayahKey, wordPosition)),
+            onWordLongPress: (ayahKey, wordPosition) =>
+                unawaited(_showMushafWordDetails(ayahKey, wordPosition)),
+            onAyahTap: (_) {},
+          );
 
     return Stack(
       children: [
@@ -319,6 +433,88 @@ class _HifzReaderPageState extends ConsumerState<HifzReaderPage> {
       debugPrintStack(stackTrace: stackTrace);
       if (mounted) _showMessage('Word pronunciation could not be played.');
     }
+  }
+
+  bool _isAudioRunning(QuranAudioState? audio) {
+    if (audio == null) return false;
+    return audio.status == QuranAudioStatus.loading ||
+        audio.status == QuranAudioStatus.playing;
+  }
+
+  String _audioTargetSignature(QuranAudioState? audio) {
+    if (audio == null) return 'none';
+    return [
+      audio.mode.name,
+      audio.status.name,
+      audio.ayahKey ?? '',
+      audio.activeWordPosition?.toString() ?? '',
+    ].join('|');
+  }
+
+  Future<void> _syncPlaybackTarget(QuranAudioState audio) async {
+    final token = ++_audioSyncToken;
+    final active =
+        (audio.status == QuranAudioStatus.loading ||
+            audio.status == QuranAudioStatus.playing ||
+            audio.status == QuranAudioStatus.paused) &&
+        (audio.mode == QuranAudioMode.ayah || audio.mode == QuranAudioMode.word);
+    final ayahKey = active ? audio.ayahKey : null;
+    if (ayahKey == null) {
+      if (mounted) {
+        setState(() {
+          _activeWordBanglaMeaning = null;
+          _playbackPage = null;
+        });
+      }
+      return;
+    }
+
+    final parts = ayahKey.split(':');
+    if (parts.length != 2) return;
+    final surahNumber = int.tryParse(parts[0]);
+    final ayahNumber = int.tryParse(parts[1]);
+    if (surahNumber == null || ayahNumber == null) return;
+
+    final ayah = await ref.read(quranRepositoryProvider).loadAyah(
+          surahNumber: surahNumber,
+          ayahNumber: ayahNumber,
+          translationResourceId: ref.read(quranTranslationResourceIdProvider),
+        );
+    if (!mounted || token != _audioSyncToken) return;
+    if (ayah == null) {
+      setState(() {
+        _activeWordBanglaMeaning = null;
+        _playbackPage = null;
+      });
+      return;
+    }
+
+    String? meaning;
+    final wordPosition = audio.activeWordPosition;
+    if (wordPosition != null) {
+      for (final word in ayah.words) {
+        if (word.position == wordPosition) {
+          final candidate = word.banglaMeaning?.trim();
+          if (candidate != null && candidate.isNotEmpty) {
+            meaning = candidate;
+          }
+          break;
+        }
+      }
+    }
+
+    final playbackPage = ayah.pageNumber;
+    if (ref.read(hifzReaderModeProvider) == HifzReaderMode.page) {
+      await _ensurePageWindow(playbackPage, makeCurrent: true);
+    } else {
+      await _ensurePageWindow(playbackPage, makeCurrent: false);
+    }
+    if (!mounted || token != _audioSyncToken) return;
+
+    setState(() {
+      _activeWordBanglaMeaning = meaning;
+      _playbackPage = playbackPage;
+    });
   }
 
   Future<void> _showMushafWordDetails(

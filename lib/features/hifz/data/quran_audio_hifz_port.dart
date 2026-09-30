@@ -59,8 +59,18 @@ class DriftHifzPlaybackRequestResolver implements HifzPlaybackRequestResolver {
       surahNumber: ayah.surahNumber,
       ayahNumber: ayah.ayahNumber,
     );
+    final hasWordTiming =
+        timing != null &&
+        (await _database.getWordTimings(
+          reciterId: reciterId,
+          surahNumber: ayah.surahNumber,
+          ayahNumber: ayah.ayahNumber,
+        )).isNotEmpty;
 
-    if (audio == null || audio.remoteUrl.isEmpty || timing == null) {
+    if (audio == null ||
+        audio.remoteUrl.isEmpty ||
+        timing == null ||
+        !hasWordTiming) {
       await _syncService.syncChapter(
         reciterId: reciterId,
         surahNumber: ayah.surahNumber,
