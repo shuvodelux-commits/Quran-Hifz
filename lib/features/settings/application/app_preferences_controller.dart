@@ -42,6 +42,25 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
         : current.copyWith(prayerCityId: cityId),
   );
 
+  Future<void> setHijriDayBoundary(HijriDayBoundary value) =>
+      _update((current) => current.copyWith(hijriDayBoundary: value));
+
+  Future<void> setHijriDateCorrection(int value, {String? scope}) {
+    if (value < -1 || value > 1) {
+      throw ArgumentError.value(value, 'value');
+    }
+    if (value != 0 && (scope == null || scope.isEmpty)) {
+      throw ArgumentError.value(scope, 'scope');
+    }
+    return _update(
+      (current) => current.copyWith(
+        hijriDateCorrection: value,
+        hijriCorrectionScope: value == 0 ? null : scope,
+        clearHijriCorrectionScope: value == 0,
+      ),
+    );
+  }
+
   Future<void> setQuranScript(QuranScriptPreference value) => _update(
     (current) => current.copyWith(
       quranScript: value,
@@ -212,6 +231,21 @@ final asrSchoolProvider = Provider<AsrSchool>(
 
 final prayerCityIdProvider = Provider<String?>(
   (ref) => ref.watch(appPreferencesControllerProvider).value?.prayerCityId,
+);
+
+final hijriDayBoundaryProvider = Provider<HijriDayBoundary>(
+  (ref) =>
+      ref.watch(appPreferencesControllerProvider).value?.hijriDayBoundary ??
+      HijriDayBoundary.maghrib,
+);
+
+final hijriDateCorrectionProvider = Provider<int>(
+  (ref) =>
+      ref.watch(appPreferencesControllerProvider).value?.hijriDateCorrection ?? 0,
+);
+
+final hijriCorrectionScopeProvider = Provider<String?>(
+  (ref) => ref.watch(appPreferencesControllerProvider).value?.hijriCorrectionScope,
 );
 
 final quranScriptPreferenceProvider = Provider<QuranScriptPreference>((ref) {
