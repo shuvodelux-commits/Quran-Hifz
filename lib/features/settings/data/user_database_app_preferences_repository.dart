@@ -33,6 +33,9 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
   static const languageKey = 'app_language';
   static const asrSchoolKey = 'asr_school';
   static const prayerCityKey = 'prayer_city_id';
+  static const hijriDayBoundaryKey = 'hijri_day_boundary';
+  static const hijriDateCorrectionKey = 'hijri_date_correction';
+  static const hijriCorrectionScopeKey = 'hijri_correction_scope';
 
   final UserDatabase _database;
 
@@ -65,6 +68,9 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       _database.getSetting(hifzLineHeightKey),
       _database.getSetting(hifzShowTajweedColorsKey),
       _database.getSetting(showPlaybackBanglaWordMeaningKey),
+      _database.getSetting(hijriDayBoundaryKey),
+      _database.getSetting(hijriDateCorrectionKey),
+      _database.getSetting(hijriCorrectionScopeKey),
     ]);
 
     final theme = switch (values[0]) {
@@ -96,6 +102,7 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
     final banglaFontSize = double.tryParse(values[17] ?? '');
     final hifzFontSize = double.tryParse(values[20] ?? '');
     final hifzLineHeight = double.tryParse(values[21] ?? '');
+    final hijriCorrection = int.tryParse(values[25] ?? '');
 
     return AppPreferences(
       theme: theme,
@@ -184,6 +191,17 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
           ? AsrSchool.standard
           : AsrSchool.hanafi,
       prayerCityId: values[14]?.isNotEmpty == true ? values[14] : null,
+      hijriDayBoundary: values[24] == 'midnight'
+          ? HijriDayBoundary.midnight
+          : HijriDayBoundary.maghrib,
+      hijriDateCorrection:
+          hijriCorrection != null && hijriCorrection >= -1 && hijriCorrection <= 1
+          ? hijriCorrection
+          : defaults.hijriDateCorrection,
+      hijriCorrectionScope:
+          hijriCorrection != null && hijriCorrection != 0 && values[26]?.isNotEmpty == true
+          ? values[26]
+          : null,
     );
   }
 
@@ -273,6 +291,18 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       await _database.saveSetting(
         prayerCityKey,
         preferences.prayerCityId ?? '',
+      );
+      await _database.saveSetting(
+        hijriDayBoundaryKey,
+        preferences.hijriDayBoundary.name,
+      );
+      await _database.saveSetting(
+        hijriDateCorrectionKey,
+        preferences.hijriDateCorrection.toString(),
+      );
+      await _database.saveSetting(
+        hijriCorrectionScopeKey,
+        preferences.hijriCorrectionScope ?? '',
       );
     });
   }
