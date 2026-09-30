@@ -26,11 +26,11 @@ final bangladeshHijriDateProvider =
         .family<ResolvedHijriDate, BangladeshHijriDateRequest>((ref, request) async {
           final repository = ref.watch(bangladeshHijriDateRepositoryProvider);
           final baseline = await repository.convert(request.baselineSourceDate);
-          final correction =
-              request.correction != 0 &&
-                  request.correctionScope == baseline.scopeKey
-              ? request.correction
-              : 0;
+          final correction = BangladeshHijriDateResolver.activeCorrection(
+            correction: request.correction,
+            correctionScope: request.correctionScope,
+            baseline: baseline,
+          );
           if (correction == 0) return baseline;
           return repository.convert(
             request.baselineSourceDate.add(Duration(days: correction)),
@@ -86,10 +86,11 @@ final bangladeshHijriMonthProvider =
                 final baselineSource = civilDay.subtract(const Duration(days: 1));
                 final baseline = lookup(baselineSource);
                 final correction =
-                    request.correction != 0 &&
-                        request.correctionScope == baseline.scopeKey
-                    ? request.correction
-                    : 0;
+                    BangladeshHijriDateResolver.activeCorrection(
+                      correction: request.correction,
+                      correctionScope: request.correctionScope,
+                      baseline: baseline,
+                    );
                 return lookup(
                   baselineSource.add(Duration(days: correction)),
                 );
