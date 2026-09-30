@@ -53,13 +53,14 @@ void main() {
 
         expect(activeColor, isNot(baseColor));
         expect((activeHsv.hue - baseHsv.hue).abs(), lessThan(1));
-        expect(activeHsv.value, greaterThanOrEqualTo(baseHsv.value));
-        expect(activeHsv.saturation, greaterThanOrEqualTo(baseHsv.saturation));
+        expect(activeHsv.value, greaterThan(baseHsv.value));
         expect(
-          activeHsv.value > baseHsv.value ||
-              activeHsv.saturation > baseHsv.saturation,
-          isTrue,
+          activeHsv.value,
+          greaterThanOrEqualTo(
+            theme.brightness == Brightness.dark ? 0.84 : 0.70,
+          ),
         );
+        expect(activeHsv.saturation, inInclusiveRange(0.52, 0.78));
       },
     );
   }
