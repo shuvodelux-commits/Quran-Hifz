@@ -95,16 +95,27 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const ValueKey('calendar-week-strip')), findsOneWidget);
+      expect(find.byKey(const ValueKey('calendar-date-strip')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('calendar-expand-handle')),
+        findsOneWidget,
+      );
       expect(find.byKey(const ValueKey('calendar-month-grid')), findsNothing);
 
-      await tester.tap(find.byKey(const ValueKey('calendar-expand-button')));
+      await tester.drag(
+        find.byKey(const ValueKey('calendar-date-strip')),
+        const Offset(-180, 0),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('calendar-expand-handle')));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const ValueKey('calendar-week-strip')), findsNothing);
       expect(find.byKey(const ValueKey('calendar-month-grid')), findsOneWidget);
       expect(find.byType(DropdownButton<int>), findsNWidgets(2));
 
-      await tester.tap(find.byKey(const ValueKey('calendar-expand-button')));
+      await tester.tap(find.byKey(const ValueKey('calendar-expand-handle')));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const ValueKey('calendar-week-strip')), findsOneWidget);
