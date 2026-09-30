@@ -33,6 +33,7 @@ class OfflinePrayerCalculator {
         'Isha': _wallTime(today.isha, location.utcOffsetMinutes),
       },
       tomorrowFajr: _wallTime(next.fajr, location.utcOffsetMinutes),
+      tomorrowMaghrib: _wallTime(next.maghrib, location.utcOffsetMinutes),
     );
   }
 
