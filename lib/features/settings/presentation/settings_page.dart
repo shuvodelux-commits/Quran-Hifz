@@ -88,9 +88,9 @@ class SettingsPage extends ConsumerWidget {
                 const SizedBox(height: 14),
                 Text(
                   appText(value.language, 'UI রং', 'UI color'),
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
                 _ThemePicker(
@@ -492,11 +492,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: 14),
                 _PlaybackChoiceGroup<double>(
-                  label: appText(
-                    value.language,
-                    'অডিওর গতি',
-                    'Playback speed',
-                  ),
+                  label: appText(value.language, 'অডিওর গতি', 'Playback speed'),
                   values: AppPreferences.supportedPlaybackSpeeds,
                   selected: value.defaultPlaybackSpeed,
                   keyFor: (speed) => ValueKey('speed-choice-$speed'),
@@ -870,7 +866,11 @@ class _ThemeChoice extends StatelessWidget {
                 ),
                 if (selected) ...[
                   const SizedBox(width: 4),
-                  Icon(Icons.check_circle_rounded, size: 18, color: colors.primary),
+                  Icon(
+                    Icons.check_circle_rounded,
+                    size: 18,
+                    color: colors.primary,
+                  ),
                 ],
               ],
             ),

@@ -76,7 +76,9 @@ class BangladeshHijriDateRepository {
       final uri = Uri.https('api.aladhan.com', '/v1/gToH/$day', {
         'calendarMethod': 'HJCoSA',
       });
-      final response = await _client.get(uri).timeout(const Duration(seconds: 8));
+      final response = await _client
+          .get(uri)
+          .timeout(const Duration(seconds: 8));
       if (response.statusCode != 200) return _localFallback(sourceDate);
       final body = jsonDecode(response.body);
       if (body is! Map<String, dynamic> || body['code'] != 200) {
@@ -98,7 +100,9 @@ class BangladeshHijriDateRepository {
         '/v1/gToHCalendar/$month/$year',
         {'calendarMethod': 'HJCoSA'},
       );
-      final response = await _client.get(uri).timeout(const Duration(seconds: 10));
+      final response = await _client
+          .get(uri)
+          .timeout(const Duration(seconds: 10));
       if (response.statusCode != 200) return _localMonth(year, month, count);
       final body = jsonDecode(response.body);
       if (body is! Map<String, dynamic> || body['code'] != 200) {
@@ -111,7 +115,8 @@ class BangladeshHijriDateRepository {
       final result = <int, ResolvedHijriDate>{};
       for (var index = 0; index < count; index++) {
         final item = data[index];
-        if (item is! Map<String, dynamic>) return _localMonth(year, month, count);
+        if (item is! Map<String, dynamic>)
+          return _localMonth(year, month, count);
         final parsed = _parseHijri(item['hijri']);
         if (parsed == null) return _localMonth(year, month, count);
         result[index + 1] = parsed;

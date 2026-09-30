@@ -29,7 +29,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
           appLanguageProvider.overrideWithValue(AppLanguage.bangla),
           asrSchoolProvider.overrideWithValue(AsrSchool.hanafi),
           prayerScheduleProvider.overrideWith(
@@ -69,7 +71,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
           appLanguageProvider.overrideWithValue(AppLanguage.english),
           asrSchoolProvider.overrideWithValue(AsrSchool.hanafi),
           prayerScheduleProvider.overrideWith((ref) async => schedule),

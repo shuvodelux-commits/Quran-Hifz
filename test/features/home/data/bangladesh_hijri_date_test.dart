@@ -94,35 +94,38 @@ void main() {
     });
   });
 
-  test('HJCoSA repository requests the explicit AlAdhan calendar method', () async {
-    late Uri requested;
-    final client = MockClient((request) async {
-      requested = request.url;
-      return http.Response(
-        jsonEncode({
-          'code': 200,
-          'data': {
-            'hijri': {
-              'day': '18',
-              'month': {'number': 4, 'en': 'Rabi al-Thani'},
-              'year': '1448',
-              'method': 'HJCoSA',
+  test(
+    'HJCoSA repository requests the explicit AlAdhan calendar method',
+    () async {
+      late Uri requested;
+      final client = MockClient((request) async {
+        requested = request.url;
+        return http.Response(
+          jsonEncode({
+            'code': 200,
+            'data': {
+              'hijri': {
+                'day': '18',
+                'month': {'number': 4, 'en': 'Rabi al-Thani'},
+                'year': '1448',
+                'method': 'HJCoSA',
+              },
             },
-          },
-        }),
-        200,
-      );
-    });
-    final repository = BangladeshHijriDateRepository(client: client);
+          }),
+          200,
+        );
+      });
+      final repository = BangladeshHijriDateRepository(client: client);
 
-    final result = await repository.convert(DateTime(2026, 9, 30));
+      final result = await repository.convert(DateTime(2026, 9, 30));
 
-    expect(requested.path, '/v1/gToH/30-09-2026');
-    expect(requested.queryParameters['calendarMethod'], 'HJCoSA');
-    expect(result.text, '18 Rabi al-Thani 1448 AH');
-    expect(result.scopeKey, '1448-04');
-    expect(result.source, HijriDateSource.hjcosa);
-  });
+      expect(requested.path, '/v1/gToH/30-09-2026');
+      expect(requested.queryParameters['calendarMethod'], 'HJCoSA');
+      expect(result.text, '18 Rabi al-Thani 1448 AH');
+      expect(result.scopeKey, '1448-04');
+      expect(result.source, HijriDateSource.hjcosa);
+    },
+  );
 
   test('HJCoSA repository falls back to local Hijri conversion', () async {
     final repository = BangladeshHijriDateRepository(

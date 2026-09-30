@@ -241,11 +241,13 @@ final hijriDayBoundaryProvider = Provider<HijriDayBoundary>(
 
 final hijriDateCorrectionProvider = Provider<int>(
   (ref) =>
-      ref.watch(appPreferencesControllerProvider).value?.hijriDateCorrection ?? 0,
+      ref.watch(appPreferencesControllerProvider).value?.hijriDateCorrection ??
+      0,
 );
 
 final hijriCorrectionScopeProvider = Provider<String?>(
-  (ref) => ref.watch(appPreferencesControllerProvider).value?.hijriCorrectionScope,
+  (ref) =>
+      ref.watch(appPreferencesControllerProvider).value?.hijriCorrectionScope,
 );
 
 final quranScriptPreferenceProvider = Provider<QuranScriptPreference>((ref) {

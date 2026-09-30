@@ -13,73 +13,78 @@ import 'package:quran_hifz/features/settings/domain/app_preferences_repository.d
 import 'package:quran_hifz/features/settings/presentation/settings_page.dart';
 
 void main() {
-  testWidgets('settings are grouped into clear sections with named color themes', (
-    tester,
-  ) async {
-    final preferences = _MemoryPreferencesRepository()
-      ..value = const AppPreferences.defaults().copyWith(
-        language: AppLanguage.english,
+  testWidgets(
+    'settings are grouped into clear sections with named color themes',
+    (tester) async {
+      final preferences = _MemoryPreferencesRepository()
+        ..value = const AppPreferences.defaults().copyWith(
+          language: AppLanguage.english,
+        );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            bangladeshHijriDateRepositoryProvider.overrideWithValue(
+              _FakeHijriRepository(),
+            ),
+            prayerScheduleProvider.overrideWith(
+              (ref) async => throw StateError('No location'),
+            ),
+            appPreferencesRepositoryProvider.overrideWithValue(preferences),
+            indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
+            tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
+          ],
+          child: const MaterialApp(home: SettingsPage(currentSurahNumber: 1)),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Appearance & Language'), findsOneWidget);
+      expect(find.text('Prayer & Location'), findsOneWidget);
+      expect(find.text('Teal Blue'), findsOneWidget);
+      expect(find.text('Sea Green'), findsOneWidget);
+      expect(find.text('Turquoise Dark'), findsOneWidget);
+      expect(find.text('Mauve Rose'), findsOneWidget);
+      expect(
+        find.byType(DropdownButtonFormField<AppThemePreference>),
+        findsNothing,
       );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
-          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
-          appPreferencesRepositoryProvider.overrideWithValue(preferences),
-          indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
-          tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
-        ],
-        child: const MaterialApp(home: SettingsPage(currentSurahNumber: 1)),
-      ),
-    );
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Sea Green'));
+      await tester.pumpAndSettle();
+      expect(preferences.value.theme, AppThemePreference.green);
 
-    expect(find.text('Appearance & Language'), findsOneWidget);
-    expect(find.text('Prayer & Location'), findsOneWidget);
-    expect(find.text('Teal Blue'), findsOneWidget);
-    expect(find.text('Sea Green'), findsOneWidget);
-    expect(find.text('Turquoise Dark'), findsOneWidget);
-    expect(find.text('Mauve Rose'), findsOneWidget);
-    expect(
-      find.byType(DropdownButtonFormField<AppThemePreference>),
-      findsNothing,
-    );
+      await tester.scrollUntilVisible(
+        find.text('Calendar & Hijri Date'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Calendar & Hijri Date'), findsOneWidget);
+      expect(find.text('Hijri day changes at'), findsOneWidget);
+      expect(find.text('Bangladesh Hijri correction'), findsOneWidget);
 
-    await tester.tap(find.text('Sea Green'));
-    await tester.pumpAndSettle();
-    expect(preferences.value.theme, AppThemePreference.green);
+      await tester.scrollUntilVisible(
+        find.text('Quran Reading'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Quran Reading'), findsOneWidget);
 
-    await tester.scrollUntilVisible(
-      find.text('Calendar & Hijri Date'),
-      250,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('Calendar & Hijri Date'), findsOneWidget);
-    expect(find.text('Hijri day changes at'), findsOneWidget);
-    expect(find.text('Bangladesh Hijri correction'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Text & Reading Layout'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Text & Reading Layout'), findsOneWidget);
 
-    await tester.scrollUntilVisible(
-      find.text('Quran Reading'),
-      250,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('Quran Reading'), findsOneWidget);
-
-    await tester.scrollUntilVisible(
-      find.text('Text & Reading Layout'),
-      250,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('Text & Reading Layout'), findsOneWidget);
-
-    await tester.scrollUntilVisible(
-      find.text('Audio & Recitation'),
-      250,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('Audio & Recitation'), findsOneWidget);
-  });
+      await tester.scrollUntilVisible(
+        find.text('Audio & Recitation'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Audio & Recitation'), findsOneWidget);
+    },
+  );
 
   testWidgets('playback Bangla word meaning has its own toggle', (
     tester,
@@ -92,8 +97,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
-          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
+          prayerScheduleProvider.overrideWith(
+            (ref) async => throw StateError('No location'),
+          ),
           appPreferencesRepositoryProvider.overrideWithValue(preferences),
           indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
           tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
@@ -132,8 +141,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
-          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
+          prayerScheduleProvider.overrideWith(
+            (ref) async => throw StateError('No location'),
+          ),
           appPreferencesRepositoryProvider.overrideWithValue(preferences),
           indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
           tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
@@ -175,8 +188,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
-          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
+          prayerScheduleProvider.overrideWith(
+            (ref) async => throw StateError('No location'),
+          ),
           appPreferencesRepositoryProvider.overrideWithValue(
             _MemoryPreferencesRepository(),
           ),
@@ -196,18 +213,12 @@ void main() {
     await tester.pumpAndSettle();
 
     for (final count in AppPreferences.supportedRepeatCounts) {
-      expect(
-        find.byKey(ValueKey('repeat-choice-$count')),
-        findsOneWidget,
-      );
+      expect(find.byKey(ValueKey('repeat-choice-$count')), findsOneWidget);
     }
     expect(find.byKey(const ValueKey('repeat-choice-4')), findsNothing);
 
     for (final speed in AppPreferences.supportedPlaybackSpeeds) {
-      expect(
-        find.byKey(ValueKey('speed-choice-$speed')),
-        findsOneWidget,
-      );
+      expect(find.byKey(ValueKey('speed-choice-$speed')), findsOneWidget);
     }
     expect(find.byKey(const ValueKey('speed-choice-2.0')), findsNothing);
   });
@@ -218,8 +229,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
-          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
+          prayerScheduleProvider.overrideWith(
+            (ref) async => throw StateError('No location'),
+          ),
           appPreferencesRepositoryProvider.overrideWithValue(
             _MemoryPreferencesRepository(),
           ),
@@ -249,8 +264,12 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
-          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
+            bangladeshHijriDateRepositoryProvider.overrideWithValue(
+              _FakeHijriRepository(),
+            ),
+            prayerScheduleProvider.overrideWith(
+              (ref) async => throw StateError('No location'),
+            ),
             appPreferencesRepositoryProvider.overrideWithValue(preferences),
             indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
             tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
@@ -285,8 +304,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
-          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
+          prayerScheduleProvider.overrideWith(
+            (ref) async => throw StateError('No location'),
+          ),
           appPreferencesRepositoryProvider.overrideWithValue(
             _MemoryPreferencesRepository(),
           ),
@@ -323,8 +346,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
-          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
+          prayerScheduleProvider.overrideWith(
+            (ref) async => throw StateError('No location'),
+          ),
           appPreferencesRepositoryProvider.overrideWithValue(
             _MemoryPreferencesRepository(),
           ),

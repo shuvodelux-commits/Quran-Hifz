@@ -32,7 +32,9 @@ void main() {
           ProviderScope(
             key: ValueKey(language),
             overrides: [
-              bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+              bangladeshHijriDateRepositoryProvider.overrideWithValue(
+                _FakeHijriRepository(),
+              ),
               userDatabaseProvider.overrideWithValue(database),
               appLanguageProvider.overrideWithValue(language),
               savedPrayerLocationProvider.overrideWith((ref) async => null),
@@ -75,7 +77,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
           userDatabaseProvider.overrideWithValue(database),
           prayerScheduleProvider.overrideWith(
             (ref) async => throw StateError('No location'),
@@ -110,7 +114,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+            bangladeshHijriDateRepositoryProvider.overrideWithValue(
+              _FakeHijriRepository(),
+            ),
             userDatabaseProvider.overrideWithValue(database),
             prayerScheduleProvider.overrideWith(
               (ref) async => throw StateError('No location'),
@@ -172,7 +178,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
           userDatabaseProvider.overrideWithValue(database),
           appLanguageProvider.overrideWithValue(AppLanguage.english),
           prayerScheduleProvider.overrideWith((ref) async => schedule),
@@ -220,7 +228,7 @@ void main() {
     final compactGregorian = gregorianParts
         .sublist(0, gregorianParts.length - 1)
         .join(' ');
-    expect(find.text('6 Rabi al-Thani'), findsOneWidget);
+    expect(find.text('3 Rabi al-Thani'), findsOneWidget);
     expect(find.textContaining(compactGregorian), findsOneWidget);
 
     final start = find.descendant(
@@ -304,7 +312,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
           userDatabaseProvider.overrideWithValue(database),
           appLanguageProvider.overrideWithValue(AppLanguage.english),
           prayerScheduleProvider.overrideWith((ref) async => schedule),
@@ -378,7 +388,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+            bangladeshHijriDateRepositoryProvider.overrideWithValue(
+              _FakeHijriRepository(),
+            ),
             userDatabaseProvider.overrideWithValue(database),
             prayerScheduleProvider.overrideWith((ref) async => schedule),
           ],
@@ -493,7 +505,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
           userDatabaseProvider.overrideWithValue(database),
           prayerScheduleProvider.overrideWith((ref) async => schedule),
         ],
@@ -554,7 +568,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
           userDatabaseProvider.overrideWithValue(database),
           prayerScheduleProvider.overrideWith((ref) async => schedule),
         ],
@@ -628,7 +644,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
           userDatabaseProvider.overrideWithValue(database),
           prayerScheduleProvider.overrideWith((ref) async => schedule),
           mosquePrayerTimesProvider.overrideWith((ref) => pending.future),

@@ -64,26 +64,31 @@ void main() {
     expect(repository.value.showPlaybackBanglaWordMeaning, isFalse);
   });
 
-  test('Hijri settings update independently and clear correction scope', () async {
-    final repository = _MemoryRepository();
-    final container = containerFor(repository);
-    await container.read(appPreferencesControllerProvider.future);
-    final controller = container.read(appPreferencesControllerProvider.notifier);
+  test(
+    'Hijri settings update independently and clear correction scope',
+    () async {
+      final repository = _MemoryRepository();
+      final container = containerFor(repository);
+      await container.read(appPreferencesControllerProvider.future);
+      final controller = container.read(
+        appPreferencesControllerProvider.notifier,
+      );
 
-    await controller.setHijriDayBoundary(HijriDayBoundary.midnight);
-    await controller.setHijriDateCorrection(1, scope: '1448-04');
+      await controller.setHijriDayBoundary(HijriDayBoundary.midnight);
+      await controller.setHijriDateCorrection(1, scope: '1448-04');
 
-    var state = container.read(appPreferencesControllerProvider).value!;
-    expect(state.hijriDayBoundary, HijriDayBoundary.midnight);
-    expect(state.hijriDateCorrection, 1);
-    expect(state.hijriCorrectionScope, '1448-04');
-    expect(state.asrSchool, AsrSchool.hanafi);
+      var state = container.read(appPreferencesControllerProvider).value!;
+      expect(state.hijriDayBoundary, HijriDayBoundary.midnight);
+      expect(state.hijriDateCorrection, 1);
+      expect(state.hijriCorrectionScope, '1448-04');
+      expect(state.asrSchool, AsrSchool.hanafi);
 
-    await controller.setHijriDateCorrection(0);
-    state = container.read(appPreferencesControllerProvider).value!;
-    expect(state.hijriDateCorrection, 0);
-    expect(state.hijriCorrectionScope, isNull);
-  });
+      await controller.setHijriDateCorrection(0);
+      state = container.read(appPreferencesControllerProvider).value!;
+      expect(state.hijriDateCorrection, 0);
+      expect(state.hijriCorrectionScope, isNull);
+    },
+  );
 
   test('changing repeat count preserves unrelated preferences', () async {
     final repository = _MemoryRepository();
@@ -136,32 +141,35 @@ void main() {
     expect(state.defaultPlaybackSpeed, 1.0);
   });
 
-  test('Hifz appearance updates never mutate normal Quran typography', () async {
-    final repository = _MemoryRepository();
-    final container = containerFor(repository);
-    await container.read(appPreferencesControllerProvider.future);
-    final controller = container.read(
-      appPreferencesControllerProvider.notifier,
-    );
+  test(
+    'Hifz appearance updates never mutate normal Quran typography',
+    () async {
+      final repository = _MemoryRepository();
+      final container = containerFor(repository);
+      await container.read(appPreferencesControllerProvider.future);
+      final controller = container.read(
+        appPreferencesControllerProvider.notifier,
+      );
 
-    await controller.setHifzMushafVariant(QuranMushafVariant.qcfV2);
-    await controller.setHifzFontSize(48);
-    await controller.setHifzLineHeight(1.8);
-    await controller.setHifzShowTajweedColors(false);
+      await controller.setHifzMushafVariant(QuranMushafVariant.qcfV2);
+      await controller.setHifzFontSize(48);
+      await controller.setHifzLineHeight(1.8);
+      await controller.setHifzShowTajweedColors(false);
 
-    final state = container.read(appPreferencesControllerProvider).value!;
-    expect(state.quranFont, QuranFontPreference.qpcHafs);
-    expect(state.hifzMushafVariant, QuranMushafVariant.qcfV2);
-    expect(state.hifzFontSize, 48);
-    expect(state.hifzLineHeight, 1.8);
-    expect(state.hifzShowTajweedColors, isFalse);
+      final state = container.read(appPreferencesControllerProvider).value!;
+      expect(state.quranFont, QuranFontPreference.qpcHafs);
+      expect(state.hifzMushafVariant, QuranMushafVariant.qcfV2);
+      expect(state.hifzFontSize, 48);
+      expect(state.hifzLineHeight, 1.8);
+      expect(state.hifzShowTajweedColors, isFalse);
 
-    await controller.setQuranFont(QuranFontPreference.indoPak);
-    final changed = container.read(appPreferencesControllerProvider).value!;
-    expect(changed.quranFont, QuranFontPreference.indoPak);
-    expect(changed.hifzMushafVariant, QuranMushafVariant.qcfV2);
-    expect(changed.hifzFontSize, 48);
-  });
+      await controller.setQuranFont(QuranFontPreference.indoPak);
+      final changed = container.read(appPreferencesControllerProvider).value!;
+      expect(changed.quranFont, QuranFontPreference.indoPak);
+      expect(changed.hifzMushafVariant, QuranMushafVariant.qcfV2);
+      expect(changed.hifzFontSize, 48);
+    },
+  );
 
   test('rejects invalid Hifz typography ranges', () async {
     final repository = _MemoryRepository();

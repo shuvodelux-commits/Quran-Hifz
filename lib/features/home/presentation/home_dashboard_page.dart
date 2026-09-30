@@ -76,8 +76,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
     final resolvedHijri = ref
         .watch(currentBangladeshHijriDateProvider(baselineHijriSource))
         .value;
-    final hijriDate =
-        resolvedHijri?.text ?? schedule?.hijriDateAt(_now) ?? '—';
+    final hijriDate = resolvedHijri?.text ?? schedule?.hijriDateAt(_now) ?? '—';
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,

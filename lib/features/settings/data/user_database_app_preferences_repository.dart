@@ -195,11 +195,15 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
           ? HijriDayBoundary.midnight
           : HijriDayBoundary.maghrib,
       hijriDateCorrection:
-          hijriCorrection != null && hijriCorrection >= -1 && hijriCorrection <= 1
+          hijriCorrection != null &&
+              hijriCorrection >= -1 &&
+              hijriCorrection <= 1
           ? hijriCorrection
           : defaults.hijriDateCorrection,
       hijriCorrectionScope:
-          hijriCorrection != null && hijriCorrection != 0 && values[26]?.isNotEmpty == true
+          hijriCorrection != null &&
+              hijriCorrection != 0 &&
+              values[26]?.isNotEmpty == true
           ? values[26]
           : null,
     );

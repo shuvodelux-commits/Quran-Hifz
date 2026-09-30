@@ -147,24 +147,27 @@ void main() {
     expect(restored.prayerCityId, isNull);
   });
 
-  test('legacy global QCF font normalizes without overriding Hifz skin', () async {
-    final database = UserDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(database.close);
-    final repository = UserDatabaseAppPreferencesRepository(database);
+  test(
+    'legacy global QCF font normalizes without overriding Hifz skin',
+    () async {
+      final database = UserDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(database.close);
+      final repository = UserDatabaseAppPreferencesRepository(database);
 
-    await database.saveSetting(
-      UserDatabaseAppPreferencesRepository.quranFontKey,
-      'qcfV2',
-    );
-    await database.saveSetting(
-      UserDatabaseAppPreferencesRepository.hifzMushafVariantKey,
-      QuranMushafVariant.qcfV4Tajweed.name,
-    );
+      await database.saveSetting(
+        UserDatabaseAppPreferencesRepository.quranFontKey,
+        'qcfV2',
+      );
+      await database.saveSetting(
+        UserDatabaseAppPreferencesRepository.hifzMushafVariantKey,
+        QuranMushafVariant.qcfV4Tajweed.name,
+      );
 
-    final restored = await repository.load();
-    expect(restored.quranFont, QuranFontPreference.qpcHafs);
-    expect(restored.hifzMushafVariant, QuranMushafVariant.qcfV4Tajweed);
-  });
+      final restored = await repository.load();
+      expect(restored.quranFont, QuranFontPreference.qpcHafs);
+      expect(restored.hifzMushafVariant, QuranMushafVariant.qcfV4Tajweed);
+    },
+  );
 
   test('malformed Hifz appearance falls back to safe defaults', () async {
     final database = UserDatabase.forTesting(NativeDatabase.memory());
@@ -190,5 +193,4 @@ void main() {
     expect(restored.hifzFontSize, defaults.hifzFontSize);
     expect(restored.hifzLineHeight, defaults.hifzLineHeight);
   });
-
 }
