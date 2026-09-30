@@ -49,7 +49,8 @@ class BangladeshHijriDateResolver {
 }
 
 class BangladeshHijriDateRepository {
-  BangladeshHijriDateRepository({http.Client? client}) : _client = client ?? http.Client();
+  BangladeshHijriDateRepository({http.Client? client})
+    : _client = client ?? http.Client();
 
   final http.Client _client;
 
@@ -63,52 +64,90 @@ class BangladeshHijriDateRepository {
         'calendarMethod': 'HJCoSA',
       });
       final response = await _client.get(uri).timeout(const Duration(seconds: 8));
-      if (response.statusCode != 200) {
-        return _localFallback(sourceDate);
-      }
+      if (response.statusCode != 200) return _localFallback(sourceDate);
       final body = jsonDecode(response.body);
       if (body is! Map<String, dynamic> || body['code'] != 200) {
         return _localFallback(sourceDate);
       }
       final data = body['data'];
       if (data is! Map<String, dynamic>) return _localFallback(sourceDate);
-      final hijri = data['hijri'];
-      if (hijri is! Map<String, dynamic> || hijri['method'] != 'HJCoSA') {
-        return _localFallback(sourceDate);
-      }
-      final month = hijri['month'];
-      if (month is! Map<String, dynamic>) return _localFallback(sourceDate);
-      final parsedDay = int.tryParse('${hijri['day']}');
-      final parsedMonth = month['number'] is int
-          ? month['number'] as int
-          : int.tryParse('${month['number']}');
-      final parsedYear = int.tryParse('${hijri['year']}');
-      final monthName = month['en']?.toString().trim();
-      if (parsedDay == null ||
-          parsedMonth == null ||
-          parsedYear == null ||
-          monthName == null ||
-          monthName.isEmpty) {
-        return _localFallback(sourceDate);
-      }
-      return ResolvedHijriDate(
-        day: parsedDay,
-        month: parsedMonth,
-        year: parsedYear,
-        monthName: monthName,
-        source: HijriDateSource.hjcosa,
-      );
+      return _parseHijri(data['hijri']) ?? _localFallback(sourceDate);
     } catch (_) {
       return _localFallback(sourceDate);
     }
   }
+
+  Future<Map<int, ResolvedHijriDate>> convertMonth(int year, int month) async {
+    final count = DateTime(year, month + 1, 0).day;
+    try {
+      final uri = Uri.https(
+        'api.aladhan.com',
+        '/v1/gToHCalendar/$month/$year',
+        {'calendarMethod': 'HJCoSA'},
+      );
+      final response = await _client.get(uri).timeout(const Duration(seconds: 10));
+      if (response.statusCode != 200) return _localMonth(year, month, count);
+      final body = jsonDecode(response.body);
+      if (body is! Map<String, dynamic> || body['code'] != 200) {
+        return _localMonth(year, month, count);
+      }
+      final data = body['data'];
+      if (data is! List || data.length < count) {
+        return _localMonth(year, month, count);
+      }
+      final result = <int, ResolvedHijriDate>{};
+      for (var index = 0; index < count; index++) {
+        final item = data[index];
+        if (item is! Map<String, dynamic>) return _localMonth(year, month, count);
+        final parsed = _parseHijri(item['hijri']);
+        if (parsed == null) return _localMonth(year, month, count);
+        result[index + 1] = parsed;
+      }
+      return result;
+    } catch (_) {
+      return _localMonth(year, month, count);
+    }
+  }
+
+  ResolvedHijriDate? _parseHijri(Object? raw) {
+    if (raw is! Map<String, dynamic> || raw['method'] != 'HJCoSA') return null;
+    final month = raw['month'];
+    if (month is! Map<String, dynamic>) return null;
+    final parsedDay = int.tryParse('${raw['day']}');
+    final parsedMonth = month['number'] is int
+        ? month['number'] as int
+        : int.tryParse('${month['number']}');
+    final parsedYear = int.tryParse('${raw['year']}');
+    final monthName = month['en']?.toString().trim();
+    if (parsedDay == null ||
+        parsedMonth == null ||
+        parsedYear == null ||
+        monthName == null ||
+        monthName.isEmpty) {
+      return null;
+    }
+    return ResolvedHijriDate(
+      day: parsedDay,
+      month: parsedMonth,
+      year: parsedYear,
+      monthName: monthName,
+      source: HijriDateSource.hjcosa,
+    );
+  }
+
+  Map<int, ResolvedHijriDate> _localMonth(int year, int month, int count) => {
+    for (var day = 1; day <= count; day++)
+      day: _localFallback(DateTime(year, month, day)),
+  };
 
   ResolvedHijriDate _localFallback(DateTime sourceDate) {
     final local = hijri_core.toHijri(
       DateTime.utc(sourceDate.year, sourceDate.month, sourceDate.day),
     );
     if (local == null) {
-      throw StateError('Hijri date is unavailable for ${sourceDate.toIso8601String()}.');
+      throw StateError(
+        'Hijri date is unavailable for ${sourceDate.toIso8601String()}.',
+      );
     }
     return ResolvedHijriDate(
       day: local.hd,
