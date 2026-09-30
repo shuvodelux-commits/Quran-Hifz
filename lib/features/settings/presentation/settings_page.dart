@@ -641,7 +641,7 @@ class _HijriSettingsCard extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         DropdownButtonFormField<int>(
-          initialValue: preferences.hijriDateCorrection,
+          initialValue: correctionExpired ? 0 : preferences.hijriDateCorrection,
           decoration: InputDecoration(
             labelText: appText(
               preferences.language,
