@@ -104,3 +104,14 @@ String localPrayerName(String name, AppLanguage language) =>
       'Isha' => 'ইশা',
       _ => name,
     }, name);
+
+String localPrayerNameForDate(
+  String name,
+  AppLanguage language,
+  DateTime date,
+) {
+  if (name == 'Dhuhr' && date.weekday == DateTime.friday) {
+    return appText(language, 'জুমুআ', "Jumu'ah");
+  }
+  return localPrayerName(name, language);
+}

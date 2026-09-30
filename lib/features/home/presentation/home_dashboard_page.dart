@@ -33,7 +33,9 @@ class HomeDashboardPage extends ConsumerStatefulWidget {
 
 class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
   Timer? _timer;
+  final PageController _prayerCardController = PageController();
   DateTime _now = DateTime.now();
+  int _prayerCardPage = 0;
 
   @override
   void initState() {
@@ -52,6 +54,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _prayerCardController.dispose();
     super.dispose();
   }
 
@@ -200,6 +203,9 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                 key: const ValueKey('prayer-card-pager'),
                 height: 298,
                 child: PageView(
+                  controller: _prayerCardController,
+                  onPageChanged: (page) =>
+                      setState(() => _prayerCardPage = page),
                   children: [
                     _Panel(
                       child: Column(
@@ -227,6 +233,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                               },
                               active: current?.name == name,
                               language: language,
+                              date: _now,
                             ),
                         ],
                       ),
@@ -242,6 +249,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                               savedTime: mosqueTimes[name],
                               active: current?.name == name,
                               language: language,
+                              date: _now,
                               onAzanTap: mosqueTimesReady
                                   ? () => _editMosqueTime(
                                       name,
@@ -260,6 +268,92 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                                   : null,
                             ),
                         ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 2),
+              SizedBox(
+                height: 34,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Row(
+                      key: const ValueKey('prayer-card-dots'),
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (var index = 0; index < 2; index++) ...[
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 160),
+                            width: _prayerCardPage == index ? 8 : 7,
+                            height: _prayerCardPage == index ? 8 : 7,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _prayerCardPage == index
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.outlineVariant,
+                            ),
+                          ),
+                          if (index == 0) const SizedBox(width: 6),
+                        ],
+                      ],
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        key: const ValueKey('prayer-card-direction'),
+                        onPressed: () => _prayerCardController.animateToPage(
+                          _prayerCardPage == 0 ? 1 : 0,
+                          duration: const Duration(milliseconds: 260),
+                          curve: Curves.easeOutCubic,
+                        ),
+                        style: TextButton.styleFrom(
+                          minimumSize: const Size(0, 30),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_prayerCardPage == 1) ...[
+                              Icon(
+                                Icons.chevron_left_rounded,
+                                size: 16,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(width: 1),
+                            ],
+                            Text(
+                              _prayerCardPage == 0
+                                  ? appText(
+                                      language,
+                                      'স্থানীয় মসজিদ',
+                                      'Local mosque',
+                                    )
+                                  : appText(
+                                      language,
+                                      'সলাতের সময়',
+                                      'Prayer times',
+                                    ),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (_prayerCardPage == 0) ...[
+                              const SizedBox(width: 1),
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                size: 16,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -890,10 +984,10 @@ class _CurrentPrayerCard extends StatelessWidget {
         ? appText(language, 'বর্তমান সলাত', 'Current Prayer')
         : appText(language, 'এখন সলাতের সময় নয়', 'Prayer break');
     final name = hasCurrent
-        ? localPrayerName(current!.name, language)
+        ? localPrayerNameForDate(current!.name, language, now)
         : next == null
         ? '—'
-        : '${appText(language, 'পরবর্তী', 'Next')}: ${localPrayerName(next!.name, language)}';
+        : '${appText(language, 'পরবর্তী', 'Next')}: ${localPrayerNameForDate(next!.name, language, now)}';
     final timeLabel = hasCurrent
         ? appText(language, 'শেষ হবে', 'Ends at')
         : appText(language, 'শুরু হবে', 'Starts at');
@@ -982,12 +1076,14 @@ class _PrayerRow extends StatelessWidget {
     this.end,
     required this.active,
     required this.language,
+    required this.date,
   });
   final String name;
   final DateTime? time;
   final DateTime? end;
   final bool active;
   final AppLanguage language;
+  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
@@ -1171,6 +1267,7 @@ class _MosquePrayerRow extends StatelessWidget {
     required this.savedTime,
     required this.active,
     required this.language,
+    required this.date,
     required this.onAzanTap,
     required this.onJamaatTap,
   });
@@ -1180,6 +1277,7 @@ class _MosquePrayerRow extends StatelessWidget {
   final MosquePrayerTime? savedTime;
   final bool active;
   final AppLanguage language;
+  final DateTime date;
   final VoidCallback? onAzanTap;
   final VoidCallback? onJamaatTap;
 

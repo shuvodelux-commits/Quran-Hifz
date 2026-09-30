@@ -21,6 +21,25 @@ void main() {
     );
   });
 
+  test('Friday Dhuhr is displayed as Jumuah only on Friday', () {
+    final friday = DateTime(2026, 10, 2);
+    final thursday = DateTime(2026, 10, 1);
+
+    expect(
+      localPrayerNameForDate('Dhuhr', AppLanguage.bangla, friday),
+      'জুমুআ',
+    );
+    expect(
+      localPrayerNameForDate('Dhuhr', AppLanguage.english, friday),
+      "Jumu'ah",
+    );
+    expect(
+      localPrayerNameForDate('Dhuhr', AppLanguage.bangla, thursday),
+      'যোহর',
+    );
+    expect(localPrayerNameForDate('Asr', AppLanguage.bangla, friday), 'আসর');
+  });
+
   test('Gregorian and Hijri dates localize without changing day identity', () {
     expect(
       localGregorianDate(DateTime(2026, 9, 14), AppLanguage.bangla),

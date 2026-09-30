@@ -107,6 +107,52 @@ void main() {
     expect(find.text('তাফসির'), findsOneWidget);
   });
 
+  testWidgets('prayer pager shows centered direction cue and switches hint', (
+    tester,
+  ) async {
+    final database = UserDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final now = DateTime.now();
+    final schedule = PrayerSchedule(
+      location: 'Natore, Bangladesh',
+      latitude: 24.42,
+      longitude: 88.99,
+      hijriDate: '6 Rabi al-Thani 1448 AH',
+      sunrise: DateTime(now.year, now.month, now.day, 5, 51),
+      sunset: DateTime(now.year, now.month, now.day, 18, 6),
+      times: {
+        'Fajr': DateTime(now.year, now.month, now.day, 4, 35),
+        'Dhuhr': DateTime(now.year, now.month, now.day, 12),
+        'Asr': DateTime(now.year, now.month, now.day, 16, 23),
+        'Maghrib': DateTime(now.year, now.month, now.day, 18, 6),
+        'Isha': DateTime(now.year, now.month, now.day, 19, 22),
+      },
+      tomorrowFajr: DateTime(now.year, now.month, now.day + 1, 4, 35),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
+          userDatabaseProvider.overrideWithValue(database),
+          prayerScheduleProvider.overrideWith((ref) async => schedule),
+        ],
+        child: const MaterialApp(home: HomeDashboardPage(onMore: _noop)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('prayer-card-dots')), findsOneWidget);
+    expect(find.text('স্থানীয় মসজিদ'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('prayer-card-direction')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('সলাতের সময়'), findsOneWidget);
+  });
+
   testWidgets('home background and date hero follow every selected palette', (
     tester,
   ) async {
