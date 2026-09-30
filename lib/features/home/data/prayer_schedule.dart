@@ -40,6 +40,7 @@ class PrayerSchedule {
     required this.sunset,
     required this.times,
     this.tomorrowFajr,
+    this.tomorrowMaghrib,
   });
 
   final String location;
@@ -52,6 +53,7 @@ class PrayerSchedule {
   final DateTime sunset;
   final Map<String, DateTime> times;
   final DateTime? tomorrowFajr;
+  final DateTime? tomorrowMaghrib;
 
   String hijriDateAt(DateTime now) =>
       !now.isBefore(sunset) ? (tomorrowHijriDate ?? hijriDate) : hijriDate;
@@ -218,6 +220,7 @@ class PrayerScheduleRepository {
     );
     final tomorrow = DateTime(now.year, now.month, now.day + 1);
     DateTime? tomorrowFajr;
+    DateTime? tomorrowMaghrib;
     String? tomorrowHijriDate;
     try {
       final next = await _fetch(
@@ -226,11 +229,9 @@ class PrayerScheduleRepository {
         location.longitude,
         school,
       );
-      tomorrowFajr = _time(
-        tomorrow,
-        next['timings'] as Map<String, dynamic>,
-        'Fajr',
-      );
+      final nextTimings = next['timings'] as Map<String, dynamic>;
+      tomorrowFajr = _time(tomorrow, nextTimings, 'Fajr');
+      tomorrowMaghrib = _time(tomorrow, nextTimings, 'Maghrib');
       tomorrowHijriDate = _hijriText(next);
     } catch (_) {
       // Today's five times remain useful while a second request fails.
@@ -242,6 +243,7 @@ class PrayerScheduleRepository {
       latitude: location.latitude,
       longitude: location.longitude,
       tomorrowFajr: tomorrowFajr,
+      tomorrowMaghrib: tomorrowMaghrib,
       tomorrowHijriDate: tomorrowHijriDate,
     );
   }
@@ -289,6 +291,7 @@ class PrayerScheduleRepository {
     required double latitude,
     required double longitude,
     DateTime? tomorrowFajr,
+    DateTime? tomorrowMaghrib,
     String? tomorrowHijriDate,
   }) {
     final timings = data['timings'] as Map<String, dynamic>;
@@ -302,6 +305,7 @@ class PrayerScheduleRepository {
       sunset: _time(day, timings, 'Sunset'),
       times: {for (final name in prayerNames) name: _time(day, timings, name)},
       tomorrowFajr: tomorrowFajr,
+      tomorrowMaghrib: tomorrowMaghrib,
     );
   }
 
