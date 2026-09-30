@@ -34,7 +34,7 @@ void main() {
     expect(value.awwabinEnd, DateTime(2026, 9, 30, 19, 7));
     expect(value.tahajjudStart, DateTime(2026, 9, 30, 19, 7));
     expect(value.tahajjudEnd, DateTime(2026, 10, 1, 4, 39));
-    expect(value.lastThirdStart, DateTime(2026, 10, 1, 0, 3));
+    expect(value.lastThirdStart, DateTime(2026, 10, 1, 1, 3, 40));
   });
 
   test('uses the next exact iftar after Maghrib', () {
