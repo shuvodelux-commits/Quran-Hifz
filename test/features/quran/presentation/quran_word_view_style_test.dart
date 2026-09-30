@@ -16,6 +16,8 @@ import 'package:quran_hifz/features/settings/application/app_preferences_control
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences_repository.dart';
 import 'package:quran_hifz/app/app_theme.dart';
+import 'package:quran_hifz/core/theme/app_palette.dart';
+import 'package:quran_hifz/core/theme/reference_colors.dart';
 
 void main() {
   for (final preference in AppThemePreference.values) {
@@ -64,6 +66,55 @@ void main() {
       },
     );
   }
+  testWidgets(
+    'graphite dark mode uses the blue-theme playback highlight',
+    (tester) async {
+      const graphite = Color(0xFF4C5054);
+      final base = ThemeData.dark();
+      final palette = AppPalette(
+        readerAccent: graphite,
+        accentPressed: graphite,
+        accentTint: graphite,
+        cardSurface: base.colorScheme.surfaceContainerLow,
+        secondaryText: base.colorScheme.onSurfaceVariant,
+        subtleBorder: base.colorScheme.outlineVariant,
+        quranHeader: graphite,
+        goldAccent: base.colorScheme.tertiary,
+      );
+      final theme = base.copyWith(extensions: [palette]);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            appPreferencesRepositoryProvider.overrideWithValue(
+              _MemoryPreferencesRepository(),
+            ),
+          ],
+          child: MaterialApp(
+            theme: theme,
+            home: const Scaffold(
+              body: QuranWordView(
+                word: QuranWord(position: 1, arabic: 'اللَّه'),
+                isActive: true,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final activeColor = DefaultTextStyle.of(
+        tester.element(find.text('اللَّه')),
+      ).style.color!;
+      final activeHsv = HSVColor.fromColor(activeColor);
+      final blueHsv = HSVColor.fromColor(ReferenceColors.appBlue);
+
+      expect((activeHsv.hue - blueHsv.hue).abs(), lessThan(1));
+      expect(activeHsv.saturation, greaterThanOrEqualTo(0.52));
+      expect(activeHsv.value, greaterThanOrEqualTo(0.78));
+    },
+  );
+
   test(
     'Quran font manifest registers every exact family alias and asset',
     () async {
