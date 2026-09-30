@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../core/localization/app_locale_text.dart';
 import '../../settings/application/app_preferences_controller.dart';
+import '../application/bangladesh_hijri_date_providers.dart';
 import '../../settings/domain/app_preferences.dart';
 import '../data/prayer_schedule.dart';
 import 'home_page.dart';
@@ -59,6 +60,16 @@ class _PrayerCalendarPageState extends ConsumerState<PrayerCalendarPage> {
     final current = ref.watch(prayerScheduleProvider);
     final location = current.value;
     final school = ref.watch(asrSchoolProvider);
+    final hijriCorrection = ref.watch(hijriDateCorrectionProvider);
+    final hijriCorrectionScope = ref.watch(hijriCorrectionScopeProvider);
+    final hijriMonth = ref.watch(
+      bangladeshHijriMonthProvider((
+        year: _year,
+        month: _month,
+        correction: hijriCorrection,
+        correctionScope: hijriCorrectionScope,
+      )),
+    );
     final request = location == null
         ? null
         : (
@@ -153,6 +164,9 @@ class _PrayerCalendarPageState extends ConsumerState<PrayerCalendarPage> {
                             ),
                             day: day,
                             schedule: days[index],
+                            hijriDate:
+                                hijriMonth.value?[index].text ??
+                                days[index].hijriDate,
                             language: language,
                           );
                         },
@@ -236,10 +250,12 @@ class _CalendarDayCard extends StatelessWidget {
     super.key,
     required this.day,
     required this.schedule,
+    required this.hijriDate,
     required this.language,
   });
   final DateTime day;
   final PrayerSchedule schedule;
+  final String hijriDate;
   final AppLanguage language;
 
   @override
@@ -279,7 +295,7 @@ class _CalendarDayCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        localHijriDate(schedule.hijriDate, language),
+                        localHijriDate(hijriDate, language),
                         style: TextStyle(
                           color: Theme.of(
                             context,
@@ -295,7 +311,7 @@ class _CalendarDayCard extends StatelessWidget {
                   onPressed: () => SharePlus.instance.share(
                     ShareParams(
                       text:
-                          '$header\n${localHijriDate(schedule.hijriDate, language)}\n${prayerNames.map((name) => '${localPrayerName(name, language)} ${localClock(schedule.times[name], language)}').join(' · ')}',
+                          '$header\n${localHijriDate(hijriDate, language)}\n${prayerNames.map((name) => '${localPrayerName(name, language)} ${localClock(schedule.times[name], language)}').join(' · ')}',
                     ),
                   ),
                   icon: Icon(
