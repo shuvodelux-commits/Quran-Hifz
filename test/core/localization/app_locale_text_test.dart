@@ -49,5 +49,13 @@ void main() {
       localHijriDate('3 Rabi al-Thani 1448 AH', AppLanguage.bangla),
       '৩ রবিউস সানি ১৪৪৮ হি.',
     );
+    expect(
+      localHijriDate('18 Rabī al-thānī 1448 AH', AppLanguage.bangla),
+      '১৮ রবিউস সানি ১৪৪৮ হি.',
+    );
+    expect(
+      localHijriDate('18 Jumādá al-ūlá 1448 AH', AppLanguage.bangla),
+      '১৮ জমাদিউল আউয়াল ১৪৪৮ হি.',
+    );
   });
 }
