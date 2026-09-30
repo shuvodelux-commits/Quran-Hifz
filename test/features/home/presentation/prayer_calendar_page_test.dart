@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/app/app_theme.dart';
 import 'package:quran_hifz/core/localization/app_locale_text.dart';
+import 'package:quran_hifz/features/home/application/bangladesh_hijri_date_providers.dart';
+import 'package:quran_hifz/features/home/data/bangladesh_hijri_date.dart';
 import 'package:quran_hifz/features/home/data/prayer_schedule.dart';
 import 'package:quran_hifz/features/home/presentation/home_page.dart';
 import 'package:quran_hifz/features/home/presentation/prayer_calendar_page.dart';
@@ -27,6 +29,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           appLanguageProvider.overrideWithValue(AppLanguage.bangla),
           asrSchoolProvider.overrideWithValue(AsrSchool.hanafi),
           prayerScheduleProvider.overrideWith(
@@ -66,6 +69,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           appLanguageProvider.overrideWithValue(AppLanguage.english),
           asrSchoolProvider.overrideWithValue(AsrSchool.hanafi),
           prayerScheduleProvider.overrideWith((ref) async => schedule),
@@ -92,6 +96,23 @@ void main() {
       theme.colorScheme.primaryContainer,
     );
   });
+}
+
+class _FakeHijriRepository extends BangladeshHijriDateRepository {
+  @override
+  Future<Map<int, ResolvedHijriDate>> convertMonth(int year, int month) async {
+    final count = DateTime(year, month + 1, 0).day;
+    return {
+      for (var day = 1; day <= count; day++)
+        day: const ResolvedHijriDate(
+          day: 19,
+          month: 3,
+          year: 1448,
+          monthName: 'Rabi al-Awwal',
+          source: HijriDateSource.hjcosa,
+        ),
+    };
+  }
 }
 
 class _CalendarRepository extends PrayerScheduleRepository {
