@@ -12,14 +12,18 @@ abstract final class QuranReadingColors {
   static const activeWord = Color(0xFF087EAB);
 
   static Color activeWordFor(BuildContext context) {
-    final accent = Theme.of(context).extension<AppPalette>()?.readerAccent;
+    final theme = Theme.of(context);
+    final accent = theme.extension<AppPalette>()?.readerAccent;
     if (accent == null) return activeWord;
 
     final hsv = HSVColor.fromColor(accent);
-    return hsv
-        .withSaturation((hsv.saturation + 0.18).clamp(0.0, 1.0).toDouble())
-        .withValue((hsv.value + 0.18).clamp(0.0, 1.0).toDouble())
-        .toColor();
+    final dark = theme.brightness == Brightness.dark;
+    final saturation = (hsv.saturation * 0.92).clamp(0.52, 0.78).toDouble();
+    final value = (hsv.value + (dark ? 0.16 : 0.22))
+        .clamp(dark ? 0.84 : 0.70, dark ? 0.98 : 0.88)
+        .toDouble();
+
+    return hsv.withSaturation(saturation).withValue(value).toColor();
   }
 
   /// Classic Tajweed palette for the Quran Foundation embedded rule classes.
