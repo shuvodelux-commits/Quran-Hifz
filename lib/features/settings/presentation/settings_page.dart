@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/localization/app_locale_text.dart';
+import '../../home/application/bangladesh_hijri_date_providers.dart';
 import '../../home/data/bangladesh_cities.dart';
+import '../../home/data/bangladesh_hijri_date.dart';
+import '../../home/presentation/home_page.dart' show prayerScheduleProvider;
 import '../../home/presentation/prayer_location_page.dart';
 import '../../quran/application/quran_providers.dart';
 import '../../quran/domain/bismillah_text.dart';
@@ -182,6 +185,22 @@ class SettingsPage extends ConsumerWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            _SettingsSectionHeader(
+              icon: Icons.calendar_month_outlined,
+              title: appText(
+                value.language,
+                'ক্যালেন্ডার ও হিজরি তারিখ',
+                'Calendar & Hijri Date',
+              ),
+              subtitle: appText(
+                value.language,
+                'বাংলাদেশের তারিখ ও দিন বদলের নিয়ম',
+                'Bangladesh date and day-change rule',
+              ),
+            ),
+            const SizedBox(height: 6),
+            _HijriSettingsCard(preferences: value),
             const SizedBox(height: 12),
             _SettingsSectionHeader(
               icon: Icons.menu_book_outlined,
@@ -550,6 +569,149 @@ class SettingsPage extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _HijriSettingsCard extends ConsumerWidget {
+  const _HijriSettingsCard({required this.preferences});
+
+  final AppPreferences preferences;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final schedule = ref.watch(prayerScheduleProvider).value;
+    final now = DateTime.now();
+    final baselineSource = BangladeshHijriDateResolver.sourceDate(
+      now: now,
+      maghrib: schedule?.times['Maghrib'],
+      boundary: preferences.hijriDayBoundary,
+      correction: 0,
+    );
+    final baselineState = ref.watch(
+      bangladeshHijriDateProvider((
+        baselineSourceDate: baselineSource,
+        correction: 0,
+        correctionScope: null,
+      )),
+    );
+    final baseline = baselineState.value;
+    final correctionExpired =
+        preferences.hijriDateCorrection != 0 &&
+        baseline != null &&
+        preferences.hijriCorrectionScope != baseline.scopeKey;
+
+    return _SettingsCard(
+      children: [
+        DropdownButtonFormField<HijriDayBoundary>(
+          initialValue: preferences.hijriDayBoundary,
+          decoration: InputDecoration(
+            labelText: appText(
+              preferences.language,
+              'হিজরি দিন বদলাবে',
+              'Hijri day changes at',
+            ),
+            helperText: appText(
+              preferences.language,
+              'ডিফল্ট: স্থানীয় মাগরিবের সময়',
+              'Default: local Maghrib time',
+            ),
+          ),
+          items: [
+            DropdownMenuItem(
+              value: HijriDayBoundary.maghrib,
+              child: Text(
+                appText(preferences.language, 'সন্ধ্যা · মাগরিব', 'Maghrib'),
+              ),
+            ),
+            DropdownMenuItem(
+              value: HijriDayBoundary.midnight,
+              child: Text(
+                appText(preferences.language, 'রাত ১২টা', '12:00 AM'),
+              ),
+            ),
+          ],
+          onChanged: (boundary) {
+            if (boundary != null) {
+              ref
+                  .read(appPreferencesControllerProvider.notifier)
+                  .setHijriDayBoundary(boundary);
+            }
+          },
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<int>(
+          initialValue: preferences.hijriDateCorrection,
+          decoration: InputDecoration(
+            labelText: appText(
+              preferences.language,
+              'বাংলাদেশ হিজরি সংশোধন',
+              'Bangladesh Hijri correction',
+            ),
+            helperText: correctionExpired
+                ? appText(
+                    preferences.language,
+                    'আগের মাসের সংশোধন শেষ হয়েছে; এখন বাংলাদেশ ডিফল্ট চলছে।',
+                    'The previous month correction has expired; Bangladesh default is active.',
+                  )
+                : baselineState.isLoading
+                ? appText(
+                    preferences.language,
+                    'বর্তমান হিজরি মাস যাচাই হচ্ছে…',
+                    'Checking the current Hijri month…',
+                  )
+                : appText(
+                    preferences.language,
+                    'HJCoSA থেকে ১ দিন কম হলো ডিফল্ট। চাঁদ দেখা কমিটির ঘোষণায় প্রয়োজন হলে শুধু চলতি মাসে ঠিক করুন।',
+                    'Default is HJCoSA minus 1 day. Correct only the current month when Bangladesh moon-sighting requires it.',
+                  ),
+          ),
+          items: [
+            DropdownMenuItem(
+              value: -1,
+              child: Text(
+                appText(preferences.language, '১ দিন আগে', '1 day earlier'),
+              ),
+            ),
+            DropdownMenuItem(
+              value: 0,
+              child: Text(
+                appText(
+                  preferences.language,
+                  'বাংলাদেশ ডিফল্ট',
+                  'Bangladesh default',
+                ),
+              ),
+            ),
+            DropdownMenuItem(
+              value: 1,
+              child: Text(
+                appText(preferences.language, '১ দিন পরে', '1 day later'),
+              ),
+            ),
+          ],
+          onChanged: baseline == null
+              ? null
+              : (correction) {
+                  if (correction != null) {
+                    ref
+                        .read(appPreferencesControllerProvider.notifier)
+                        .setHijriDateCorrection(
+                          correction,
+                          scope: correction == 0 ? null : baseline.scopeKey,
+                        );
+                  }
+                },
+        ),
+        if (baseline != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            '${appText(preferences.language, 'বর্তমান বেসলাইন', 'Current baseline')}: '
+            '${localHijriDate(baseline.text, preferences.language)}',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ],
     );
   }
 }
