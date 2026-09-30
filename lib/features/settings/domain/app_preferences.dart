@@ -10,6 +10,8 @@ enum AppLanguage { bangla, english }
 
 enum AsrSchool { standard, hanafi }
 
+enum HijriDayBoundary { maghrib, midnight }
+
 class AppPreferences {
   static const supportedRepeatCounts = <int>[1, 2, 3, 5, 10, 20];
   static const supportedPlaybackSpeeds = <double>[0.5, 0.75, 1.0, 1.25];
@@ -49,6 +51,9 @@ class AppPreferences {
     required this.language,
     required this.asrSchool,
     this.prayerCityId,
+    this.hijriDayBoundary = HijriDayBoundary.maghrib,
+    this.hijriDateCorrection = 0,
+    this.hijriCorrectionScope,
   });
 
   const AppPreferences.defaults()
@@ -75,7 +80,10 @@ class AppPreferences {
       highlightActiveWord = true,
       language = AppLanguage.bangla,
       asrSchool = AsrSchool.hanafi,
-      prayerCityId = null;
+      prayerCityId = null,
+      hijriDayBoundary = HijriDayBoundary.maghrib,
+      hijriDateCorrection = 0,
+      hijriCorrectionScope = null;
 
   final AppThemePreference theme;
   final QuranScriptPreference quranScript;
@@ -101,6 +109,9 @@ class AppPreferences {
   final AppLanguage language;
   final AsrSchool asrSchool;
   final String? prayerCityId;
+  final HijriDayBoundary hijriDayBoundary;
+  final int hijriDateCorrection;
+  final String? hijriCorrectionScope;
 
   AppPreferences copyWith({
     AppThemePreference? theme,
@@ -128,6 +139,10 @@ class AppPreferences {
     AsrSchool? asrSchool,
     String? prayerCityId,
     bool clearPrayerCity = false,
+    HijriDayBoundary? hijriDayBoundary,
+    int? hijriDateCorrection,
+    String? hijriCorrectionScope,
+    bool clearHijriCorrectionScope = false,
   }) {
     final nextQuranFont =
         quranFont ??
@@ -164,6 +179,11 @@ class AppPreferences {
       language: language ?? this.language,
       asrSchool: asrSchool ?? this.asrSchool,
       prayerCityId: clearPrayerCity ? null : prayerCityId ?? this.prayerCityId,
+      hijriDayBoundary: hijriDayBoundary ?? this.hijriDayBoundary,
+      hijriDateCorrection: hijriDateCorrection ?? this.hijriDateCorrection,
+      hijriCorrectionScope: clearHijriCorrectionScope
+          ? null
+          : hijriCorrectionScope ?? this.hijriCorrectionScope,
     );
   }
 }
