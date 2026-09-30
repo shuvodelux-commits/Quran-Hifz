@@ -71,17 +71,28 @@ String localGregorianDate(DateTime value, AppLanguage language) {
 
 const _hijriMonths = <String, String>{
   'Muharram': 'মুহাররম',
+  'Muḥarram': 'মুহাররম',
   'Safar': 'সফর',
+  'Ṣafar': 'সফর',
   'Rabi al-Awwal': 'রবিউল আউয়াল',
+  'Rabī al-awwal': 'রবিউল আউয়াল',
   'Rabi al-Thani': 'রবিউস সানি',
+  'Rabī al-thānī': 'রবিউস সানি',
   'Jumada al-Ula': 'জমাদিউল আউয়াল',
+  'Jumādá al-ūlá': 'জমাদিউল আউয়াল',
   'Jumada al-Akhirah': 'জমাদিউস সানি',
+  'Jumādá al-ākhirah': 'জমাদিউস সানি',
   'Rajab': 'রজব',
   "Sha'ban": 'শাবান',
+  'Shaʿbān': 'শাবান',
   'Ramadan': 'রমজান',
+  'Ramaḍān': 'রমজান',
   'Shawwal': 'শাওয়াল',
+  'Shawwāl': 'শাওয়াল',
   "Dhu al-Qi'dah": 'জিলকদ',
+  'Dhū al-Qaʿdah': 'জিলকদ',
   'Dhu al-Hijjah': 'জিলহজ',
+  'Dhū al-Ḥijjah': 'জিলহজ',
 };
 
 String localHijriDate(String value, AppLanguage language) {
