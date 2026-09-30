@@ -9,8 +9,10 @@ import '../../../core/localization/app_locale_text.dart';
 import '../../quran/application/todays_ayah.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/domain/app_preferences.dart';
+import '../application/bangladesh_hijri_date_providers.dart';
 import '../application/mosque_prayer_times_providers.dart';
 import '../data/bangla_calendar.dart';
+import '../data/bangladesh_hijri_date.dart';
 import '../data/bangladesh_cities.dart';
 import '../data/mosque_prayer_times_repository.dart';
 import '../data/prayer_schedule.dart';
@@ -64,6 +66,18 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
     final current = schedule?.currentPrayer(_now);
     final next = schedule?.nextPrayer(_now);
     final todaysAyah = ref.watch(todaysAyahProvider).value;
+    final hijriBoundary = ref.watch(hijriDayBoundaryProvider);
+    final baselineHijriSource = BangladeshHijriDateResolver.sourceDate(
+      now: _now,
+      maghrib: schedule?.times['Maghrib'],
+      boundary: hijriBoundary,
+      correction: 0,
+    );
+    final resolvedHijri = ref
+        .watch(currentBangladeshHijriDateProvider(baselineHijriSource))
+        .value;
+    final hijriDate =
+        resolvedHijri?.text ?? schedule?.hijriDateAt(_now) ?? '—';
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -166,7 +180,12 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                 ],
               ),
               const SizedBox(height: 8),
-              _DateHero(now: _now, schedule: schedule, language: language),
+              _DateHero(
+                now: _now,
+                schedule: schedule,
+                hijriDate: hijriDate,
+                language: language,
+              ),
               const SizedBox(height: 8),
               _CurrentPrayerCard(
                 current: current,
@@ -383,20 +402,6 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
               _Panel(
                 child: Row(
                   children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.menu_book_rounded,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -512,10 +517,12 @@ class _DateHero extends StatelessWidget {
   const _DateHero({
     required this.now,
     required this.schedule,
+    required this.hijriDate,
     required this.language,
   });
   final DateTime now;
   final PrayerSchedule? schedule;
+  final String hijriDate;
   final AppLanguage language;
 
   @override
@@ -556,7 +563,7 @@ class _DateHero extends StatelessWidget {
                 flex: wide ? 7 : 6,
                 child: _ReferenceDateBlock(
                   now: now,
-                  schedule: schedule,
+                  hijriDate: hijriDate,
                   language: language,
                   wide: wide,
                 ),
@@ -600,12 +607,12 @@ class _DateHero extends StatelessWidget {
 class _ReferenceDateBlock extends StatelessWidget {
   const _ReferenceDateBlock({
     required this.now,
-    required this.schedule,
+    required this.hijriDate,
     required this.language,
     required this.wide,
   });
   final DateTime now;
-  final PrayerSchedule? schedule;
+  final String hijriDate;
   final AppLanguage language;
   final bool wide;
 
@@ -620,7 +627,7 @@ class _ReferenceDateBlock extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          _compactHijriDate(schedule?.hijriDateAt(now) ?? '—', language),
+          _compactHijriDate(hijriDate, language),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
@@ -805,21 +812,6 @@ class _CurrentPrayerCard extends StatelessWidget {
     return _Panel(
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Theme.of(context).colorScheme.primaryContainer,
-            ),
-            child: Icon(
-              hasCurrent ? Icons.mosque_rounded : Icons.schedule_rounded,
-              color: Theme.of(context).colorScheme.primary,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
