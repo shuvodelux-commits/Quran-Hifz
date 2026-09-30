@@ -378,6 +378,26 @@ class _CompactCalendarSelector extends StatelessWidget {
                 language: language,
                 onDaySelected: onDaySelected,
               ),
+            const SizedBox(height: 2),
+            InkWell(
+              key: const ValueKey('calendar-expand-handle'),
+              borderRadius: BorderRadius.circular(12),
+              onTap: onToggleExpanded,
+              child: SizedBox(
+                height: 18,
+                width: double.infinity,
+                child: Center(
+                  child: Container(
+                    width: 44,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: scheme.outline.withValues(alpha: 0.42),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -385,7 +405,7 @@ class _CompactCalendarSelector extends StatelessWidget {
   }
 }
 
-class _WeekStrip extends StatelessWidget {
+class _WeekStrip extends StatefulWidget {
   const _WeekStrip({
     super.key,
     required this.year,
@@ -402,22 +422,66 @@ class _WeekStrip extends StatelessWidget {
   final ValueChanged<int> onDaySelected;
 
   @override
+  State<_WeekStrip> createState() => _WeekStripState();
+}
+
+class _WeekStripState extends State<_WeekStrip> {
+  static const _itemExtent = 48.0;
+  final ScrollController _controller = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _centerSelected());
+  }
+
+  @override
+  void didUpdateWidget(covariant _WeekStrip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.year != widget.year ||
+        oldWidget.month != widget.month ||
+        oldWidget.selectedDay != widget.selectedDay) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _centerSelected());
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _centerSelected() {
+    if (!mounted || !_controller.hasClients) return;
+    final position = _controller.position;
+    final raw =
+        (widget.selectedDay - 1) * _itemExtent -
+        (position.viewportDimension - _itemExtent) / 2;
+    final target = raw.clamp(0.0, position.maxScrollExtent).toDouble();
+    if ((position.pixels - target).abs() < 1) return;
+    _controller.jumpTo(target);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final selected = DateTime(year, month, selectedDay);
-    final start = selected.subtract(Duration(days: selected.weekday - 1));
-    return Row(
-      children: [
-        for (var index = 0; index < 7; index++)
-          Expanded(
-            child: _CalendarDayButton(
-              date: start.add(Duration(days: index)),
-              displayMonth: month,
-              selectedDay: selectedDay,
-              language: language,
-              onDaySelected: onDaySelected,
-            ),
-          ),
-      ],
+    final dayCount = DateTime(widget.year, widget.month + 1, 0).day;
+    return SizedBox(
+      height: 58,
+      child: ListView.builder(
+        key: const ValueKey('calendar-date-strip'),
+        controller: _controller,
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemExtent: _itemExtent,
+        itemCount: dayCount,
+        itemBuilder: (context, index) => _CalendarDayButton(
+          date: DateTime(widget.year, widget.month, index + 1),
+          displayMonth: widget.month,
+          selectedDay: widget.selectedDay,
+          language: widget.language,
+          onDaySelected: widget.onDaySelected,
+        ),
+      ),
     );
   }
 }
