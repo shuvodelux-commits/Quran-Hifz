@@ -9,7 +9,7 @@ void main() {
     );
 
     expect(item.id, 'chapter:7:1');
-    expect(item.album, 'Quran Hifz');
+    expect(item.album, 'YawMuslim');
     expect(item.title, 'Quran recitation');
   });
 }

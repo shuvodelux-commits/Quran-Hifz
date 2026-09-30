@@ -24,7 +24,7 @@ class QuranHifzApp extends ConsumerWidget {
     };
 
     return MaterialApp(
-      title: 'Quran Hifz',
+      title: 'YawMuslim',
       debugShowCheckedModeBanner: false,
       theme: appTheme(themePreference, language: language),
       darkTheme: appTheme(AppThemePreference.dark, language: language),

@@ -10,7 +10,7 @@ MediaItem buildQuranRecitationMediaItem(
   String id, {
   String title = 'Quran recitation',
 }) {
-  return MediaItem(id: id, album: 'Quran Hifz', title: title);
+  return MediaItem(id: id, album: 'YawMuslim', title: title);
 }
 
 class JustAudioPlayerAdapter implements AudioPlayerAdapter {

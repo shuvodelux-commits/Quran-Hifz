@@ -83,8 +83,8 @@ class _QuranHifzShellState extends ConsumerState<QuranHifzShell> {
         content: Text(
           appText(
             language,
-            'আপনি কি কুরআন হিফজ অ্যাপটি বন্ধ করতে চান?',
-            'Do you want to close Quran Hifz?',
+            'আপনি কি YawMuslim অ্যাপটি বন্ধ করতে চান?',
+            'Do you want to close YawMuslim?',
           ),
         ),
         actions: [
