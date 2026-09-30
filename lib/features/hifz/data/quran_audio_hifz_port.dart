@@ -10,6 +10,8 @@ import '../domain/hifz_step.dart';
 const selectedReciterSettingKey = 'selected_reciter_id';
 
 typedef HifzDelay = Future<void> Function(Duration duration);
+typedef HifzFallbackWordPositionsLoader =
+    Future<List<int>> Function(AyahRef ayah);
 
 class HifzAudioUnavailableException implements Exception {
   const HifzAudioUnavailableException(this.message);
@@ -32,11 +34,15 @@ class DriftHifzPlaybackRequestResolver implements HifzPlaybackRequestResolver {
   DriftHifzPlaybackRequestResolver({
     required UserDatabase database,
     required QuranAudioSync syncService,
+    HifzFallbackWordPositionsLoader? fallbackWordPositionsLoader,
   }) : _database = database,
-       _syncService = syncService;
+       _syncService = syncService,
+       _fallbackWordPositionsLoader = fallbackWordPositionsLoader;
 
   final UserDatabase _database;
   final QuranAudioSync _syncService;
+  final HifzFallbackWordPositionsLoader? _fallbackWordPositionsLoader;
+  final Set<String> _wordTimingRefreshAttemptedChapters = <String>{};
 
   @override
   Future<AyahPlaybackRequest> resolve(
@@ -59,18 +65,23 @@ class DriftHifzPlaybackRequestResolver implements HifzPlaybackRequestResolver {
       surahNumber: ayah.surahNumber,
       ayahNumber: ayah.ayahNumber,
     );
-    final hasWordTiming =
+    var hasWordTiming =
         timing != null &&
         (await _database.getWordTimings(
           reciterId: reciterId,
           surahNumber: ayah.surahNumber,
           ayahNumber: ayah.ayahNumber,
         )).isNotEmpty;
+    final refreshKey = '$reciterId:${ayah.surahNumber}';
+    final shouldRefreshWordTiming =
+        timing != null &&
+        !hasWordTiming &&
+        _wordTimingRefreshAttemptedChapters.add(refreshKey);
 
     if (audio == null ||
         audio.remoteUrl.isEmpty ||
         timing == null ||
-        !hasWordTiming) {
+        shouldRefreshWordTiming) {
       await _syncService.syncChapter(
         reciterId: reciterId,
         surahNumber: ayah.surahNumber,
@@ -82,6 +93,16 @@ class DriftHifzPlaybackRequestResolver implements HifzPlaybackRequestResolver {
         surahNumber: ayah.surahNumber,
         ayahNumber: ayah.ayahNumber,
       );
+      hasWordTiming =
+          timing != null &&
+          (await _database.getWordTimings(
+            reciterId: reciterId,
+            surahNumber: ayah.surahNumber,
+            ayahNumber: ayah.ayahNumber,
+          )).isNotEmpty;
+      if (!hasWordTiming) {
+        _wordTimingRefreshAttemptedChapters.add(refreshKey);
+      }
     }
 
     if (audio == null || audio.remoteUrl.isEmpty) {
@@ -95,6 +116,11 @@ class DriftHifzPlaybackRequestResolver implements HifzPlaybackRequestResolver {
       );
     }
 
+    final fallbackWordPositions =
+        !hasWordTiming && _fallbackWordPositionsLoader != null
+        ? await _fallbackWordPositionsLoader(ayah)
+        : const <int>[];
+
     return AyahPlaybackRequest(
       source: audio.remoteUrl,
       audioKey: audioKey,
@@ -107,6 +133,7 @@ class DriftHifzPlaybackRequestResolver implements HifzPlaybackRequestResolver {
         surahNumber: ayah.surahNumber,
         ayahNumber: ayah.ayahNumber,
       ),
+      fallbackWordPositions: fallbackWordPositions,
     );
   }
 }

@@ -28,6 +28,7 @@ class AyahPlaybackRequest {
     this.pauseBetweenRepeats = Duration.zero,
     this.speed = 1.0,
     this.timingKey,
+    this.fallbackWordPositions = const [],
     this.autoNext,
   }) : assert(repeatCount > 0),
        assert(speed > 0);
@@ -40,6 +41,7 @@ class AyahPlaybackRequest {
   final Duration pauseBetweenRepeats;
   final double speed;
   final AudioTimingKey? timingKey;
+  final List<int> fallbackWordPositions;
   final AyahPlaybackRequest? autoNext;
 }
 

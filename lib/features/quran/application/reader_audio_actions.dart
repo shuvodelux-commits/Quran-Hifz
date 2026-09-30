@@ -198,6 +198,7 @@ class DriftReaderPlaybackRequestResolver
         surahNumber: ayah.surahNumber,
         ayahNumber: ayah.ayahNumber,
       ),
+      fallbackWordPositions: [for (final word in ayah.words) word.position],
     );
   }
 }

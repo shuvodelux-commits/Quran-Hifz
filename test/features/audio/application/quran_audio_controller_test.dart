@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/core/audio/offline_audio_resolver.dart';
 import 'package:quran_hifz/features/audio/application/audio_providers.dart';
+import 'package:quran_hifz/features/audio/domain/audio_timing.dart';
 import 'package:quran_hifz/features/audio/domain/playback_requests.dart';
 import 'package:quran_hifz/features/audio/domain/quran_audio_state.dart';
 
@@ -199,6 +200,60 @@ void main() {
   });
 
   test(
+    'ayah playback synthesizes active words when exact word timing is missing',
+    () async {
+      final fake = FakeAudioPlayerAdapter(autoComplete: false);
+      final timing = _FakeTimingRepository(
+        ayah: AyahAudioTiming(
+          start: const Duration(milliseconds: 1000),
+          end: const Duration(milliseconds: 4000),
+        ),
+      );
+      final container = _container(fake, timing: timing);
+      addTearDown(container.dispose);
+      final controller = container.read(quranAudioControllerProvider.notifier);
+
+      final playback = controller.playAyah(
+        const AyahPlaybackRequest(
+          source: 'ayah.mp3',
+          ayahKey: '4:14',
+          timingKey: AudioTimingKey(
+            reciterId: 7,
+            surahNumber: 4,
+            ayahNumber: 14,
+          ),
+          fallbackWordPositions: [1, 2, 3],
+        ),
+      );
+      await _flush();
+
+      fake.emitPosition(const Duration(milliseconds: 500));
+      await _flush();
+      expect(
+        container.read(quranAudioControllerProvider).activeWordPosition,
+        1,
+      );
+
+      fake.emitPosition(const Duration(milliseconds: 1500));
+      await _flush();
+      expect(
+        container.read(quranAudioControllerProvider).activeWordPosition,
+        2,
+      );
+
+      fake.emitPosition(const Duration(milliseconds: 2500));
+      await _flush();
+      expect(
+        container.read(quranAudioControllerProvider).activeWordPosition,
+        3,
+      );
+
+      await controller.stop();
+      await playback;
+    },
+  );
+
+  test(
     'word playback exposes the tapped ayah word then clears highlight',
     () async {
       final fake = FakeAudioPlayerAdapter(autoComplete: false);
@@ -299,11 +354,13 @@ void main() {
 ProviderContainer _container(
   FakeAudioPlayerAdapter fake, {
   PlaybackDelay? delay,
+  TimingRepository? timing,
 }) {
   return ProviderContainer(
     overrides: [
       audioPlayerAdapterProvider.overrideWithValue(fake),
       if (delay != null) playbackDelayProvider.overrideWithValue(delay),
+      if (timing != null) timingRepositoryProvider.overrideWithValue(timing),
     ],
   );
 }
@@ -316,6 +373,26 @@ Future<void> _waitUntil(bool Function() condition) async {
     await _flush();
   }
   fail('Condition was not reached');
+}
+
+class _FakeTimingRepository implements TimingRepository {
+  const _FakeTimingRepository({required this.ayah});
+
+  final AyahAudioTiming? ayah;
+
+  @override
+  Future<AyahAudioTiming?> getAyahTiming({
+    required int reciterId,
+    required int surahNumber,
+    required int ayahNumber,
+  }) async => ayah;
+
+  @override
+  Future<List<WordAudioTiming>> getWordTimings({
+    required int reciterId,
+    required int surahNumber,
+    required int ayahNumber,
+  }) async => const [];
 }
 
 class _FakeAudioSourceResolver implements AudioSourceResolver {

@@ -3,6 +3,35 @@ import '../domain/audio_timing.dart';
 class TimingResolver {
   const TimingResolver();
 
+  List<WordAudioTiming> synthesizeWordTimings({
+    required AyahAudioTiming ayahTiming,
+    required List<int> wordPositions,
+  }) {
+    if (wordPositions.isEmpty ||
+        wordPositions.any((position) => position <= 0)) {
+      return const [];
+    }
+
+    final totalMicros = (ayahTiming.end - ayahTiming.start).inMicroseconds;
+    if (totalMicros < wordPositions.length) return const [];
+
+    final ayahStartMicros = ayahTiming.start.inMicroseconds;
+    final count = wordPositions.length;
+    return [
+      for (var index = 0; index < count; index++)
+        WordAudioTiming(
+          wordPosition: wordPositions[index],
+          start: Duration(
+            microseconds: ayahStartMicros + (totalMicros * index ~/ count),
+          ),
+          end: Duration(
+            microseconds:
+                ayahStartMicros + (totalMicros * (index + 1) ~/ count),
+          ),
+        ),
+    ];
+  }
+
   int? activeWordAt(
     Duration absolutePosition,
     List<WordAudioTiming> sortedSegments,

@@ -93,6 +93,34 @@ void main() {
   );
 
   test(
+    'resolver supplies canonical fallback word positions when chapter segments stay empty',
+    () async {
+      final database = UserDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(database.close);
+      await database.saveSetting(selectedReciterSettingKey, '7');
+      final sync = _FakeAudioSync(
+        database,
+        includeWordTiming: false,
+        ayahNumber: 14,
+      );
+      final resolver = DriftHifzPlaybackRequestResolver(
+        database: database,
+        syncService: sync,
+        fallbackWordPositionsLoader: (_) async => const [1, 2, 3, 4],
+      );
+
+      final request = await resolver.resolve(
+        const AyahRef(surahNumber: 4, ayahNumber: 14),
+        repeatCount: 1,
+        pauseBetweenRepeats: Duration.zero,
+      );
+
+      expect(request.fallbackWordPositions, [1, 2, 3, 4]);
+      expect(sync.chapterCalls, [(reciterId: 7, surahNumber: 4)]);
+    },
+  );
+
+  test(
     'resolver fails when sync still cannot provide verified timing',
     () async {
       final database = UserDatabase.forTesting(NativeDatabase.memory());
@@ -250,10 +278,17 @@ class _FakeResolver implements HifzPlaybackRequestResolver {
 }
 
 class _FakeAudioSync implements QuranAudioSync {
-  _FakeAudioSync(this.database, {this.includeTiming = true});
+  _FakeAudioSync(
+    this.database, {
+    this.includeTiming = true,
+    this.includeWordTiming = true,
+    this.ayahNumber = 1,
+  });
 
   final UserDatabase database;
   final bool includeTiming;
+  final bool includeWordTiming;
+  final int ayahNumber;
   final chapterCalls = <({int reciterId, int surahNumber})>[];
 
   @override
@@ -277,12 +312,14 @@ class _FakeAudioSync implements QuranAudioSync {
         surahNumber: surahNumber,
         timestamps: [
           {
-            'verse_key': '67:1',
+            'verse_key': '$surahNumber:$ayahNumber',
             'timestamp_from': 100,
             'timestamp_to': 900,
-            'segments': <List<int>>[
-              [1, 100, 400],
-            ],
+            'segments': includeWordTiming
+                ? <List<int>>[
+                    [1, 100, 400],
+                  ]
+                : <List<int>>[],
           },
         ],
       );

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/database_providers.dart';
 import '../../audio/application/audio_providers.dart';
 import '../../downloads/application/download_controller.dart';
+import '../../quran/application/quran_providers.dart';
 import '../../quran/data/quran_audio_sync_service.dart';
 import '../../reciters/application/reciter_audio_providers.dart';
 import '../data/drift_hifz_repository.dart';
@@ -78,6 +79,8 @@ final hifzSequenceBuilderProvider = Provider<HifzSequenceBuilder>((ref) {
 final hifzAudioPortProvider = Provider<HifzAudioPort>((ref) {
   final database = ref.watch(userDatabaseProvider);
   final audioController = ref.read(quranAudioControllerProvider.notifier);
+  final quranRepository = ref.watch(quranRepositoryProvider);
+  final translationResourceId = ref.watch(quranTranslationResourceIdProvider);
 
   return QuranAudioHifzPort(
     playAyah: audioController.playAyah,
@@ -92,6 +95,15 @@ final hifzAudioPortProvider = Provider<HifzAudioPort>((ref) {
         database: database,
         downloads: ref.watch(audioDownloadRepositoryProvider),
       ),
+      fallbackWordPositionsLoader: (ayah) async {
+        final loaded = await quranRepository.loadAyah(
+          surahNumber: ayah.surahNumber,
+          ayahNumber: ayah.ayahNumber,
+          translationResourceId: translationResourceId,
+        );
+        if (loaded == null) return const <int>[];
+        return [for (final word in loaded.words) word.position];
+      },
     ),
     delay: ref.read(playbackDelayProvider),
   );

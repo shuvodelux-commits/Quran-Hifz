@@ -270,11 +270,17 @@ class QuranAudioController extends Notifier<QuranAudioState> {
       return _TimingBundle(ayah: ayah);
     }
 
-    final words = await _timings.getWordTimings(
+    final exactWords = await _timings.getWordTimings(
       reciterId: key.reciterId,
       surahNumber: key.surahNumber,
       ayahNumber: key.ayahNumber,
     );
+    final words = exactWords.isNotEmpty || request.fallbackWordPositions.isEmpty
+        ? exactWords
+        : _timingResolver.synthesizeWordTimings(
+            ayahTiming: ayah,
+            wordPositions: request.fallbackWordPositions,
+          );
     return _TimingBundle(ayah: ayah, words: words);
   }
 

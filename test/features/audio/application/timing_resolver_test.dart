@@ -83,6 +83,32 @@ void main() {
     );
   });
 
+  test('synthesizes fallback word timing across the ayah window', () {
+    final generated = resolver.synthesizeWordTimings(
+      ayahTiming: AyahAudioTiming(
+        start: const Duration(milliseconds: 1000),
+        end: const Duration(milliseconds: 4000),
+      ),
+      wordPositions: const [1, 2, 3],
+    );
+
+    expect(generated, hasLength(3));
+    expect(generated.first.start, const Duration(milliseconds: 1000));
+    expect(generated.last.end, const Duration(milliseconds: 4000));
+    expect(
+      resolver.activeWordAt(const Duration(milliseconds: 1500), generated),
+      1,
+    );
+    expect(
+      resolver.activeWordAt(const Duration(milliseconds: 2500), generated),
+      2,
+    );
+    expect(
+      resolver.activeWordAt(const Duration(milliseconds: 3500), generated),
+      3,
+    );
+  });
+
   test('returns null for missing timing segments', () {
     expect(resolver.activeWordAt(Duration.zero, const []), isNull);
   });
