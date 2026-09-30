@@ -17,6 +17,7 @@ import 'package:quran_hifz/features/home/presentation/home_dashboard_page.dart';
 import 'package:quran_hifz/features/home/presentation/home_page.dart';
 import 'package:quran_hifz/features/quran/application/todays_ayah.dart';
 import 'package:quran_hifz/features/quran/domain/quran_ayah.dart';
+import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
 import 'package:quran_hifz/app/app_theme.dart';
 import 'package:quran_hifz/features/settings/application/app_preferences_controller.dart';
 import 'package:quran_hifz/features/settings/domain/app_preferences.dart';
@@ -69,6 +70,7 @@ void main() {
       surahNumber: 2,
       ayahNumber: 255,
       arabicText: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ',
+      arabicTextIndopak: 'اَللّٰهُ لَاۤ اِلٰهَ اِلَّا هُوَ',
       translation: 'আল্লাহ, তিনি ছাড়া কোনো উপাস্য নেই।',
       words: [],
     );
@@ -85,6 +87,7 @@ void main() {
             (ref) async => throw StateError('No location'),
           ),
           todaysAyahProvider.overrideWith((ref) async => ayah),
+          quranFontProvider.overrideWithValue(QuranFontPreference.indoPak),
         ],
         child: const MaterialApp(home: HomeDashboardPage(onMore: _noop)),
       ),
@@ -94,7 +97,9 @@ void main() {
     await tester.drag(find.byType(ListView), const Offset(0, -700));
     await tester.pumpAndSettle();
 
-    expect(find.text('আজকের আয়াত'), findsOneWidget);
+    final todaysAyahHeading = tester.widget<Text>(find.text('আজকের আয়াত'));
+    expect(todaysAyahHeading.style?.fontSize, 16);
+    expect(todaysAyahHeading.style?.fontWeight, FontWeight.w600);
     expect(find.text('আজকের দোয়া'), findsNothing);
     expect(find.text(ayah.arabicText), findsNothing);
     expect(find.text(ayah.translation!), findsOneWidget);
@@ -102,7 +107,10 @@ void main() {
     await tester.tap(find.text(ayah.translation!));
     await tester.pumpAndSettle();
 
-    expect(find.text(ayah.arabicText), findsOneWidget);
+    expect(find.text(ayah.arabicText), findsNothing);
+    expect(find.text(ayah.arabicTextIndopak!), findsOneWidget);
+    final arabic = tester.widget<Text>(find.text(ayah.arabicTextIndopak!));
+    expect(arabic.style?.fontFamily, 'IndoPak Nastaleeq');
     expect(find.text(ayah.translation!), findsWidgets);
     expect(find.text('তাফসির'), findsOneWidget);
   });
