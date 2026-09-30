@@ -32,7 +32,6 @@ void main() {
           ProviderScope(
             key: ValueKey(language),
             overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
               bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
               userDatabaseProvider.overrideWithValue(database),
               appLanguageProvider.overrideWithValue(language),
@@ -111,7 +110,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+            bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
             userDatabaseProvider.overrideWithValue(database),
             prayerScheduleProvider.overrideWith(
               (ref) async => throw StateError('No location'),
@@ -379,7 +378,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+            bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
             userDatabaseProvider.overrideWithValue(database),
             prayerScheduleProvider.overrideWith((ref) async => schedule),
           ],
