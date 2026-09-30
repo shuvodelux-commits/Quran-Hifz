@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quran_hifz/features/home/application/bangladesh_hijri_date_providers.dart';
+import 'package:quran_hifz/features/home/data/bangladesh_hijri_date.dart';
 import 'package:quran_hifz/features/quran/application/quran_providers.dart';
 import 'package:quran_hifz/features/quran/domain/bismillah_text.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
@@ -21,6 +23,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           appPreferencesRepositoryProvider.overrideWithValue(preferences),
           indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
           tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
@@ -32,6 +35,14 @@ void main() {
 
     expect(find.text('Appearance & Language'), findsOneWidget);
     expect(find.text('Prayer & Location'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Calendar & Hijri Date'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Calendar & Hijri Date'), findsOneWidget);
+    expect(find.text('Hijri day changes at'), findsOneWidget);
+    expect(find.text('Bangladesh Hijri correction'), findsOneWidget);
     expect(find.text('Teal Blue'), findsOneWidget);
     expect(find.text('Sea Green'), findsOneWidget);
     expect(find.text('Turquoise Dark'), findsOneWidget);
@@ -78,6 +89,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           appPreferencesRepositoryProvider.overrideWithValue(preferences),
           indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
           tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
@@ -116,6 +128,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           appPreferencesRepositoryProvider.overrideWithValue(preferences),
           indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
           tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
@@ -157,6 +170,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           appPreferencesRepositoryProvider.overrideWithValue(
             _MemoryPreferencesRepository(),
           ),
@@ -198,6 +212,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           appPreferencesRepositoryProvider.overrideWithValue(
             _MemoryPreferencesRepository(),
           ),
@@ -227,6 +242,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
             appPreferencesRepositoryProvider.overrideWithValue(preferences),
             indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
             tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
@@ -261,6 +277,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           appPreferencesRepositoryProvider.overrideWithValue(
             _MemoryPreferencesRepository(),
           ),
@@ -297,6 +314,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           appPreferencesRepositoryProvider.overrideWithValue(
             _MemoryPreferencesRepository(),
           ),
@@ -383,4 +401,16 @@ class _MemoryPreferencesRepository implements AppPreferencesRepository {
   Future<void> save(AppPreferences preferences) async {
     value = preferences;
   }
+}
+
+class _FakeHijriRepository extends BangladeshHijriDateRepository {
+  @override
+  Future<ResolvedHijriDate> convert(DateTime sourceDate) async =>
+      const ResolvedHijriDate(
+        day: 18,
+        month: 4,
+        year: 1448,
+        monthName: 'Rabi al-Thani',
+        source: HijriDateSource.hjcosa,
+      );
 }
