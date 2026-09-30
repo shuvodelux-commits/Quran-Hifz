@@ -32,6 +32,9 @@ void main() {
         language: AppLanguage.english,
         asrSchool: AsrSchool.standard,
         prayerCityId: 'dhaka',
+        hijriDayBoundary: HijriDayBoundary.midnight,
+        hijriDateCorrection: 1,
+        hijriCorrectionScope: '1448-04',
         hifzMushafVariant: QuranMushafVariant.qcfV2,
         hifzFontSize: 46,
         hifzLineHeight: 1.75,
@@ -59,10 +62,20 @@ void main() {
     expect(restored.language, AppLanguage.english);
     expect(restored.asrSchool, AsrSchool.standard);
     expect(restored.prayerCityId, 'dhaka');
+    expect(restored.hijriDayBoundary, HijriDayBoundary.midnight);
+    expect(restored.hijriDateCorrection, 1);
+    expect(restored.hijriCorrectionScope, '1448-04');
     expect(restored.hifzMushafVariant, QuranMushafVariant.qcfV2);
     expect(restored.hifzFontSize, 46);
     expect(restored.hifzLineHeight, 1.75);
     expect(restored.hifzShowTajweedColors, isFalse);
+  });
+
+  test('Hijri preferences have Bangladesh-safe defaults', () {
+    const defaults = AppPreferences.defaults();
+    expect(defaults.hijriDayBoundary, HijriDayBoundary.maghrib);
+    expect(defaults.hijriDateCorrection, 0);
+    expect(defaults.hijriCorrectionScope, isNull);
   });
 
   test('unknown Quran font falls back safely', () async {
