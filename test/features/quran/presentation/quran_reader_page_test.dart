@@ -178,6 +178,10 @@ void main() {
     expect(find.byTooltip('Bookmark ayah'), findsWidgets);
     expect(find.byTooltip('Share ayah'), findsWidgets);
     expect(find.byTooltip('Copy ayah'), findsWidgets);
+    final actionRow = tester.widget<Padding>(
+      find.byKey(const ValueKey('ayah-actions-1')).first,
+    );
+    expect(actionRow.padding, const EdgeInsets.symmetric(horizontal: 2));
 
     await tester.tap(find.text('A'));
     await tester.pump();
@@ -200,9 +204,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final bubble = find.byKey(
-        const ValueKey('playback-word-meaning-bubble'),
-      );
+      final bubble = find.byKey(const ValueKey('playback-word-meaning-bubble'));
       expect(bubble, findsOneWidget);
       expect(
         find.descendant(of: bubble, matching: find.text('Fixture meaning')),
@@ -220,12 +222,14 @@ void main() {
       expect(
         bubbleRect.bottom,
         lessThan(wordRect.top),
-        reason: 'The live Bangla meaning must float above the active Arabic word.',
+        reason:
+            'The live Bangla meaning must float above the active Arabic word.',
       );
       expect(
         (bubbleRect.center.dx - wordRect.center.dx).abs(),
         lessThan(24),
-        reason: 'The meaning bubble must stay horizontally anchored to the active word.',
+        reason:
+            'The meaning bubble must stay horizontally anchored to the active word.',
       );
     },
   );
@@ -539,41 +543,38 @@ void main() {
     expect(_wordColor(tester, 'B'), isNot(QuranReadingColors.activeWord));
   });
 
-  testWidgets(
-    'Hifz Mushaf selection never switches the normal Quran reader',
-    (tester) async {
-      final preferences = _MemoryPreferencesRepository();
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: _overrides(preferences: preferences),
-          child: const MaterialApp(home: QuranReaderPage(surah: _surah)),
-        ),
-      );
-      await tester.pumpAndSettle();
+  testWidgets('Hifz Mushaf selection never switches the normal Quran reader', (
+    tester,
+  ) async {
+    final preferences = _MemoryPreferencesRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: _overrides(preferences: preferences),
+        child: const MaterialApp(home: QuranReaderPage(surah: _surah)),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      final container = ProviderScope.containerOf(
-        tester.element(find.byType(QuranReaderPage)),
-      );
-      await container
-          .read(readerControllerProvider.notifier)
-          .openPage(2, preferredSurahNumber: 1, firstPage: 1, lastPage: 2);
-      await tester.pumpAndSettle();
-      expect(find.text('C'), findsOneWidget);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(QuranReaderPage)),
+    );
+    await container
+        .read(readerControllerProvider.notifier)
+        .openPage(2, preferredSurahNumber: 1, firstPage: 1, lastPage: 2);
+    await tester.pumpAndSettle();
+    expect(find.text('C'), findsOneWidget);
 
-      await container
-          .read(appPreferencesControllerProvider.notifier)
-          .setHifzMushafVariant(QuranMushafVariant.qcfV2);
-      await tester.pumpAndSettle();
+    await container
+        .read(appPreferencesControllerProvider.notifier)
+        .setHifzMushafVariant(QuranMushafVariant.qcfV2);
+    await tester.pumpAndSettle();
 
-      expect(find.byType(QuranStrictMushafSurface), findsNothing);
-      expect(find.text('C'), findsOneWidget);
-      expect(container.read(readerControllerProvider).value?.currentPage, 2);
-      expect(
-        container.read(quranFontProvider),
-        QuranFontPreference.qpcHafs,
-      );
-    },
-  );}
+    expect(find.byType(QuranStrictMushafSurface), findsNothing);
+    expect(find.text('C'), findsOneWidget);
+    expect(container.read(readerControllerProvider).value?.currentPage, 2);
+    expect(container.read(quranFontProvider), QuranFontPreference.qpcHafs);
+  });
+}
 
 Color? _wordColor(WidgetTester tester, String text) =>
     DefaultTextStyle.of(tester.element(find.text(text))).style.color;

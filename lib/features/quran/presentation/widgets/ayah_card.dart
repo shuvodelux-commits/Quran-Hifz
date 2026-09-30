@@ -286,10 +286,7 @@ class _AyahCardState extends ConsumerState<AyahCard> {
 }
 
 class _PlaybackWordMeaningAnchor extends StatelessWidget {
-  const _PlaybackWordMeaningAnchor({
-    required this.child,
-    this.meaning,
-  });
+  const _PlaybackWordMeaningAnchor({required this.child, this.meaning});
 
   final Widget child;
   final String? meaning;
@@ -394,16 +391,14 @@ class _AyahPlayerControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(30),
-      ),
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      key: ValueKey('ayah-actions-$ayahNumber'),
+      padding: const EdgeInsets.symmetric(horizontal: 2),
       child: IconButtonTheme(
         data: IconButtonThemeData(
           style: IconButton.styleFrom(
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            foregroundColor: scheme.onSurfaceVariant,
             minimumSize: const Size(34, 34),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             padding: EdgeInsets.zero,
@@ -416,8 +411,8 @@ class _AyahPlayerControls extends StatelessWidget {
             Text(
               '$ayahNumber',
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimary,
-                fontWeight: FontWeight.w500,
+                color: scheme.onSurfaceVariant,
+                fontWeight: FontWeight.w400,
                 fontSize: 16,
               ),
             ),
