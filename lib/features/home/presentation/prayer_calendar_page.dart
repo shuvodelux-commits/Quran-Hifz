@@ -713,8 +713,16 @@ class _CalendarDayCard extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            color: Theme.of(context).colorScheme.primary,
-            padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
+            key: const ValueKey('calendar-day-header'),
+            padding: const EdgeInsets.fromLTRB(14, 12, 8, 10),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
+              ),
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -724,16 +732,18 @@ class _CalendarDayCard extends StatelessWidget {
                       Text(
                         header,
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         localHijriDate(hijriDate, language),
                         style: TextStyle(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onPrimary.withValues(alpha: 0.8),
+                          ).colorScheme.onSurfaceVariant,
                           fontSize: 12,
                         ),
                       ),
@@ -750,7 +760,7 @@ class _CalendarDayCard extends StatelessWidget {
                   ),
                   icon: Icon(
                     Icons.share_outlined,
-                    color: Theme.of(context).colorScheme.onPrimary,
+                    color: Theme.of(context).colorScheme.primary,
                     size: 20,
                   ),
                 ),
