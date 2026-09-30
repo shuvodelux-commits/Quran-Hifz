@@ -8,6 +8,7 @@ import '../application/bangladesh_hijri_date_providers.dart';
 import '../../settings/domain/app_preferences.dart';
 import '../data/prayer_schedule.dart';
 import 'home_page.dart';
+import 'nafl_prayer_times_card.dart';
 
 typedef _MonthRequest = ({
   int year,
@@ -157,6 +158,9 @@ class _PrayerCalendarPageState extends ConsumerState<PrayerCalendarPage> {
                         separatorBuilder: (_, __) => const SizedBox(height: 14),
                         itemBuilder: (context, index) {
                           final day = DateTime(_year, _month, index + 1);
+                          final nextFajr = index + 1 < days.length
+                              ? days[index + 1].times['Fajr']
+                              : days[index].tomorrowFajr;
                           return _CalendarDayCard(
                             key: _dayKeys.putIfAbsent(
                               index + 1,
@@ -164,6 +168,7 @@ class _PrayerCalendarPageState extends ConsumerState<PrayerCalendarPage> {
                             ),
                             day: day,
                             schedule: days[index],
+                            nextFajr: nextFajr,
                             hijriDate:
                                 hijriMonth.value?[index].text ??
                                 days[index].hijriDate,
@@ -250,11 +255,13 @@ class _CalendarDayCard extends StatelessWidget {
     super.key,
     required this.day,
     required this.schedule,
+    required this.nextFajr,
     required this.hijriDate,
     required this.language,
   });
   final DateTime day;
   final PrayerSchedule schedule;
+  final DateTime? nextFajr;
   final String hijriDate;
   final AppLanguage language;
 
@@ -377,6 +384,14 @@ class _CalendarDayCard extends StatelessWidget {
                       '${localClock(schedule.sunset.subtract(const Duration(minutes: 15)), language)}–${localClock(schedule.sunset, language)}',
                     ),
                   ],
+                ),
+                const SizedBox(height: 10),
+                NaflPrayerTimesCard(
+                  schedule: schedule,
+                  now: day.add(const Duration(hours: 12)),
+                  language: language,
+                  nextFajr: nextFajr,
+                  embedded: true,
                 ),
               ],
             ),
