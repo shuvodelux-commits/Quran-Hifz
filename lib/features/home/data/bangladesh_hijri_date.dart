@@ -29,6 +29,19 @@ class ResolvedHijriDate {
 class BangladeshHijriDateResolver {
   const BangladeshHijriDateResolver._();
 
+  static int activeCorrection({
+    required int correction,
+    required String? correctionScope,
+    required ResolvedHijriDate baseline,
+  }) {
+    if (correction < -1 || correction > 1) {
+      throw ArgumentError.value(correction, 'correction');
+    }
+    return correction != 0 && correctionScope == baseline.scopeKey
+        ? correction
+        : 0;
+  }
+
   static DateTime sourceDate({
     required DateTime now,
     required DateTime? maghrib,
