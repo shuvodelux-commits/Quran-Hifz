@@ -36,9 +36,7 @@ class NaflPrayerTimes {
     final maghrib = schedule.times['Maghrib'];
     final isha = schedule.times['Isha'];
     final tomorrowFajr =
-        nextFajr ??
-        schedule.tomorrowFajr ??
-        fajr?.add(const Duration(days: 1));
+        nextFajr ?? schedule.tomorrowFajr ?? fajr?.add(const Duration(days: 1));
     final tomorrowMaghrib =
         nextMaghrib ??
         schedule.tomorrowMaghrib ??

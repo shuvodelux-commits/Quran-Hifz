@@ -3,11 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/database_providers.dart';
 import '../../../core/database/quran_content_database.dart';
 import '../../settings/application/app_preferences_controller.dart';
+import '../data/bundled_quran_translation_repository.dart';
+import '../data/composite_quran_translation_repository.dart';
 import '../data/drift_quran_repository.dart';
 import '../data/drift_word_audio_catalog.dart';
+import '../data/local_quran_translation_repository.dart';
 import '../data/user_database_reading_location_store.dart';
 import '../domain/quran_repository.dart';
 import '../domain/quran_script.dart';
+import '../domain/quran_translation_repository.dart';
 import '../domain/word_audio_source.dart';
 import 'reader_controller.dart';
 
@@ -21,6 +25,17 @@ final quranTranslationResourceIdProvider = Provider<int>((ref) => 1);
 final quranRepositoryProvider = Provider<QuranRepository>((ref) {
   return DriftQuranRepository(ref.watch(quranContentDatabaseProvider));
 });
+
+final quranTranslationRepositoryProvider = Provider<QuranTranslationRepository>(
+  (ref) => CompositeQuranTranslationRepository(
+    bundled: BundledQuranTranslationRepository(
+      ref.watch(quranContentDatabaseProvider),
+    ),
+    downloaded: LocalQuranTranslationRepository(
+      ref.watch(userDatabaseProvider),
+    ),
+  ),
+);
 
 final indoPakQuranTextAvailableProvider = FutureProvider<bool>((ref) async {
   final database = ref.watch(quranContentDatabaseProvider);

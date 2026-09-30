@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/localization/app_locale_text.dart';
 import '../../quran/application/todays_ayah.dart';
+import '../../quran/domain/quran_ayah.dart';
+import '../../quran/presentation/widgets/inline_tafsir_panel.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/domain/app_preferences.dart';
 import '../application/bangladesh_hijri_date_providers.dart';
@@ -352,9 +354,11 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                               const SizedBox(width: 5),
                               Expanded(
                                 child: Text(
-                                  language == AppLanguage.bangla
-                                      ? 'আজকের রোজা'
-                                      : 'Fasting today',
+                                  appText(
+                                    language,
+                                    'সাহরি ও ইফতার',
+                                    'Sahari & Iftar',
+                                  ),
                                   maxLines: 2,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w500,
@@ -366,7 +370,7 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            appText(language, 'সেহরি শেষ', 'Suhur ends'),
+                            appText(language, 'সাহরি শেষ', 'Sahari ends'),
                             style: TextStyle(
                               fontSize: 11,
                               color: Theme.of(
@@ -404,36 +408,52 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                   schedule: schedule,
                   now: _now,
                   language: language,
-                  showFastingFooter: true,
                 ),
                 const SizedBox(height: 8),
               ],
               _Panel(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            language == AppLanguage.bangla
-                                ? 'আজকের আয়াত'
-                                : 'Today’s ayah',
-                            style: const TextStyle(fontWeight: FontWeight.w500),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: todaysAyah == null
+                      ? null
+                      : () => _showTodaysAyahDetail(todaysAyah, language),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          language == AppLanguage.bangla
+                              ? 'আজকের আয়াত'
+                              : 'Today’s ayah',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          todaysAyah == null
+                              ? appText(
+                                  language,
+                                  'আয়াত লোড হচ্ছে…',
+                                  'Loading ayah…',
+                                )
+                              : todaysAyah.translation?.trim().isNotEmpty ==
+                                    true
+                              ? todaysAyah.translation!
+                              : appText(
+                                  language,
+                                  'বাংলা অনুবাদ পাওয়া যায়নি।',
+                                  'English translation is not installed.',
+                                ),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            height: 1.45,
+                            fontWeight: FontWeight.w500,
                           ),
-                          const SizedBox(height: 3),
+                        ),
+                        if (todaysAyah != null) ...[
+                          const SizedBox(height: 5),
                           Text(
-                            todaysAyah?.arabicText ?? '…',
-                            style: TextStyle(fontSize: 21),
-                          ),
-                          Text(
-                            todaysAyah == null
-                                ? appText(
-                                    language,
-                                    'আয়াত লোড হচ্ছে…',
-                                    'Loading ayah…',
-                                  )
-                                : '${todaysAyah.translation ?? ''} · ${appText(language, 'সূরা', 'Surah')} ${localDigits('${todaysAyah.surahNumber}:${todaysAyah.ayahNumber}', language)}',
+                            '${appText(language, 'সূরা', 'Surah')} ${localDigits('${todaysAyah.surahNumber}:${todaysAyah.ayahNumber}', language)}',
                             style: TextStyle(
                               fontSize: 11,
                               color: Theme.of(
@@ -442,10 +462,73 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                             ),
                           ),
                         ],
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showTodaysAyahDetail(QuranAyah ayah, AppLanguage language) {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+            18,
+            4,
+            18,
+            18 + MediaQuery.viewInsetsOf(sheetContext).bottom,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                appText(language, 'আজকের আয়াত', 'Today’s ayah'),
+                style: Theme.of(
+                  sheetContext,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${appText(language, 'সূরা', 'Surah')} ${localDigits('${ayah.surahNumber}:${ayah.ayahNumber}', language)}',
+                style: Theme.of(sheetContext).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(sheetContext).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                ayah.arabicText,
+                textDirection: TextDirection.rtl,
+                textAlign: TextAlign.right,
+                style: const TextStyle(fontSize: 25, height: 1.9),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                ayah.translation?.trim().isNotEmpty == true
+                    ? ayah.translation!
+                    : appText(
+                        language,
+                        'বাংলা অনুবাদ পাওয়া যায়নি।',
+                        'English translation is not installed.',
+                      ),
+                style: Theme.of(
+                  sheetContext,
+                ).textTheme.bodyLarge?.copyWith(height: 1.6),
+              ),
+              const SizedBox(height: 8),
+              const Divider(),
+              InlineTafsirPanel(
+                surahNumber: ayah.surahNumber,
+                ayahNumber: ayah.ayahNumber,
+                language: language,
               ),
             ],
           ),

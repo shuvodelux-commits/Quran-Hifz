@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/localization/app_locale_text.dart';
+import '../../../settings/domain/app_preferences.dart';
 import '../../../tafsir/application/tafsir_providers.dart';
 import '../../../tafsir/domain/tafsir_catalog.dart';
 import '../../../tafsir/domain/tafsir_entry.dart';
@@ -11,10 +13,12 @@ class InlineTafsirPanel extends ConsumerStatefulWidget {
     super.key,
     required this.surahNumber,
     required this.ayahNumber,
+    this.language = AppLanguage.english,
   });
 
   final int surahNumber;
   final int ayahNumber;
+  final AppLanguage language;
 
   @override
   ConsumerState<InlineTafsirPanel> createState() => _InlineTafsirPanelState();
@@ -32,7 +36,7 @@ class _InlineTafsirPanelState extends ConsumerState<InlineTafsirPanel> {
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.menu_book_outlined),
-          title: const Text('Tafsir'),
+          title: Text(appText(widget.language, 'তাফসির', 'Tafsir')),
           trailing: AnimatedRotation(
             turns: _expanded ? 0.5 : 0,
             duration: const Duration(milliseconds: 180),

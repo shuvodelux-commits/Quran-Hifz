@@ -96,8 +96,15 @@ void main() {
 
     expect(find.text('আজকের আয়াত'), findsOneWidget);
     expect(find.text('আজকের দোয়া'), findsNothing);
+    expect(find.text(ayah.arabicText), findsNothing);
+    expect(find.text(ayah.translation!), findsOneWidget);
+
+    await tester.tap(find.text(ayah.translation!));
+    await tester.pumpAndSettle();
+
     expect(find.text(ayah.arabicText), findsOneWidget);
-    expect(find.textContaining(ayah.translation!), findsOneWidget);
+    expect(find.text(ayah.translation!), findsWidgets);
+    expect(find.text('তাফসির'), findsOneWidget);
   });
 
   testWidgets('home background and date hero follow every selected palette', (
@@ -269,7 +276,7 @@ void main() {
     ).colorScheme.onSurface;
     for (final label in [
       'Prohibited prayer times',
-      'Fasting today',
+      'Sahari & Iftar',
       'Today’s ayah',
     ]) {
       final finder = find.text(label);
@@ -484,7 +491,7 @@ void main() {
       expect(find.text('জাওয়াল শুরু'), findsOneWidget);
       expect(find.text('আওয়াবিন'), findsOneWidget);
       expect(find.text('তাহাজ্জুদ'), findsOneWidget);
-      expect(find.text('পরবর্তী ইফতার'), findsOneWidget);
+      expect(find.text('সাহরি ও ইফতার'), findsOneWidget);
     },
   );
 

@@ -70,11 +70,7 @@ class NaflPrayerTimesCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  appText(
-                    language,
-                    'নফল সালাতের সময়',
-                    'Nafl prayer times',
-                  ),
+                  appText(language, 'নফল সালাতের সময়', 'Nafl prayer times'),
                   style: TextStyle(
                     fontSize: embedded ? 13 : 15,
                     fontWeight: FontWeight.w700,
@@ -214,11 +210,7 @@ class _NaflRow extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: compact ? 3 : 4),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: compact ? 17 : 20,
-            color: scheme.onSurfaceVariant,
-          ),
+          Icon(icon, size: compact ? 17 : 20, color: scheme.onSurfaceVariant),
           SizedBox(width: compact ? 7 : 9),
           Expanded(
             flex: 4,
@@ -334,11 +326,8 @@ class _FooterDivider extends StatelessWidget {
   final Color color;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: 1,
-    height: 38,
-    color: color,
-  );
+  Widget build(BuildContext context) =>
+      Container(width: 1, height: 38, color: color);
 }
 
 String _durationText(Duration? value, AppLanguage language) {
