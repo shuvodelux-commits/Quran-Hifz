@@ -6,6 +6,7 @@ import '../../../core/localization/app_locale_text.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../application/bangladesh_hijri_date_providers.dart';
 import '../../settings/domain/app_preferences.dart';
+import '../data/bangla_calendar.dart';
 import '../data/prayer_schedule.dart';
 import 'home_page.dart';
 import 'nafl_prayer_times_card.dart';
@@ -738,12 +739,22 @@ class _CalendarDayCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 2),
+                      if (language == AppLanguage.bangla) ...[
+                        Text(
+                          banglaCalendarDate(day),
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                      ],
                       Text(
                         localHijriDate(hijriDate, language),
                         style: TextStyle(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 12,
                         ),
                       ),

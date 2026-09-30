@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/app/app_theme.dart';
 import 'package:quran_hifz/core/localization/app_locale_text.dart';
 import 'package:quran_hifz/features/home/application/bangladesh_hijri_date_providers.dart';
+import 'package:quran_hifz/features/home/data/bangla_calendar.dart';
 import 'package:quran_hifz/features/home/data/bangladesh_hijri_date.dart';
 import 'package:quran_hifz/features/home/data/prayer_schedule.dart';
 import 'package:quran_hifz/features/home/presentation/home_page.dart';
@@ -50,6 +51,8 @@ void main() {
       find.textContaining(localGregorianDate(today, AppLanguage.bangla)),
       findsOneWidget,
     );
+    expect(find.text(banglaCalendarDate(today)), findsOneWidget);
+    expect(find.textContaining('রবিউল আউয়াল'), findsOneWidget);
     expect(find.text('০৫:৫৩–০৬:০৮'), findsOneWidget);
     expect(find.text('নফল সালাতের সময়'), findsWidgets);
     expect(find.text('দুহা'), findsWidgets);

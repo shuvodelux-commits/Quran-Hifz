@@ -54,8 +54,32 @@ void main() {
       '১৮ রবিউস সানি ১৪৪৮ হি.',
     );
     expect(
+      localHijriDate('19 Rabīʿ al-thānī 1448 AH', AppLanguage.bangla),
+      '১৯ রবিউস সানি ১৪৪৮ হি.',
+    );
+    expect(
       localHijriDate('18 Jumādá al-ūlá 1448 AH', AppLanguage.bangla),
       '১৮ জমাদিউল আউয়াল ১৪৪৮ হি.',
+    );
+    expect(
+      localHijriDate('1 Jumada al-Awwal 1448 AH', AppLanguage.bangla),
+      '১ জমাদিউল আউয়াল ১৪৪৮ হি.',
+    );
+    expect(
+      localHijriDate('1 Jumada al-Thani 1448 AH', AppLanguage.bangla),
+      '১ জমাদিউস সানি ১৪৪৮ হি.',
+    );
+    expect(
+      localHijriDate('1 Sha’ban 1448 AH', AppLanguage.bangla),
+      '১ শাবান ১৪৪৮ হি.',
+    );
+    expect(
+      localHijriDate('1 Dhul Qa’dah 1448 AH', AppLanguage.bangla),
+      '১ জিলকদ ১৪৪৮ হি.',
+    );
+    expect(
+      localHijriDate('1 Dhul Hijjah 1448 AH', AppLanguage.bangla),
+      '১ জিলহজ ১৪৪৮ হি.',
     );
   });
 }
