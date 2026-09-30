@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/tajweed_segment.dart';
 import '../../../core/theme/app_palette.dart';
+import '../../../core/theme/reference_colors.dart';
 
 /// Quran-reading colors kept in one place for consistent Quran study UI.
 abstract final class QuranReadingColors {
@@ -16,12 +17,15 @@ abstract final class QuranReadingColors {
     final accent = theme.extension<AppPalette>()?.readerAccent;
     if (accent == null) return activeWord;
 
-    final hsv = HSVColor.fromColor(accent);
-    final dark = theme.brightness == Brightness.dark;
+    final accentHsv = HSVColor.fromColor(accent);
+    final isGraphiteDark =
+        theme.brightness == Brightness.dark && accentHsv.saturation <= 0.22;
+    final highlightBase =
+        isGraphiteDark ? ReferenceColors.appBlue : accent;
+    final hsv = HSVColor.fromColor(highlightBase);
+
     final saturation = (hsv.saturation * 0.92).clamp(0.52, 0.78).toDouble();
-    final value = (hsv.value + (dark ? 0.16 : 0.22))
-        .clamp(dark ? 0.84 : 0.70, dark ? 0.98 : 0.88)
-        .toDouble();
+    final value = (hsv.value + 0.22).clamp(0.78, 0.90).toDouble();
 
     return hsv.withSaturation(saturation).withValue(value).toColor();
   }
