@@ -64,6 +64,27 @@ void main() {
     expect(repository.value.showPlaybackBanglaWordMeaning, isFalse);
   });
 
+  test('Hijri settings update independently and clear correction scope', () async {
+    final repository = _MemoryRepository();
+    final container = containerFor(repository);
+    await container.read(appPreferencesControllerProvider.future);
+    final controller = container.read(appPreferencesControllerProvider.notifier);
+
+    await controller.setHijriDayBoundary(HijriDayBoundary.midnight);
+    await controller.setHijriDateCorrection(1, scope: '1448-04');
+
+    var state = container.read(appPreferencesControllerProvider).value!;
+    expect(state.hijriDayBoundary, HijriDayBoundary.midnight);
+    expect(state.hijriDateCorrection, 1);
+    expect(state.hijriCorrectionScope, '1448-04');
+    expect(state.asrSchool, AsrSchool.hanafi);
+
+    await controller.setHijriDateCorrection(0);
+    state = container.read(appPreferencesControllerProvider).value!;
+    expect(state.hijriDateCorrection, 0);
+    expect(state.hijriCorrectionScope, isNull);
+  });
+
   test('changing repeat count preserves unrelated preferences', () async {
     final repository = _MemoryRepository();
     final container = containerFor(repository);
