@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/features/home/application/bangladesh_hijri_date_providers.dart';
 import 'package:quran_hifz/features/home/data/bangladesh_hijri_date.dart';
+import 'package:quran_hifz/features/home/presentation/home_page.dart';
 import 'package:quran_hifz/features/quran/application/quran_providers.dart';
 import 'package:quran_hifz/features/quran/domain/bismillah_text.dart';
 import 'package:quran_hifz/features/quran/domain/quran_font_preference.dart';
@@ -24,6 +25,7 @@ void main() {
       ProviderScope(
         overrides: [
           bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
           appPreferencesRepositoryProvider.overrideWithValue(preferences),
           indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
           tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
@@ -90,6 +92,7 @@ void main() {
       ProviderScope(
         overrides: [
           bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
           appPreferencesRepositoryProvider.overrideWithValue(preferences),
           indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
           tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
@@ -129,6 +132,7 @@ void main() {
       ProviderScope(
         overrides: [
           bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
           appPreferencesRepositoryProvider.overrideWithValue(preferences),
           indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
           tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
@@ -171,6 +175,7 @@ void main() {
       ProviderScope(
         overrides: [
           bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
           appPreferencesRepositoryProvider.overrideWithValue(
             _MemoryPreferencesRepository(),
           ),
@@ -213,6 +218,7 @@ void main() {
       ProviderScope(
         overrides: [
           bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
           appPreferencesRepositoryProvider.overrideWithValue(
             _MemoryPreferencesRepository(),
           ),
@@ -243,6 +249,7 @@ void main() {
         ProviderScope(
           overrides: [
           bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
             appPreferencesRepositoryProvider.overrideWithValue(preferences),
             indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
             tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
@@ -278,6 +285,7 @@ void main() {
       ProviderScope(
         overrides: [
           bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
           appPreferencesRepositoryProvider.overrideWithValue(
             _MemoryPreferencesRepository(),
           ),
@@ -315,6 +323,7 @@ void main() {
       ProviderScope(
         overrides: [
           bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+          prayerScheduleProvider.overrideWith((ref) async => throw StateError('No location')),
           appPreferencesRepositoryProvider.overrideWithValue(
             _MemoryPreferencesRepository(),
           ),
