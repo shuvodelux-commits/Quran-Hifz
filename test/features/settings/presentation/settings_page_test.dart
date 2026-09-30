@@ -37,14 +37,6 @@ void main() {
 
     expect(find.text('Appearance & Language'), findsOneWidget);
     expect(find.text('Prayer & Location'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('Calendar & Hijri Date'),
-      250,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('Calendar & Hijri Date'), findsOneWidget);
-    expect(find.text('Hijri day changes at'), findsOneWidget);
-    expect(find.text('Bangladesh Hijri correction'), findsOneWidget);
     expect(find.text('Teal Blue'), findsOneWidget);
     expect(find.text('Sea Green'), findsOneWidget);
     expect(find.text('Turquoise Dark'), findsOneWidget);
@@ -57,6 +49,15 @@ void main() {
     await tester.tap(find.text('Sea Green'));
     await tester.pumpAndSettle();
     expect(preferences.value.theme, AppThemePreference.green);
+
+    await tester.scrollUntilVisible(
+      find.text('Calendar & Hijri Date'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Calendar & Hijri Date'), findsOneWidget);
+    expect(find.text('Hijri day changes at'), findsOneWidget);
+    expect(find.text('Bangladesh Hijri correction'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.text('Quran Reading'),
