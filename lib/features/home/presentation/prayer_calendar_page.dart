@@ -45,6 +45,8 @@ class PrayerCalendarPage extends ConsumerStatefulWidget {
 class _PrayerCalendarPageState extends ConsumerState<PrayerCalendarPage> {
   late int _year = DateTime.now().year;
   late int _month = DateTime.now().month;
+  late int _selectedDay = DateTime.now().day;
+  bool _calendarExpanded = false;
   final _scrollController = ScrollController();
   final _dayKeys = <int, GlobalKey>{};
   ({int year, int month})? _revealedTodayFor;
@@ -95,40 +97,20 @@ class _PrayerCalendarPageState extends ConsumerState<PrayerCalendarPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _Picker<int>(
-                    value: _month,
-                    values: List.generate(12, (index) => index + 1),
-                    label: (value) => language == AppLanguage.bangla
-                        ? _banglaMonths[value - 1]
-                        : _englishMonths[value - 1],
-                    onChanged: (value) => setState(() {
-                      _month = value;
-                      _revealedTodayFor = null;
-                      _dayKeys.clear();
-                    }),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _Picker<int>(
-                    value: _year,
-                    values: List.generate(
-                      11,
-                      (index) => DateTime.now().year - 5 + index,
-                    ),
-                    label: (value) => localDigits('$value', language),
-                    onChanged: (value) => setState(() {
-                      _year = value;
-                      _revealedTodayFor = null;
-                      _dayKeys.clear();
-                    }),
-                  ),
-                ),
-              ],
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+            child: _CompactCalendarSelector(
+              year: _year,
+              month: _month,
+              selectedDay: _selectedDay,
+              language: language,
+              expanded: _calendarExpanded,
+              onToggleExpanded: () =>
+                  setState(() => _calendarExpanded = !_calendarExpanded),
+              onPreviousMonth: () => _changeMonth(-1),
+              onNextMonth: () => _changeMonth(1),
+              onMonthChanged: (value) => _setDisplayedMonth(_year, value),
+              onYearChanged: (value) => _setDisplayedMonth(value, _month),
+              onDaySelected: _selectDay,
             ),
           ),
           Expanded(
@@ -184,6 +166,53 @@ class _PrayerCalendarPageState extends ConsumerState<PrayerCalendarPage> {
     );
   }
 
+  void _changeMonth(int delta) {
+    final next = DateTime(_year, _month + delta);
+    _setDisplayedMonth(next.year, next.month);
+  }
+
+  void _setDisplayedMonth(int year, int month) {
+    final today = DateTime.now();
+    final lastDay = DateTime(year, month + 1, 0).day;
+    final isCurrentMonth = year == today.year && month == today.month;
+    setState(() {
+      _year = year;
+      _month = month;
+      _selectedDay = isCurrentMonth
+          ? today.day
+          : _selectedDay.clamp(1, lastDay).toInt();
+      _revealedTodayFor = null;
+      _dayKeys.clear();
+    });
+  }
+
+  void _selectDay(int day) {
+    setState(() => _selectedDay = day);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToDay(day));
+  }
+
+  void _scrollToDay(int day) {
+    if (!mounted) return;
+    final dayContext = _dayKeys[day]?.currentContext;
+    if (dayContext != null) {
+      Scrollable.ensureVisible(
+        dayContext,
+        alignment: 0.05,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+      );
+      return;
+    }
+    if (_scrollController.hasClients) {
+      final dayCount = DateTime(_year, _month + 1, 0).day;
+      final position =
+          _scrollController.position.maxScrollExtent *
+          (day - 1) /
+          (dayCount - 1);
+      _scrollController.jumpTo(position);
+    }
+  }
+
   void _revealTodayAfterLayout() {
     final today = DateTime.now();
     if (_year != today.year || _month != today.month) return;
@@ -212,6 +241,340 @@ class _PrayerCalendarPageState extends ConsumerState<PrayerCalendarPage> {
         curve: Curves.easeOutCubic,
       );
     });
+  }
+}
+
+class _CompactCalendarSelector extends StatelessWidget {
+  const _CompactCalendarSelector({
+    required this.year,
+    required this.month,
+    required this.selectedDay,
+    required this.language,
+    required this.expanded,
+    required this.onToggleExpanded,
+    required this.onPreviousMonth,
+    required this.onNextMonth,
+    required this.onMonthChanged,
+    required this.onYearChanged,
+    required this.onDaySelected,
+  });
+
+  final int year;
+  final int month;
+  final int selectedDay;
+  final AppLanguage language;
+  final bool expanded;
+  final VoidCallback onToggleExpanded;
+  final VoidCallback onPreviousMonth;
+  final VoidCallback onNextMonth;
+  final ValueChanged<int> onMonthChanged;
+  final ValueChanged<int> onYearChanged;
+  final ValueChanged<int> onDaySelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final monthName = language == AppLanguage.bangla
+        ? _banglaMonths[month - 1]
+        : _englishMonths[month - 1];
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: scheme.outlineVariant),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  tooltip: appText(language, 'আগের মাস', 'Previous month'),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onPreviousMonth,
+                  icon: const Icon(Icons.chevron_left_rounded),
+                ),
+                Expanded(
+                  child: Text(
+                    '$monthName ${localDigits('$year', language)}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: appText(language, 'পরের মাস', 'Next month'),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onNextMonth,
+                  icon: const Icon(Icons.chevron_right_rounded),
+                ),
+                IconButton(
+                  key: const ValueKey('calendar-expand-button'),
+                  tooltip: expanded
+                      ? appText(
+                          language,
+                          'ক্যালেন্ডার ছোট করুন',
+                          'Collapse calendar',
+                        )
+                      : appText(language, 'পুরো মাস দেখুন', 'Show full month'),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onToggleExpanded,
+                  icon: Icon(
+                    expanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.calendar_month_outlined,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            if (expanded) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: _Picker<int>(
+                      value: month,
+                      values: List.generate(12, (index) => index + 1),
+                      label: (value) => language == AppLanguage.bangla
+                          ? _banglaMonths[value - 1]
+                          : _englishMonths[value - 1],
+                      onChanged: onMonthChanged,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _Picker<int>(
+                      value: year,
+                      values: List.generate(
+                        11,
+                        (index) => DateTime.now().year - 5 + index,
+                      ),
+                      label: (value) => localDigits('$value', language),
+                      onChanged: onYearChanged,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _MonthGrid(
+                year: year,
+                month: month,
+                selectedDay: selectedDay,
+                language: language,
+                onDaySelected: onDaySelected,
+              ),
+            ] else
+              _WeekStrip(
+                key: const ValueKey('calendar-week-strip'),
+                year: year,
+                month: month,
+                selectedDay: selectedDay,
+                language: language,
+                onDaySelected: onDaySelected,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WeekStrip extends StatelessWidget {
+  const _WeekStrip({
+    super.key,
+    required this.year,
+    required this.month,
+    required this.selectedDay,
+    required this.language,
+    required this.onDaySelected,
+  });
+
+  final int year;
+  final int month;
+  final int selectedDay;
+  final AppLanguage language;
+  final ValueChanged<int> onDaySelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = DateTime(year, month, selectedDay);
+    final start = selected.subtract(Duration(days: selected.weekday - 1));
+    return Row(
+      children: [
+        for (var index = 0; index < 7; index++)
+          Expanded(
+            child: _CalendarDayButton(
+              date: start.add(Duration(days: index)),
+              displayMonth: month,
+              selectedDay: selectedDay,
+              language: language,
+              onDaySelected: onDaySelected,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _MonthGrid extends StatelessWidget {
+  const _MonthGrid({
+    required this.year,
+    required this.month,
+    required this.selectedDay,
+    required this.language,
+    required this.onDaySelected,
+  });
+
+  final int year;
+  final int month;
+  final int selectedDay;
+  final AppLanguage language;
+  final ValueChanged<int> onDaySelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final firstWeekday = DateTime(year, month, 1).weekday;
+    final dayCount = DateTime(year, month + 1, 0).day;
+    final usedCells = firstWeekday - 1 + dayCount;
+    final cellCount = ((usedCells + 6) ~/ 7) * 7;
+    final labels = language == AppLanguage.bangla
+        ? _banglaWeekdayShort
+        : _englishWeekdayShort;
+
+    return Column(
+      key: const ValueKey('calendar-month-grid'),
+      children: [
+        Row(
+          children: [
+            for (final label in labels)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: cellCount,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 7,
+            childAspectRatio: 1.05,
+          ),
+          itemBuilder: (context, index) {
+            final day = index - (firstWeekday - 2);
+            if (day < 1 || day > dayCount) {
+              return const SizedBox.shrink();
+            }
+            return _CalendarDayButton(
+              date: DateTime(year, month, day),
+              displayMonth: month,
+              selectedDay: selectedDay,
+              language: language,
+              onDaySelected: onDaySelected,
+              showWeekday: false,
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _CalendarDayButton extends StatelessWidget {
+  const _CalendarDayButton({
+    required this.date,
+    required this.displayMonth,
+    required this.selectedDay,
+    required this.language,
+    required this.onDaySelected,
+    this.showWeekday = true,
+  });
+
+  final DateTime date;
+  final int displayMonth;
+  final int selectedDay;
+  final AppLanguage language;
+  final ValueChanged<int> onDaySelected;
+  final bool showWeekday;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final inMonth = date.month == displayMonth;
+    final selected = inMonth && date.day == selectedDay;
+    final today = DateUtils.isSameDay(date, DateTime.now());
+    final labels = language == AppLanguage.bangla
+        ? _banglaWeekdayShort
+        : _englishWeekdayShort;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: inMonth ? () => onDaySelected(date.day) : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (showWeekday)
+              Text(
+                labels[date.weekday - 1],
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 9,
+                  color: inMonth
+                      ? scheme.onSurfaceVariant
+                      : scheme.onSurfaceVariant.withValues(alpha: 0.35),
+                ),
+              ),
+            const SizedBox(height: 2),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 32,
+              height: 32,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: selected ? scheme.primary : Colors.transparent,
+                shape: BoxShape.circle,
+                border: !selected && today
+                    ? Border.all(color: scheme.primary)
+                    : null,
+              ),
+              child: Text(
+                localDigits('${date.day}', language),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: selected || today
+                      ? FontWeight.w700
+                      : FontWeight.w500,
+                  color: !inMonth
+                      ? scheme.onSurfaceVariant.withValues(alpha: 0.3)
+                      : selected
+                      ? scheme.onPrimary
+                      : scheme.onSurface,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -500,6 +863,15 @@ const _weekdays = [
   'শনিবার',
   'রবিবার',
 ];
+const _banglaWeekdayShort = [
+  'সোম',
+  'মঙ্গল',
+  'বুধ',
+  'বৃহ',
+  'শুক্র',
+  'শনি',
+  'রবি',
+];
 
 const _englishMonths = [
   'January',
@@ -524,3 +896,4 @@ const _englishWeekdays = [
   'Saturday',
   'Sunday',
 ];
+const _englishWeekdayShort = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

@@ -56,6 +56,62 @@ void main() {
     expect(find.text('তাহাজ্জুদ'), findsWidgets);
   });
 
+  testWidgets(
+    'calendar selector starts compact and expands to the full month',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 780);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final days = [
+        for (
+          var day = 1;
+          day <= DateTime(now.year, now.month + 1, 0).day;
+          day++
+        )
+          _scheduleFor(DateTime(now.year, now.month, day)),
+      ];
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            bangladeshHijriDateRepositoryProvider.overrideWithValue(
+              _FakeHijriRepository(),
+            ),
+            appLanguageProvider.overrideWithValue(AppLanguage.bangla),
+            asrSchoolProvider.overrideWithValue(AsrSchool.hanafi),
+            prayerScheduleProvider.overrideWith(
+              (ref) async => _scheduleFor(today),
+            ),
+            prayerScheduleRepositoryProvider.overrideWithValue(
+              _CalendarRepository(days),
+            ),
+          ],
+          child: const MaterialApp(home: PrayerCalendarPage()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('calendar-week-strip')), findsOneWidget);
+      expect(find.byKey(const ValueKey('calendar-month-grid')), findsNothing);
+
+      await tester.tap(find.byKey(const ValueKey('calendar-expand-button')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('calendar-week-strip')), findsNothing);
+      expect(find.byKey(const ValueKey('calendar-month-grid')), findsOneWidget);
+      expect(find.byType(DropdownButton<int>), findsNWidgets(2));
+
+      await tester.tap(find.byKey(const ValueKey('calendar-expand-button')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('calendar-week-strip')), findsOneWidget);
+      expect(find.byKey(const ValueKey('calendar-month-grid')), findsNothing);
+    },
+  );
+
   testWidgets('prohibited-time chips follow the selected theme color', (
     tester,
   ) async {
