@@ -266,8 +266,8 @@ class _FastingFooter extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final remaining = _durationText(nafl.iftarRemaining(now), language);
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: -12),
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.only(top: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
