@@ -414,6 +414,17 @@ void main() {
       expect(find.byIcon(Icons.mosque_rounded), findsNothing);
       expect(find.byIcon(Icons.schedule_rounded), findsNothing);
       expect(find.byIcon(Icons.menu_book_rounded), findsNothing);
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('home-nafl-prayer-times')),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('নফল সালাতের সময়'), findsOneWidget);
+      expect(find.text('দুহা'), findsOneWidget);
+      expect(find.text('জাওয়াল শুরু'), findsOneWidget);
+      expect(find.text('আওয়াবিন'), findsOneWidget);
+      expect(find.text('তাহাজ্জুদ'), findsOneWidget);
+      expect(find.text('পরবর্তী ইফতার'), findsOneWidget);
       final gregorianParts = localGregorianDate(
         now,
         AppLanguage.bangla,
