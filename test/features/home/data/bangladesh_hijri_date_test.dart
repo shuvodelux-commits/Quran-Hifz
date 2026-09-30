@@ -40,6 +40,42 @@ void main() {
       expect(source, DateTime(2026, 9, 29));
     });
 
+    test('civil-day shifting crosses Gregorian year boundaries safely', () {
+      final source = BangladeshHijriDateResolver.sourceDate(
+        now: DateTime(2026, 1, 1, 12),
+        maghrib: DateTime(2026, 1, 1, 18),
+        boundary: HijriDayBoundary.midnight,
+        correction: -1,
+      );
+      expect(source, DateTime(2025, 12, 30));
+    });
+
+    test('month-scoped correction expires when baseline month changes', () {
+      const baseline = ResolvedHijriDate(
+        day: 1,
+        month: 5,
+        year: 1448,
+        monthName: 'Jumada al-Awwal',
+        source: HijriDateSource.hjcosa,
+      );
+      expect(
+        BangladeshHijriDateResolver.activeCorrection(
+          correction: 1,
+          correctionScope: '1448-05',
+          baseline: baseline,
+        ),
+        1,
+      );
+      expect(
+        BangladeshHijriDateResolver.activeCorrection(
+          correction: 1,
+          correctionScope: '1448-04',
+          baseline: baseline,
+        ),
+        0,
+      );
+    });
+
     test('relative correction shifts around the Bangladesh default', () {
       final earlier = BangladeshHijriDateResolver.sourceDate(
         now: DateTime(2026, 9, 30, 12),
