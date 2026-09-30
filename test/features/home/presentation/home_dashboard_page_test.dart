@@ -7,7 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/core/database/database_providers.dart';
 import 'package:quran_hifz/core/database/user_database.dart';
 import 'package:quran_hifz/core/localization/app_locale_text.dart';
+import 'package:quran_hifz/features/home/application/bangladesh_hijri_date_providers.dart';
 import 'package:quran_hifz/features/home/application/mosque_prayer_times_providers.dart';
+import 'package:quran_hifz/features/home/data/bangladesh_hijri_date.dart';
 import 'package:quran_hifz/features/home/data/bangla_calendar.dart';
 import 'package:quran_hifz/features/home/data/mosque_prayer_times_repository.dart';
 import 'package:quran_hifz/features/home/data/prayer_schedule.dart';
@@ -30,6 +32,8 @@ void main() {
           ProviderScope(
             key: ValueKey(language),
             overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
+              bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
               userDatabaseProvider.overrideWithValue(database),
               appLanguageProvider.overrideWithValue(language),
               savedPrayerLocationProvider.overrideWith((ref) async => null),
@@ -72,6 +76,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           userDatabaseProvider.overrideWithValue(database),
           prayerScheduleProvider.overrideWith(
             (ref) async => throw StateError('No location'),
@@ -106,6 +111,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
             userDatabaseProvider.overrideWithValue(database),
             prayerScheduleProvider.overrideWith(
               (ref) async => throw StateError('No location'),
@@ -167,6 +173,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           userDatabaseProvider.overrideWithValue(database),
           appLanguageProvider.overrideWithValue(AppLanguage.english),
           prayerScheduleProvider.overrideWith((ref) async => schedule),
@@ -298,6 +305,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           userDatabaseProvider.overrideWithValue(database),
           appLanguageProvider.overrideWithValue(AppLanguage.english),
           prayerScheduleProvider.overrideWith((ref) async => schedule),
@@ -371,6 +379,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
             userDatabaseProvider.overrideWithValue(database),
             prayerScheduleProvider.overrideWith((ref) async => schedule),
           ],
@@ -391,6 +400,8 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('পরবর্তী সলাত'), findsNothing);
+      expect(find.byIcon(Icons.mosque_rounded), findsNothing);
+      expect(find.byIcon(Icons.schedule_rounded), findsNothing);
       final gregorianParts = localGregorianDate(
         now,
         AppLanguage.bangla,
@@ -482,6 +493,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           userDatabaseProvider.overrideWithValue(database),
           prayerScheduleProvider.overrideWith((ref) async => schedule),
         ],
@@ -542,6 +554,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           userDatabaseProvider.overrideWithValue(database),
           prayerScheduleProvider.overrideWith((ref) async => schedule),
         ],
@@ -615,6 +628,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(_FakeHijriRepository()),
           userDatabaseProvider.overrideWithValue(database),
           prayerScheduleProvider.overrideWith((ref) async => schedule),
           mosquePrayerTimesProvider.overrideWith((ref) => pending.future),
@@ -637,6 +651,18 @@ void main() {
     pending.complete({});
     await tester.pumpAndSettle();
   });
+}
+
+class _FakeHijriRepository extends BangladeshHijriDateRepository {
+  @override
+  Future<ResolvedHijriDate> convert(DateTime sourceDate) async =>
+      const ResolvedHijriDate(
+        day: 3,
+        month: 4,
+        year: 1448,
+        monthName: 'Rabi al-Thani',
+        source: HijriDateSource.hjcosa,
+      );
 }
 
 void _noop() {}
