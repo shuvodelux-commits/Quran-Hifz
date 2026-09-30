@@ -18,6 +18,7 @@ import '../data/mosque_prayer_times_repository.dart';
 import '../data/prayer_schedule.dart';
 import 'home_page.dart'
     show prayerScheduleProvider, savedPrayerLocationProvider;
+import 'nafl_prayer_times_card.dart';
 import 'prayer_location_page.dart';
 
 class HomeDashboardPage extends ConsumerStatefulWidget {
@@ -398,6 +399,15 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                 ],
               ),
               const SizedBox(height: 8),
+              if (schedule != null) ...[
+                NaflPrayerTimesCard(
+                  schedule: schedule,
+                  now: _now,
+                  language: language,
+                  showFastingFooter: true,
+                ),
+                const SizedBox(height: 8),
+              ],
               _Panel(
                 child: Row(
                   children: [
