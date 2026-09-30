@@ -51,6 +51,9 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('০৫:৫৩–০৬:০৮'), findsOneWidget);
+    expect(find.text('নফল সালাতের সময়'), findsWidgets);
+    expect(find.text('দুহা'), findsWidgets);
+    expect(find.text('তাহাজ্জুদ'), findsWidgets);
   });
 
   testWidgets('prohibited-time chips follow the selected theme color', (
