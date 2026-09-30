@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/localization/app_locale_text.dart';
 import '../../quran/application/todays_ayah.dart';
 import '../../quran/domain/quran_ayah.dart';
+import '../../quran/domain/quran_font_preference.dart';
+import '../../quran/presentation/quran_text_style.dart';
 import '../../quran/presentation/widgets/inline_tafsir_panel.dart';
 import '../../settings/application/app_preferences_controller.dart';
 import '../../settings/domain/app_preferences.dart';
@@ -520,7 +522,10 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                           language == AppLanguage.bangla
                               ? 'আজকের আয়াত'
                               : 'Today’s ayah',
-                          style: const TextStyle(fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         const SizedBox(height: 5),
                         Text(
@@ -569,6 +574,13 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
   }
 
   Future<void> _showTodaysAyahDetail(QuranAyah ayah, AppLanguage language) {
+    final quranFont = ref.read(quranFontProvider);
+    final arabicText =
+        quranFont == QuranFontPreference.indoPak &&
+            ayah.arabicTextIndopak?.trim().isNotEmpty == true
+        ? ayah.arabicTextIndopak!
+        : ayah.arabicText;
+
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -599,10 +611,16 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
               ),
               const SizedBox(height: 16),
               Text(
-                ayah.arabicText,
+                arabicText,
                 textDirection: TextDirection.rtl,
                 textAlign: TextAlign.right,
-                style: const TextStyle(fontSize: 25, height: 1.9),
+                style: QuranTextStyle.forScript(
+                  script: quranFont.script,
+                  font: quranFont,
+                  color: Theme.of(sheetContext).colorScheme.onSurface,
+                  fontSize: 25,
+                  lineHeight: 1.9,
+                ),
               ),
               const SizedBox(height: 14),
               Text(
