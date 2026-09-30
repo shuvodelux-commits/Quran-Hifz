@@ -402,6 +402,7 @@ void main() {
       expect(find.text('পরবর্তী সলাত'), findsNothing);
       expect(find.byIcon(Icons.mosque_rounded), findsNothing);
       expect(find.byIcon(Icons.schedule_rounded), findsNothing);
+      expect(find.byIcon(Icons.menu_book_rounded), findsNothing);
       final gregorianParts = localGregorianDate(
         now,
         AppLanguage.bangla,
