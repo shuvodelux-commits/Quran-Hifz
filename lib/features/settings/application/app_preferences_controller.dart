@@ -33,6 +33,34 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
   Future<void> setLanguage(AppLanguage value) =>
       _update((current) => current.copyWith(language: value));
 
+  /// Update the UI controls atomically when Save is pressed, not while sliding.
+  Future<void> setUiTypography({
+    required double fontScale,
+    required double lineHeightScale,
+    required bool followSystemTextSize,
+  }) {
+    if (!fontScale.isFinite ||
+        fontScale < AppPreferences.minUiFontScale ||
+        fontScale > AppPreferences.maxUiFontScale) {
+      return Future<void>.error(ArgumentError.value(fontScale, 'fontScale'));
+    }
+    if (!lineHeightScale.isFinite ||
+        lineHeightScale < AppPreferences.minUiLineHeightScale ||
+        lineHeightScale > AppPreferences.maxUiLineHeightScale) {
+      return Future<void>.error(
+        ArgumentError.value(lineHeightScale, 'lineHeightScale'),
+      );
+    }
+    return _update(
+      (current) => current.copyWith(
+        uiFontScale: fontScale,
+        uiLineHeightScale: lineHeightScale,
+        followSystemTextSize: followSystemTextSize,
+      ),
+    );
+  }
+
+
   Future<void> setAsrSchool(AsrSchool value) =>
       _update((current) => current.copyWith(asrSchool: value));
 
@@ -187,6 +215,18 @@ class AppPreferencesController extends AsyncNotifier<AppPreferences> {
     state = AsyncData(next);
   }
 }
+
+final uiFontScaleProvider = Provider<double>((ref) =>
+    ref.watch(appPreferencesControllerProvider).value?.uiFontScale ??
+    const AppPreferences.defaults().uiFontScale);
+
+final uiLineHeightScaleProvider = Provider<double>((ref) =>
+    ref.watch(appPreferencesControllerProvider).value?.uiLineHeightScale ??
+    const AppPreferences.defaults().uiLineHeightScale);
+
+final followSystemTextSizeProvider = Provider<bool>((ref) =>
+    ref.watch(appPreferencesControllerProvider).value?.followSystemTextSize ??
+    const AppPreferences.defaults().followSystemTextSize);
 
 final themePreferenceProvider = Provider<AppThemePreference>((ref) {
   return ref.watch(appPreferencesControllerProvider).value?.theme ??
