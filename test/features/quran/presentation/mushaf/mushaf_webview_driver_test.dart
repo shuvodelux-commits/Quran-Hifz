@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_page.dart';
 import 'package:quran_hifz/features/quran/domain/quran_mushaf_palette.dart';
@@ -25,6 +26,15 @@ void main() {
       onDiagnostic: diagnostics.add,
     );
     driver = ControllerMushafWebViewDriver(controller);
+  });
+
+  test('bundled Mushaf uses explicit font size without browser inflation', () async {
+    final css = await rootBundle.loadString('assets/mushaf/renderer/mushaf.css');
+    expect(css, contains('-webkit-text-size-adjust: none;'));
+    expect(
+      css,
+      contains('  text-size-adjust: none;'),
+    );
   });
 
   test('loadRenderer loads only the bundled renderer asset', () async {
