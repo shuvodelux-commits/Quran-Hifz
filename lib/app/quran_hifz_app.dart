@@ -16,6 +16,9 @@ class QuranHifzApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themePreference = ref.watch(themePreferenceProvider);
     final language = ref.watch(appLanguageProvider);
+    final uiFontScale = ref.watch(uiFontScaleProvider);
+    final uiLineHeightScale = ref.watch(uiLineHeightScaleProvider);
+    final followSystemTextSize = ref.watch(followSystemTextSizeProvider);
     final themeMode = switch (themePreference) {
       AppThemePreference.light => ThemeMode.light,
       AppThemePreference.dark => ThemeMode.dark,
@@ -26,13 +29,25 @@ class QuranHifzApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Quran Hifz',
       debugShowCheckedModeBanner: false,
-      // Android system font size must not change app typography between devices.
-      // Quran, Bangla translation, and Hifz retain their own size preferences.
-      builder: (context, child) => MediaQuery.withNoTextScaling(
-        child: child ?? const SizedBox.shrink(),
+      // Same readable baseline on different phones. Users may opt in to their
+      // Android large-text preference from the in-app typography settings.
+      builder: (context, child) => followSystemTextSize
+          ? child ?? const SizedBox.shrink()
+          : MediaQuery.withNoTextScaling(
+              child: child ?? const SizedBox.shrink(),
+            ),
+      theme: appTheme(
+        themePreference,
+        language: language,
+        uiFontScale: uiFontScale,
+        uiLineHeightScale: uiLineHeightScale,
       ),
-      theme: appTheme(themePreference, language: language),
-      darkTheme: appTheme(AppThemePreference.dark, language: language),
+      darkTheme: appTheme(
+        AppThemePreference.dark,
+        language: language,
+        uiFontScale: uiFontScale,
+        uiLineHeightScale: uiLineHeightScale,
+      ),
       themeMode: themeMode,
       home: const AppOpeningSplash(
         child: QuranContentBootstrapGate(
