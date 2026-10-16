@@ -16,6 +16,9 @@ void main() {
       const AppPreferences.defaults().copyWith(
         theme: AppThemePreference.green,
         quranFont: QuranFontPreference.qpcHafs,
+        uiFontScale: 1.3,
+        uiLineHeightScale: 1.2,
+        followSystemTextSize: true,
         arabicFontSize: 34,
         arabicLineHeight: 1.7,
         banglaLineHeight: 1.6,
@@ -46,6 +49,9 @@ void main() {
     expect(restored.theme, AppThemePreference.green);
     expect(restored.quranFont, QuranFontPreference.qpcHafs);
     expect(restored.quranScript, QuranScriptPreference.uthmaniMadani);
+    expect(restored.uiFontScale, 1.3);
+    expect(restored.uiLineHeightScale, 1.2);
+    expect(restored.followSystemTextSize, isTrue);
     expect(restored.arabicFontSize, 34);
     expect(restored.arabicLineHeight, 1.7);
     expect(restored.banglaLineHeight, 1.6);
@@ -114,6 +120,9 @@ void main() {
     final repository = UserDatabaseAppPreferencesRepository(database);
 
     for (final entry in {
+      UserDatabaseAppPreferencesRepository.uiFontScaleKey: 'nan',
+      UserDatabaseAppPreferencesRepository.uiLineHeightScaleKey: '3.5',
+      UserDatabaseAppPreferencesRepository.followSystemTextSizeKey: 'unknown',
       UserDatabaseAppPreferencesRepository.arabicFontSizeKey: 'nan',
       UserDatabaseAppPreferencesRepository.arabicLineHeightKey: '99',
       UserDatabaseAppPreferencesRepository.banglaLineHeightKey: '-1',
@@ -127,6 +136,9 @@ void main() {
 
     final restored = await repository.load();
     const defaults = AppPreferences.defaults();
+    expect(restored.uiFontScale, defaults.uiFontScale);
+    expect(restored.uiLineHeightScale, defaults.uiLineHeightScale);
+    expect(restored.followSystemTextSize, defaults.followSystemTextSize);
     expect(restored.arabicFontSize, defaults.arabicFontSize);
     expect(restored.arabicLineHeight, defaults.arabicLineHeight);
     expect(restored.banglaLineHeight, defaults.banglaLineHeight);

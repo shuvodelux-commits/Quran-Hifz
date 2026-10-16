@@ -40,6 +40,13 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Appearance & Language'), findsOneWidget);
+      expect(find.text('App font settings'), findsOneWidget);
+      await tester.tap(find.text('App font settings'));
+      await tester.pumpAndSettle();
+      expect(find.text('Font settings'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('ui-typography-cancel')));
+      await tester.pumpAndSettle();
+
       expect(find.text('Prayer & Location'), findsOneWidget);
       expect(find.text('Teal Blue'), findsOneWidget);
       expect(find.text('Sea Green'), findsOneWidget);
@@ -85,6 +92,38 @@ void main() {
       expect(find.text('Audio & Recitation'), findsOneWidget);
     },
   );
+
+  testWidgets('Bangla reading preview uses its selected font size', (tester) async {
+    final preferences = _MemoryPreferencesRepository()
+      ..value = const AppPreferences.defaults().copyWith(
+        banglaFontSize: 25,
+      );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          bangladeshHijriDateRepositoryProvider.overrideWithValue(
+            _FakeHijriRepository(),
+          ),
+          prayerScheduleProvider.overrideWith(
+            (ref) async => throw StateError('No location'),
+          ),
+          appPreferencesRepositoryProvider.overrideWithValue(preferences),
+          indoPakQuranTextAvailableProvider.overrideWith((ref) async => true),
+          tajweedQuranTextAvailableProvider.overrideWith((ref) async => true),
+        ],
+        child: const MaterialApp(home: SettingsPage(currentSurahNumber: 1)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final preview = find.text('পরম করুণাময় ও অসীম দয়ালু আল্লাহর নামে।');
+    await tester.scrollUntilVisible(
+      preview,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(preview).style!.fontSize, 25);
+  });
 
   testWidgets('playback Bangla word meaning has its own toggle', (
     tester,

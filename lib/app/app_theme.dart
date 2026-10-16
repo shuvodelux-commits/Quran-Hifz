@@ -7,6 +7,8 @@ import '../features/settings/domain/app_preferences.dart';
 ThemeData appTheme(
   AppThemePreference preference, {
   AppLanguage language = AppLanguage.bangla,
+  double uiFontScale = 1.0,
+  double uiLineHeightScale = 1.0,
 }) {
   final dark = preference == AppThemePreference.dark;
   final seed = switch (preference) {
@@ -55,13 +57,17 @@ ThemeData appTheme(
     colorScheme: scheme,
   );
   final fontFamily = language == AppLanguage.bangla ? 'SolaimanLipi' : null;
-  final textTheme = language == AppLanguage.bangla
+  final baseTextTheme = language == AppLanguage.bangla
       ? _compactTextTheme('SolaimanLipi', scheme)
       : androidTypography.englishLike.apply(
           bodyColor: scheme.onSurface,
           displayColor: scheme.onSurface,
           decorationColor: scheme.onSurface,
         );
+  final textTheme = _withUiLineHeight(
+    baseTextTheme.apply(fontSizeFactor: uiFontScale),
+    uiLineHeightScale,
+  );
   final primaryTextTheme = textTheme.apply(
     bodyColor: scheme.onPrimary,
     displayColor: scheme.onPrimary,
@@ -245,31 +251,58 @@ TextTheme _compactTextTheme(String fontFamily, ColorScheme scheme) => TextTheme(
   titleLarge: _style(fontFamily, 20, FontWeight.w600, scheme.onSurface, 1.2),
   titleMedium: _style(fontFamily, 16, FontWeight.w600, scheme.onSurface, 1.25),
   titleSmall: _style(fontFamily, 14, FontWeight.w500, scheme.onSurface, 1.3),
-  bodyLarge: _style(fontFamily, 14, FontWeight.w400, scheme.onSurface, 1.4),
-  bodyMedium: _style(fontFamily, 13, FontWeight.w400, scheme.onSurface, 1.4),
+  bodyLarge: _style(fontFamily, 15, FontWeight.w400, scheme.onSurface, 1.4),
+  bodyMedium: _style(fontFamily, 14, FontWeight.w400, scheme.onSurface, 1.4),
   bodySmall: _style(
     fontFamily,
-    12,
+    13,
     FontWeight.w400,
     scheme.onSurfaceVariant,
     1.35,
   ),
-  labelLarge: _style(fontFamily, 13, FontWeight.w500, scheme.onSurface, 1.25),
+  labelLarge: _style(fontFamily, 14, FontWeight.w500, scheme.onSurface, 1.25),
   labelMedium: _style(
     fontFamily,
-    11,
+    13,
     FontWeight.w500,
     scheme.onSurfaceVariant,
     1.25,
   ),
   labelSmall: _style(
     fontFamily,
-    10,
+    12,
     FontWeight.w500,
     scheme.onSurfaceVariant,
     1.25,
   ),
 );
+
+/// Adjusts UI text metrics only; Quran and Hifz have their own explicit
+/// typography settings and are not derived from this TextTheme.
+TextTheme _withUiLineHeight(TextTheme base, double factor) {
+  if (factor == 1.0) return base;
+  TextStyle? scaled(TextStyle? style) =>
+      style == null
+          ? null
+          : style.copyWith(height: (style.height ?? 1.3) * factor);
+  return TextTheme(
+    displayLarge: scaled(base.displayLarge),
+    displayMedium: scaled(base.displayMedium),
+    displaySmall: scaled(base.displaySmall),
+    headlineLarge: scaled(base.headlineLarge),
+    headlineMedium: scaled(base.headlineMedium),
+    headlineSmall: scaled(base.headlineSmall),
+    titleLarge: scaled(base.titleLarge),
+    titleMedium: scaled(base.titleMedium),
+    titleSmall: scaled(base.titleSmall),
+    bodyLarge: scaled(base.bodyLarge),
+    bodyMedium: scaled(base.bodyMedium),
+    bodySmall: scaled(base.bodySmall),
+    labelLarge: scaled(base.labelLarge),
+    labelMedium: scaled(base.labelMedium),
+    labelSmall: scaled(base.labelSmall),
+  );
+}
 
 TextStyle _style(
   String family,

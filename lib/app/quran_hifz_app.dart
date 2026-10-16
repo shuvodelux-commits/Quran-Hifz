@@ -16,6 +16,9 @@ class QuranHifzApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themePreference = ref.watch(themePreferenceProvider);
     final language = ref.watch(appLanguageProvider);
+    final uiFontScale = ref.watch(uiFontScaleProvider);
+    final uiLineHeightScale = ref.watch(uiLineHeightScaleProvider);
+    final followSystemTextSize = ref.watch(followSystemTextSizeProvider);
     final themeMode = switch (themePreference) {
       AppThemePreference.light => ThemeMode.light,
       AppThemePreference.dark => ThemeMode.dark,
@@ -26,8 +29,40 @@ class QuranHifzApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Quran Hifz',
       debugShowCheckedModeBanner: false,
-      theme: appTheme(themePreference, language: language),
-      darkTheme: appTheme(AppThemePreference.dark, language: language),
+      // Quran and Hifz must never inherit Android text scaling: they have
+      // independent in-app sizing controls. Optional Android accessibility
+      // scaling is applied to the ordinary UI Theme only.
+      builder: (context, child) {
+        final fixedReaderScale = MediaQuery.withNoTextScaling(
+          child: child ?? const SizedBox.shrink(),
+        );
+        if (!followSystemTextSize) return fixedReaderScale;
+        final androidScale =
+            MediaQuery.textScalerOf(context).scale(16) / 16;
+        final effectiveUiScale =
+            (uiFontScale * androidScale).clamp(0.85, 2.0).toDouble();
+        return Theme(
+          data: appTheme(
+            themePreference,
+            language: language,
+            uiFontScale: effectiveUiScale,
+            uiLineHeightScale: uiLineHeightScale,
+          ),
+          child: fixedReaderScale,
+        );
+      },
+      theme: appTheme(
+        themePreference,
+        language: language,
+        uiFontScale: uiFontScale,
+        uiLineHeightScale: uiLineHeightScale,
+      ),
+      darkTheme: appTheme(
+        AppThemePreference.dark,
+        language: language,
+        uiFontScale: uiFontScale,
+        uiLineHeightScale: uiLineHeightScale,
+      ),
       themeMode: themeMode,
       home: const AppOpeningSplash(
         child: QuranContentBootstrapGate(

@@ -8,6 +8,9 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
   UserDatabaseAppPreferencesRepository(this._database);
 
   static const themeKey = 'theme_mode';
+  static const uiFontScaleKey = 'ui_font_scale_v1';
+  static const uiLineHeightScaleKey = 'ui_line_height_scale_v1';
+  static const followSystemTextSizeKey = 'follow_system_text_size_v1';
   static const quranScriptKey = 'quran_script';
   static const quranFontKey = 'quran_font';
   static const arabicFontSizeKey = 'arabic_font_size';
@@ -71,6 +74,9 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
       _database.getSetting(hijriDayBoundaryKey),
       _database.getSetting(hijriDateCorrectionKey),
       _database.getSetting(hijriCorrectionScopeKey),
+      _database.getSetting(uiFontScaleKey),
+      _database.getSetting(uiLineHeightScaleKey),
+      _database.getSetting(followSystemTextSizeKey),
     ]);
 
     final theme = switch (values[0]) {
@@ -103,9 +109,22 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
     final hifzFontSize = double.tryParse(values[20] ?? '');
     final hifzLineHeight = double.tryParse(values[21] ?? '');
     final hijriCorrection = int.tryParse(values[25] ?? '');
+    final uiFontScale = double.tryParse(values[27] ?? '');
+    final uiLineHeightScale = double.tryParse(values[28] ?? '');
 
     return AppPreferences(
       theme: theme,
+      uiFontScale: _isFiniteInRange(
+        uiFontScale, AppPreferences.minUiFontScale, AppPreferences.maxUiFontScale,
+      ) ? uiFontScale! : defaults.uiFontScale,
+      uiLineHeightScale: _isFiniteInRange(
+        uiLineHeightScale,
+        AppPreferences.minUiLineHeightScale,
+        AppPreferences.maxUiLineHeightScale,
+      ) ? uiLineHeightScale! : defaults.uiLineHeightScale,
+      followSystemTextSize: _parseBool(
+        values[29], defaults.followSystemTextSize,
+      ),
       quranScript: quranFont.script,
       quranFont: quranFont,
       arabicFontSize: fontSize != null && fontSize >= 20 && fontSize <= 56
@@ -213,6 +232,15 @@ class UserDatabaseAppPreferencesRepository implements AppPreferencesRepository {
   Future<void> save(AppPreferences preferences) async {
     await _database.transaction(() async {
       await _database.saveSetting(themeKey, preferences.theme.name);
+      await _database.saveSetting(
+        uiFontScaleKey, preferences.uiFontScale.toString(),
+      );
+      await _database.saveSetting(
+        uiLineHeightScaleKey, preferences.uiLineHeightScale.toString(),
+      );
+      await _database.saveSetting(
+        followSystemTextSizeKey, preferences.followSystemTextSize.toString(),
+      );
       await _database.saveSetting(
         quranScriptKey,
         preferences.quranFont.script.name,

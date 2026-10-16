@@ -29,7 +29,7 @@ void main() {
     expect(scope.child, isA<QuranHifzApp>());
   });
 
-  testWidgets('English UI keeps the Android device text scale unchanged', (
+  testWidgets('app typography ignores device font scaling in both languages', (
     tester,
   ) async {
     final pendingManifest = Completer<String>();
@@ -38,20 +38,66 @@ void main() {
       install: (_) => throw StateError('unreachable'),
       openDatabase: (_) => throw StateError('unreachable'),
     );
+    final dispatcher = tester.binding.platformDispatcher;
+    dispatcher.textScaleFactorTestValue = 1.75;
+    addTearDown(dispatcher.clearTextScaleFactorTestValue);
+
+    for (final language in AppLanguage.values) {
+      await tester.pumpWidget(
+        ProviderScope(
+          key: ValueKey(language),
+          overrides: [
+            quranContentBootstrapperProvider.overrideWithValue(bootstrap),
+            themePreferenceProvider.overrideWithValue(AppThemePreference.light),
+            appLanguageProvider.overrideWithValue(language),
+          ],
+          child: const QuranHifzApp(),
+        ),
+      );
+      await tester.pump();
+
+      final splashContext = tester.element(
+        find.byKey(const ValueKey('app-opening-splash')),
+      );
+      expect(MediaQuery.textScalerOf(splashContext).scale(20), 20);
+      expect(find.byKey(const ValueKey('app-language-text-scale')), findsNothing);
+    }
+
+    // Changing the Android font size while the app is running must not
+    // change app typography. The Quran/Hifz size sliders remain separate.
+    dispatcher.textScaleFactorTestValue = 0.85;
+    await tester.pump();
+
+    final splashContext = tester.element(
+      find.byKey(const ValueKey('app-opening-splash')),
+    );
+    expect(MediaQuery.textScalerOf(splashContext).scale(20), 20);
+  });
+
+  testWidgets('user can opt in to Android text scaling', (tester) async {
+    final bootstrap = QuranContentBootstrap(
+      manifestLoader: () => Completer<String>().future,
+      install: (_) => throw StateError('unreachable'),
+      openDatabase: (_) => throw StateError('unreachable'),
+    );
+    final dispatcher = tester.binding.platformDispatcher;
+    dispatcher.textScaleFactorTestValue = 1.5;
+    addTearDown(dispatcher.clearTextScaleFactorTestValue);
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           quranContentBootstrapperProvider.overrideWithValue(bootstrap),
-          themePreferenceProvider.overrideWithValue(AppThemePreference.light),
-          appLanguageProvider.overrideWithValue(AppLanguage.english),
+          followSystemTextSizeProvider.overrideWithValue(true),
         ],
         child: const QuranHifzApp(),
       ),
     );
     await tester.pump();
-
-    expect(find.byKey(const ValueKey('app-language-text-scale')), findsNothing);
+    final context = tester.element(find.byKey(const ValueKey('app-opening-splash')));
+    // Device accessibility size enlarges UI Theme text, not Quran/Mushaf.
+    expect(MediaQuery.textScalerOf(context).scale(20), 20);
+    expect(Theme.of(context).textTheme.bodyMedium!.fontSize, 21);
   });
 
   testWidgets('provider-scoped app renders through canonical bootstrap', (

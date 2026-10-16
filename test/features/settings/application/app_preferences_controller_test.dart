@@ -31,6 +31,36 @@ void main() {
     return container;
   }
 
+  test('global UI typography persists without changing Quran or Hifz settings', () async {
+    final repository = _MemoryRepository();
+    final container = containerFor(repository);
+    await container.read(appPreferencesControllerProvider.future);
+    final controller = container.read(appPreferencesControllerProvider.notifier);
+
+    await controller.setUiTypography(
+      fontScale: 1.25,
+      lineHeightScale: 1.15,
+      followSystemTextSize: true,
+    );
+    final saved = repository.value;
+    expect(repository.writes, ['save']);
+    expect(saved.uiFontScale, 1.25);
+    expect(saved.uiLineHeightScale, 1.15);
+    expect(saved.followSystemTextSize, isTrue);
+    expect(saved.arabicFontSize, 27);
+    expect(saved.banglaFontSize, 18);
+    expect(saved.hifzFontSize, 32);
+
+    await expectLater(
+      controller.setUiTypography(
+        fontScale: double.nan,
+        lineHeightScale: 1.0,
+        followSystemTextSize: false,
+      ),
+      throwsArgumentError,
+    );
+  });
+
   test('changing Tajweed preference preserves Quran typography', () async {
     final repository = _MemoryRepository();
     final container = containerFor(repository);

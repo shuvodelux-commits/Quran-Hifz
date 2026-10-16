@@ -15,6 +15,9 @@ html {
   width: 100%;
   min-height: 100%;
   margin: 0;
+  /* Only the in-app Mushaf typography control determines Arabic text size. */
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
   background: var(--page-bg);
   color: var(--page-fg);
 }

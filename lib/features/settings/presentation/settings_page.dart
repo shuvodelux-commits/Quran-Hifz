@@ -15,6 +15,7 @@ import '../../quran/presentation/widgets/quran_tajweed_text.dart';
 import '../../reciters/presentation/reciter_audio_page.dart';
 import '../application/app_preferences_controller.dart';
 import '../domain/app_preferences.dart';
+import 'ui_typography_settings_page.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key, this.currentSurahNumber = 1});
@@ -99,6 +100,29 @@ class SettingsPage extends ConsumerWidget {
                   onSelected: (theme) => ref
                       .read(appPreferencesControllerProvider.notifier)
                       .setTheme(theme),
+                ),
+                const SizedBox(height: 12),
+                const Divider(),
+                ListTile(
+                  key: const ValueKey('ui-typography-settings-entry'),
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.text_fields_rounded),
+                  title: Text(appText(
+                    value.language,
+                    'অ্যাপের ফন্ট সেটিংস',
+                    'App font settings',
+                  )),
+                  subtitle: Text(
+                    '${localDigits('${(value.uiFontScale * 100).round()}%', value.language)}'
+                    ' · '
+                    '${localDigits('${(value.uiLineHeightScale * 100).round()}%', value.language)}',
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const UiTypographySettingsPage(),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -1034,7 +1058,9 @@ class _QuranTypographyPreview extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'পরম করুণাময় ও অসীম দয়ালু আল্লাহর নামে।',
+            // The preview must reflect the independent Bangla reading size.
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontSize: preferences.banglaFontSize,
               height: preferences.banglaLineHeight,
             ),
           ),
