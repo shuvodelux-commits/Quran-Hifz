@@ -70,7 +70,22 @@ void main() {
       englishDark.primaryTextTheme.titleLarge?.color,
       englishDark.colorScheme.onPrimary,
     );
-    expect(blue.textTheme.bodyMedium?.fontSize, 13);
+    expect(blue.textTheme.bodyMedium?.fontSize, 14);
+    expect(blue.textTheme.labelSmall?.fontSize, 12);
+    final enlarged = appTheme(
+      AppThemePreference.light,
+      uiFontScale: 1.25,
+      uiLineHeightScale: 1.2,
+    );
+    expect(enlarged.textTheme.bodyMedium?.fontSize, 17.5);
+    expect(
+      enlarged.textTheme.bodyMedium?.height,
+      closeTo(1.4 * 1.2, 0.001),
+    );
+    expect(
+      enlarged.textTheme.bodyMedium?.fontFamily,
+      blue.textTheme.bodyMedium?.fontFamily,
+    );
     expect(blue.textTheme.titleLarge?.fontSize, 20);
     expect(blue.textTheme.titleLarge?.fontWeight, FontWeight.w600);
     expect(blue.colorScheme.secondary, ReferenceColors.deepBlue);
