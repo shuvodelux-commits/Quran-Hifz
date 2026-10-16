@@ -74,6 +74,30 @@ void main() {
     expect(MediaQuery.textScalerOf(splashContext).scale(20), 20);
   });
 
+  testWidgets('user can opt in to Android text scaling', (tester) async {
+    final bootstrap = QuranContentBootstrap(
+      manifestLoader: () => Completer<String>().future,
+      install: (_) => throw StateError('unreachable'),
+      openDatabase: (_) => throw StateError('unreachable'),
+    );
+    final dispatcher = tester.binding.platformDispatcher;
+    dispatcher.textScaleFactorTestValue = 1.5;
+    addTearDown(dispatcher.clearTextScaleFactorTestValue);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          quranContentBootstrapperProvider.overrideWithValue(bootstrap),
+          followSystemTextSizeProvider.overrideWithValue(true),
+        ],
+        child: const QuranHifzApp(),
+      ),
+    );
+    await tester.pump();
+    final context = tester.element(find.byKey(const ValueKey('app-opening-splash')));
+    expect(MediaQuery.textScalerOf(context).scale(20), 30);
+  });
+
   testWidgets('provider-scoped app renders through canonical bootstrap', (
     tester,
   ) async {
