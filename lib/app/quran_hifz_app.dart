@@ -29,13 +29,28 @@ class QuranHifzApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Quran Hifz',
       debugShowCheckedModeBanner: false,
-      // Same readable baseline on different phones. Users may opt in to their
-      // Android large-text preference from the in-app typography settings.
-      builder: (context, child) => followSystemTextSize
-          ? child ?? const SizedBox.shrink()
-          : MediaQuery.withNoTextScaling(
-              child: child ?? const SizedBox.shrink(),
-            ),
+      // Quran and Hifz must never inherit Android text scaling: they have
+      // independent in-app sizing controls. Optional Android accessibility
+      // scaling is applied to the ordinary UI Theme only.
+      builder: (context, child) {
+        final fixedReaderScale = MediaQuery.withNoTextScaling(
+          child: child ?? const SizedBox.shrink(),
+        );
+        if (!followSystemTextSize) return fixedReaderScale;
+        final androidScale =
+            MediaQuery.textScalerOf(context).scale(16) / 16;
+        final effectiveUiScale =
+            (uiFontScale * androidScale).clamp(0.85, 2.0).toDouble();
+        return Theme(
+          data: appTheme(
+            themePreference,
+            language: language,
+            uiFontScale: effectiveUiScale,
+            uiLineHeightScale: uiLineHeightScale,
+          ),
+          child: fixedReaderScale,
+        );
+      },
       theme: appTheme(
         themePreference,
         language: language,
