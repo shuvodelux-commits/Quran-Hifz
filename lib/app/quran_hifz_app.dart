@@ -26,6 +26,11 @@ class QuranHifzApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Quran Hifz',
       debugShowCheckedModeBanner: false,
+      // Android system font size must not change app typography between devices.
+      // Quran, Bangla translation, and Hifz retain their own size preferences.
+      builder: (context, child) => MediaQuery.withNoTextScaling(
+        child: child ?? const SizedBox.shrink(),
+      ),
       theme: appTheme(themePreference, language: language),
       darkTheme: appTheme(AppThemePreference.dark, language: language),
       themeMode: themeMode,
