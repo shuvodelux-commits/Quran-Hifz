@@ -13,6 +13,11 @@ enum AsrSchool { standard, hanafi }
 enum HijriDayBoundary { maghrib, midnight }
 
 class AppPreferences {
+  // UI typography is independent of Quran, translation and Hifz font sizes.
+  static const minUiFontScale = 0.85;
+  static const maxUiFontScale = 1.50;
+  static const minUiLineHeightScale = 0.90;
+  static const maxUiLineHeightScale = 1.50;
   static const supportedRepeatCounts = <int>[1, 2, 3, 5, 10, 20];
   static const supportedPlaybackSpeeds = <double>[0.5, 0.75, 1.0, 1.25];
   static const minArabicLineHeight = 1.2;
@@ -28,6 +33,9 @@ class AppPreferences {
 
   const AppPreferences({
     required this.theme,
+    this.uiFontScale = 1.0,
+    this.uiLineHeightScale = 1.0,
+    this.followSystemTextSize = false,
     required this.quranScript,
     required this.quranFont,
     required this.arabicFontSize,
@@ -58,6 +66,9 @@ class AppPreferences {
 
   const AppPreferences.defaults()
     : theme = AppThemePreference.light,
+      uiFontScale = 1.0,
+      uiLineHeightScale = 1.0,
+      followSystemTextSize = false,
       quranScript = QuranScriptPreference.uthmaniMadani,
       quranFont = QuranFontPreference.defaultGlobal,
       arabicFontSize = 27,
@@ -86,6 +97,9 @@ class AppPreferences {
       hijriCorrectionScope = null;
 
   final AppThemePreference theme;
+  final double uiFontScale;
+  final double uiLineHeightScale;
+  final bool followSystemTextSize;
   final QuranScriptPreference quranScript;
   final QuranFontPreference quranFont;
   final double arabicFontSize;
@@ -115,6 +129,9 @@ class AppPreferences {
 
   AppPreferences copyWith({
     AppThemePreference? theme,
+    double? uiFontScale,
+    double? uiLineHeightScale,
+    bool? followSystemTextSize,
     QuranScriptPreference? quranScript,
     QuranFontPreference? quranFont,
     double? arabicFontSize,
@@ -153,6 +170,10 @@ class AppPreferences {
             : QuranFontPreference.qpcHafs);
     return AppPreferences(
       theme: theme ?? this.theme,
+      uiFontScale: uiFontScale ?? this.uiFontScale,
+      uiLineHeightScale: uiLineHeightScale ?? this.uiLineHeightScale,
+      followSystemTextSize:
+          followSystemTextSize ?? this.followSystemTextSize,
       quranScript: nextQuranFont.script,
       quranFont: nextQuranFont,
       arabicFontSize: arabicFontSize ?? this.arabicFontSize,
