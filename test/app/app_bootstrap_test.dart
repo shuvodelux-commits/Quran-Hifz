@@ -95,7 +95,9 @@ void main() {
     );
     await tester.pump();
     final context = tester.element(find.byKey(const ValueKey('app-opening-splash')));
-    expect(MediaQuery.textScalerOf(context).scale(20), 30);
+    // Device accessibility size enlarges UI Theme text, not Quran/Mushaf.
+    expect(MediaQuery.textScalerOf(context).scale(20), 20);
+    expect(Theme.of(context).textTheme.bodyMedium!.fontSize, 21);
   });
 
   testWidgets('provider-scoped app renders through canonical bootstrap', (
